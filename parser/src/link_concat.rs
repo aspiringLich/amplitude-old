@@ -1,3 +1,5 @@
+/// This module contains the code for concatenating together
+/// markdown links
 use std::{collections::HashMap, vec::IntoIter};
 
 use pulldown_cmark::{BrokenLink, CowStr, Event, Options};
@@ -9,30 +11,31 @@ pub struct LinkDef<'a> {
     pub title: &'a str,
 }
 
+pub type LinkMap<'a> = HashMap<&'a str, LinkDef<'a>>;
+
 /// Generates a list of events using the given links and link concat callback
-/// 
+///
 /// ```
 /// # use parser::link_concat::{link_concat_events, parse_markdown_link_defs};
 /// # use pulldown_cmark::{html, Options};
 /// let link_header = "[search]: https://google.com/search?q=";
 /// let text = "[search][search+test]";
 ///
-/// let events = link_concat_events(text, Options::empty(), link_header);
-/// 
+/// let events = link_concat_events(text, Options::empty(), parse_markdown_link_defs(link_header));
+///
 /// let mut html_output = String::new();
 /// html::push_html(&mut html_output, events);
-/// 
+///
 /// assert_eq!(html_output, "<p><a href=\"https://google.com/search?q=test\">search</a></p>\n");
 /// ```
 pub fn link_concat_events<'a>(
     text: &'a str,
     options: Options,
-    links: &'a str,
-) -> IntoIter<Event<'a>>{ 
-    let map = parse_markdown_link_defs(links);
+    links: LinkMap<'a>,
+) -> IntoIter<Event<'a>> {
     let mut callback = |link: BrokenLink| {
         let (first, second) = link.reference.split_once('+')?;
-        let first = map.get(first)?;
+        let first = links.get(first)?;
         Some((
             CowStr::Boxed((first.url.to_owned() + second).into_boxed_str()),
             CowStr::Borrowed(first.title),
@@ -51,12 +54,12 @@ pub fn link_concat_events<'a>(
 /// ignore other things, it may not work exactly like the Commonmark spec
 ///
 /// ALSO I do not account for multi-line link defs because im lazy
-pub fn parse_markdown_link_defs<'a>(input: &'a str) -> HashMap<&'a str, LinkDef<'a>> {
+pub fn parse_markdown_link_defs<'a>(input: &'a str) -> LinkMap<'a> {
     let mut iter = input.split('\n').peekable();
     let mut out = HashMap::new();
 
     let mut prev_empty_or_link = true;
-    'main: while let Some(line) = iter.next() {
+    while let Some(line) = iter.next() {
         // if the previous line is empty
         if line.trim_start().is_empty() {
             prev_empty_or_link = true;
@@ -69,7 +72,7 @@ pub fn parse_markdown_link_defs<'a>(input: &'a str) -> HashMap<&'a str, LinkDef<
         macro_rules! bail {
             () => {{
                 prev_empty_or_link = false;
-                continue 'main;
+                continue;
             }};
         }
 
@@ -97,6 +100,11 @@ pub fn parse_markdown_link_defs<'a>(input: &'a str) -> HashMap<&'a str, LinkDef<
         let line = &line[i..];
         let Some(split) = line.find(']') else { bail!() };
         let (name, mut line) = line.split_at(split);
+        
+        // commonmark spec the first link definition takes priority
+        if out.contains_key(name) {
+            bail!();
+        }
 
         if line.chars().nth(1) != Some(':') {
             bail!()
