@@ -1,10 +1,22 @@
 use std::collections::HashMap;
 
+use pulldown_cmark::{BrokenLink, CowStr};
+
 /// Contains information representing a Link Definition
 #[derive(Debug)]
 pub struct LinkDef<'a> {
     pub url: &'a str,
-    pub title: Option<&'a str>,
+    pub title: &'a str,
+}
+
+pub fn broken_link_concat_callback<'a>(
+    map: &HashMap<&'a str, LinkDef<'a>>,
+    link: BrokenLink<'a>,
+) -> Option<(CowStr<'a>, CowStr<'a>)> {
+    let (first, second) = link.reference.split_once('+')?;
+    let first = map.get(first)?;
+    // dbg!(first, second);
+    Some((CowStr::Boxed((first.url.to_owned() + second).into_boxed_str()), CowStr::Borrowed(first.title)))
 }
 
 /// Following the (commonmark spec)[https://spec.commonmark.org/0.18/#link-reference-definitions],
@@ -79,14 +91,14 @@ pub fn parse_markdown_link_defs<'a>(input: &'a str) -> HashMap<&'a str, LinkDef<
         };
 
         let title = match title.trim_start() {
-            "" => None,
+            "" => "",
             e => {
                 // assert that its surrounded by quotes
                 match (e.bytes().next(), e.bytes().last()) {
                     (Some(b'\''), Some(b'\'')) | (Some(b'"'), Some(b'"')) => {}
                     _ => bail!(),
                 }
-                Some(&e[1..e.len() - 1])
+                &e[1..e.len() - 1]
             }
         };
 
