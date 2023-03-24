@@ -1,4 +1,4 @@
-use parser::link_concat::{link_concat_events, parse_markdown_link_defs};
+use amplitude_markdown::link_concat::{link_concat_events, parse_markdown_link_defs};
 use pulldown_cmark::{html, Options};
 
 #[test]
