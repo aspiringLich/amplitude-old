@@ -6,7 +6,6 @@ fn main() {
     parse_dir(
         Path::new("./media/input"),
         Path::new("./media/output"),
-        LinkMap::new(),
     )
     .unwrap();
 }

@@ -1,0 +1,1 @@
+[search]: https://google.com/search?q=

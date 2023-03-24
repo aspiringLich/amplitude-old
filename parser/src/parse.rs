@@ -1,4 +1,4 @@
-use std::{io, path::Path};
+use std::{io, path::Path, fs};
 
 use pulldown_cmark::{html, Options};
 
@@ -6,12 +6,12 @@ use crate::link_concat::{link_concat_events, parse_markdown_link_defs, LinkMap};
 
 /// Parse the input file and write the output to the output file.
 pub fn parse(links: &LinkMap, input_path: &Path, output_path: &Path) -> io::Result<()> {
-    let input = std::fs::read_to_string(input_path)?;
+    let input = fs::read_to_string(input_path)?;
     let events = link_concat_events(&input, Options::all(), links);
     let mut html_output = String::new();
     pulldown_cmark::html::push_html(&mut html_output, events);
 
-    std::fs::write(output_path, html_output)?;
+    fs::write(output_path, html_output)?;
     Ok(())
 }
 
@@ -37,15 +37,26 @@ pub fn parse(links: &LinkMap, input_path: &Path, output_path: &Path) -> io::Resu
 /// │   ├── file3.md ⟵ these files will have both header.md links
 /// │   └── file4.md ⟵ root/gaming/header.md will take priority
 /// ...
+/// ```
 ///
 /// ## Notes on Behavior
 ///
 ///  - `.md` files will be parsed and converted to `.html` files
 ///  - `.md` files in the output directory will be removed
+///  - `header.md` does not appear in the output
 /// ```
-pub fn parse_dir(input: &Path, output: &Path, links: LinkMap) -> std::io::Result<()> {
+pub fn parse_dir(input: &Path, output: &Path) -> std::io::Result<()> {
+    if let Ok(s) = fs::read_to_string(input.join("header.md")) {
+        let links = parse_markdown_link_defs(&s);
+        parse_dir_internal(input, output, links)
+    } else {
+        parse_dir_internal(input, output, LinkMap::new())
+    }
+}
+
+fn parse_dir_internal(input: &Path, output: &Path, links: LinkMap) -> std::io::Result<()> {
     // check for files in output that are not in input, and delete them
-    for entry in std::fs::read_dir(output)? {
+    for entry in fs::read_dir(output)? {
         let o = entry?.path();
         let mut i = input.join(o.strip_prefix(output).unwrap());
 
@@ -55,36 +66,34 @@ pub fn parse_dir(input: &Path, output: &Path, links: LinkMap) -> std::io::Result
                 i.set_extension("md");
                 // dbg!(&i, &o);
                 if !i.exists() {
-                    std::fs::remove_file(o)?;
+                    fs::remove_file(o)?;
                 }
             }
             // just get rid of it
-            "md" => {
-                std::fs::remove_file(o)?;
-            }
+            "md" => fs::remove_file(o)?,
             _ => {
                 if !i.exists() {
                     // dbg!(&i, &o);
-                    std::fs::remove_file(o)?;
+                    fs::remove_file(o)?;
                 }
             }
         }
     }
 
     // go through all the files, copying them over and parsing them
-    for entry in std::fs::read_dir(input)? {
+    for entry in fs::read_dir(input)? {
         let i = entry?.path();
         let o = output.join(i.clone().strip_prefix(input).unwrap());
 
         // if its a dir, update links and call the fn again
         if i.is_dir() {
-            std::fs::create_dir(&o)?;
-            if let Ok(s) = std::fs::read_to_string(input.join("header.md")) {
+            fs::create_dir(&o)?;
+            if let Ok(s) = fs::read_to_string(input.join("header.md")) {
                 let mut new_links = links.clone();
                 new_links.extend(parse_markdown_link_defs(&s));
-                parse_dir(&i, &o, new_links)?;
+                parse_dir_internal(&i, &o, new_links)?;
             } else {
-                parse_dir(&i, &o, links.clone())?;
+                parse_dir_internal(&i, &o, links.clone())?;
             }
             continue;
         }
@@ -100,18 +109,18 @@ pub fn parse_dir(input: &Path, output: &Path, links: LinkMap) -> std::io::Result
             }
 
             // otherwise, parse
-            let s = std::fs::read_to_string(i)?;
+            let s = fs::read_to_string(i)?;
             let events = link_concat_events(&s, Options::all(), &links);
 
             let mut html_out = String::new();
             html::push_html(&mut html_out, events);
 
             let path = o.with_extension("html");
-            std::fs::write(path, html_out)?;
+            fs::write(path, html_out)?;
         }
         // else
         else {
-            std::fs::copy(i, o)?;
+            fs::copy(i, o)?;
         }
     }
 
