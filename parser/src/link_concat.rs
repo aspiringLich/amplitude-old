@@ -5,7 +5,7 @@ use std::{collections::HashMap, vec::IntoIter};
 use pulldown_cmark::{BrokenLink, CowStr, Event, Options};
 
 /// Contains information representing a Link Definition
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LinkDef<'a> {
     pub url: &'a str,
     pub title: &'a str,
@@ -21,7 +21,8 @@ pub type LinkMap<'a> = HashMap<&'a str, LinkDef<'a>>;
 /// let link_header = "[search]: https://google.com/search?q=";
 /// let text = "[search][search+test]";
 ///
-/// let events = link_concat_events(text, Options::empty(), parse_markdown_link_defs(link_header));
+/// let links = parse_markdown_link_defs(link_header);
+/// let events = link_concat_events(text, Options::empty(), &links);
 ///
 /// let mut html_output = String::new();
 /// html::push_html(&mut html_output, events);
@@ -31,7 +32,7 @@ pub type LinkMap<'a> = HashMap<&'a str, LinkDef<'a>>;
 pub fn link_concat_events<'a>(
     text: &'a str,
     options: Options,
-    links: LinkMap<'a>,
+    links: &'a LinkMap<'a>,
 ) -> IntoIter<Event<'a>> {
     let mut callback = |link: BrokenLink| {
         let (first, second) = link.reference.split_once('+')?;
@@ -50,8 +51,9 @@ pub fn link_concat_events<'a>(
 /// Following the [commonmark spec](https://spec.commonmark.org/0.18/#link-reference-definitions),
 /// parse a file for its Link Reference Definitions.
 ///
-/// Does not expect anything other than the link reference definitions, so although itll try and
-/// ignore other things, it may not work exactly like the Commonmark spec
+/// Does not expect anything other than the link reference definitions, so
+/// although itll try and ignore other things, it may not work exactly like the
+/// Commonmark spec.
 ///
 /// ALSO I do not account for multi-line link defs because im lazy
 pub fn parse_markdown_link_defs<'a>(input: &'a str) -> LinkMap<'a> {
@@ -100,7 +102,7 @@ pub fn parse_markdown_link_defs<'a>(input: &'a str) -> LinkMap<'a> {
         let line = &line[i..];
         let Some(split) = line.find(']') else { bail!() };
         let (name, mut line) = line.split_at(split);
-        
+
         // commonmark spec says the first link definition takes priority
         if out.contains_key(name) {
             bail!();
