@@ -37,7 +37,7 @@ fn test_link_concat() {
 
 [gaming][test+subtest]
 ";
-    let events = link_concat_events(text, Options::empty(), text);
+    let events = link_concat_events(text, Options::empty(), parse_markdown_link_defs(text));
 
     let mut html_output = String::new();
     html::push_html(&mut html_output, events);

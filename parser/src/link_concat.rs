@@ -101,7 +101,7 @@ pub fn parse_markdown_link_defs<'a>(input: &'a str) -> LinkMap<'a> {
         let Some(split) = line.find(']') else { bail!() };
         let (name, mut line) = line.split_at(split);
         
-        // commonmark spec the first link definition takes priority
+        // commonmark spec says the first link definition takes priority
         if out.contains_key(name) {
             bail!();
         }
