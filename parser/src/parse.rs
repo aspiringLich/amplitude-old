@@ -1,9 +1,4 @@
-use std::{
-    cell::RefCell,
-    collections::{HashMap, VecDeque},
-    io,
-    path::{Path, PathBuf},
-};
+use std::{io, path::Path};
 
 use pulldown_cmark::{html, Options};
 
@@ -50,7 +45,7 @@ pub fn parse(links: &LinkMap, input_path: &Path, output_path: &Path) -> io::Resu
 /// ```
 pub fn parse_dir(input: &Path, output: &Path, links: LinkMap) -> std::io::Result<()> {
     // check for files in output that are not in input, and delete them
-    for entry in std::fs::read_dir(output)?.into_iter() {
+    for entry in std::fs::read_dir(output)? {
         let o = entry?.path();
         let mut i = input.join(o.strip_prefix(output).unwrap());
 
@@ -77,7 +72,7 @@ pub fn parse_dir(input: &Path, output: &Path, links: LinkMap) -> std::io::Result
     }
 
     // go through all the files, copying them over and parsing them
-    for entry in std::fs::read_dir(input)?.into_iter() {
+    for entry in std::fs::read_dir(input)? {
         let i = entry?.path();
         let o = output.join(i.clone().strip_prefix(input).unwrap());
 
@@ -128,4 +123,4 @@ pub fn parse_dir(input: &Path, output: &Path, links: LinkMap) -> std::io::Result
 ///
 /// See [`parse_dir_recursive`] for more description on how this function
 /// behaves
-pub fn parse_dir_watch(input_dir: &Path, output_path: &Path) {}
+pub fn parse_dir_watch(_input_dir: &Path, _output_path: &Path) {}

@@ -56,12 +56,11 @@ pub fn link_concat_events<'a>(
 /// Commonmark spec.
 ///
 /// ALSO I do not account for multi-line link defs because im lazy
-pub fn parse_markdown_link_defs<'a>(input: &'a str) -> LinkMap<'a> {
-    let mut iter = input.split('\n').peekable();
+pub fn parse_markdown_link_defs(input: &str) -> LinkMap {
     let mut out = HashMap::new();
 
     let mut prev_empty_or_link = true;
-    while let Some(line) = iter.next() {
+    for line in input.split('\n') {
         // if the previous line is empty
         if line.trim_start().is_empty() {
             prev_empty_or_link = true;
@@ -84,11 +83,11 @@ pub fn parse_markdown_link_defs<'a>(input: &'a str) -> LinkMap<'a> {
         }
 
         let mut i = 1;
-        let mut chars = line.chars();
+        let chars = line.chars();
 
         // look to make sure the line starts with a `[` indented
         // by 0-3 spaces
-        while let Some(c) = chars.next() {
+        for c in chars {
             match c {
                 '[' => break,
                 ' ' if i <= 3 => i += 1,
@@ -112,7 +111,7 @@ pub fn parse_markdown_link_defs<'a>(input: &'a str) -> LinkMap<'a> {
             bail!()
         }
 
-        line = &line[2..].trim_start();
+        line = line[2..].trim_start();
         let split = line.find(|c: char| c.is_whitespace());
 
         // yes title, get both
