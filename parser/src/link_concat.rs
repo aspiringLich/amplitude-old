@@ -10,6 +10,20 @@ pub struct LinkDef<'a> {
 }
 
 /// Generates a list of events using the given links and link concat callback
+/// 
+/// ```
+/// # use parser::link_concat::{link_concat_events, parse_markdown_link_defs};
+/// # use pulldown_cmark::{html, Options};
+/// let link_header = "[search]: https://google.com/search?q=";
+/// let text = "[search][search+test]";
+///
+/// let events = link_concat_events(text, Options::empty(), link_header);
+/// 
+/// let mut html_output = String::new();
+/// html::push_html(&mut html_output, events);
+/// 
+/// assert_eq!(html_output, "<p><a href=\"https://google.com/search?q=test\">search</a></p>\n");
+/// ```
 pub fn link_concat_events<'a>(
     text: &'a str,
     options: Options,
@@ -24,12 +38,13 @@ pub fn link_concat_events<'a>(
             CowStr::Borrowed(first.title),
         ))
     };
+    // this is just for convenience when passing into `html::push_html`
     pulldown_cmark::Parser::new_with_broken_link_callback(text, options, Some(&mut callback))
         .collect::<Vec<_>>()
         .into_iter()
 }
 
-/// Following the (commonmark spec)[https://spec.commonmark.org/0.18/#link-reference-definitions],
+/// Following the [commonmark spec](https://spec.commonmark.org/0.18/#link-reference-definitions),
 /// parse a file for its Link Reference Definitions.
 ///
 /// Does not expect anything other than the link reference definitions, so although itll try and
