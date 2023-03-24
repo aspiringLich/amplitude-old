@@ -1,5 +1,5 @@
-use parser::link_concat::{broken_link_concat_callback, parse_markdown_link_defs};
-use pulldown_cmark::{Options, Parser, html};
+use parser::link_concat::{link_concat_events, parse_markdown_link_defs};
+use pulldown_cmark::{html, Options};
 
 #[test]
 fn test_parse_markdown_link_defs() {
@@ -32,21 +32,15 @@ fn test_parse_markdown_link_defs() {
 
 #[test]
 fn test_link_concat() {
-    let markdown_input = "
+    let text = "
 [test]: test/
 
 [gaming][test+subtest]
 ";
-    
-    let map = parse_markdown_link_defs(markdown_input);
-    let mut callback = |link| broken_link_concat_callback(&map, link);
-    let parser = Parser::new_with_broken_link_callback(
-        markdown_input,
-        Options::all(),
-        Some(&mut callback),
-    );
+    let events = link_concat_events(text, Options::empty(), text);
+
     let mut html_output = String::new();
-    html::push_html(&mut html_output, parser);
-    
+    html::push_html(&mut html_output, events);
+
     assert_eq!(html_output, "<p><a href=\"test/subtest\">gaming</a></p>\n");
 }

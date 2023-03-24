@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, vec::IntoIter};
 
-use pulldown_cmark::{BrokenLink, CowStr};
+use pulldown_cmark::{BrokenLink, CowStr, Event, Options};
 
 /// Contains information representing a Link Definition
 #[derive(Debug)]
@@ -9,14 +9,24 @@ pub struct LinkDef<'a> {
     pub title: &'a str,
 }
 
-pub fn broken_link_concat_callback<'a>(
-    map: &HashMap<&'a str, LinkDef<'a>>,
-    link: BrokenLink<'a>,
-) -> Option<(CowStr<'a>, CowStr<'a>)> {
-    let (first, second) = link.reference.split_once('+')?;
-    let first = map.get(first)?;
-    // dbg!(first, second);
-    Some((CowStr::Boxed((first.url.to_owned() + second).into_boxed_str()), CowStr::Borrowed(first.title)))
+/// Generates a list of events using the given links and link concat callback
+pub fn link_concat_events<'a>(
+    text: &'a str,
+    options: Options,
+    links: &'a str,
+) -> IntoIter<Event<'a>>{ 
+    let map = parse_markdown_link_defs(links);
+    let mut callback = |link: BrokenLink| {
+        let (first, second) = link.reference.split_once('+')?;
+        let first = map.get(first)?;
+        Some((
+            CowStr::Boxed((first.url.to_owned() + second).into_boxed_str()),
+            CowStr::Borrowed(first.title),
+        ))
+    };
+    pulldown_cmark::Parser::new_with_broken_link_callback(text, options, Some(&mut callback))
+        .collect::<Vec<_>>()
+        .into_iter()
 }
 
 /// Following the (commonmark spec)[https://spec.commonmark.org/0.18/#link-reference-definitions],
