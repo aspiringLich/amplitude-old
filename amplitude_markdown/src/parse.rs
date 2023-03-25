@@ -1,6 +1,11 @@
-use std::{io, path::Path, fs};
+use std::{
+    fs, io,
+    path::{Path, PathBuf},
+};
 
+use notify::{Config, Error, Event, RecommendedWatcher, Watcher};
 use pulldown_cmark::{html, Options};
+use tracing::{error, info};
 
 use crate::link_concat::{link_concat_events, parse_markdown_link_defs, LinkMap};
 
@@ -45,8 +50,8 @@ pub fn parse(links: &LinkMap, input_path: &Path, output_path: &Path) -> io::Resu
 ///  - `.md` files in the output directory will be removed
 ///  - `header.md` does not appear in the output
 /// ```
-pub fn parse_dir(input: &Path, output: &Path) -> std::io::Result<()> {
-    if let Ok(s) = fs::read_to_string(input.join("header.md")) {
+pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> std::io::Result<()> {
+    if let Ok(s) = fs::read_to_string(input.as_ref().join("header.md")) {
         let links = parse_markdown_link_defs(&s);
         parse_dir_internal(input, output, links)
     } else {
@@ -54,7 +59,10 @@ pub fn parse_dir(input: &Path, output: &Path) -> std::io::Result<()> {
     }
 }
 
-fn parse_dir_internal(input: &Path, output: &Path, links: LinkMap) -> std::io::Result<()> {
+fn parse_dir_internal<P: AsRef<Path>>(input: P, output: P, links: LinkMap) -> std::io::Result<()> {
+    let input = input.as_ref();
+    let output = output.as_ref();
+
     // check for files in output that are not in input, and delete them
     for entry in fs::read_dir(output)? {
         let o = entry?.path();
@@ -130,6 +138,41 @@ fn parse_dir_internal(input: &Path, output: &Path, links: LinkMap) -> std::io::R
 /// This function will watch the input directory and write to the output
 /// directory when detecting file changes using the `notify` crate.
 ///
-/// See [`parse_dir_recursive`] for more description on how this function
-/// behaves
-pub fn parse_dir_watch(_input_dir: &Path, _output_path: &Path) {}
+/// See [`parse_dir`] for more description on how this function behaves
+pub fn parse_dir_watch<P: AsRef<Path>>(input: P, output: P) -> notify::Result<()> {
+    let (tx, rx) = std::sync::mpsc::channel();
+
+    let mut watcher = RecommendedWatcher::new(tx, Config::default())?;
+    watcher.watch(&input.as_ref(), notify::RecursiveMode::Recursive)?;
+
+    info!("Watching for changes in '{}'", input.as_ref().display());
+
+    while let Ok(mut event) = rx.recv() {
+        use notify::EventKind::*;
+
+        // wait 50ms to avoid duplicate events
+        std::thread::sleep(std::time::Duration::from_millis(50));
+
+        // drain the channel
+        while let Ok(e) = rx.try_recv() {
+            match e {
+                Ok(e) if matches!(e.kind, Create(_) | Modify(_) | Remove(_)) => event = Ok(e),
+                Err(e) => error!("Error watching directory: {}", e),
+                _ => (),
+            }
+        }
+
+        match event {
+            Ok(event) if matches!(event.kind, Create(_) | Modify(_) | Remove(_)) => {
+                info!("Change detected, reparsing...");
+                if let Err(e) = parse_dir(input.as_ref(), output.as_ref()) {
+                    error!("Error parsing directory: '{}'", e);
+                }
+            }
+            Err(e) => error!("Error watching directory: {}", e),
+            _ => (),
+        }
+    }
+
+    Ok(())
+}
