@@ -3,7 +3,6 @@
 use std::{
     collections::HashMap,
     ops::{Deref, DerefMut},
-    vec::IntoIter,
 };
 
 use pulldown_cmark::{BrokenLink, CowStr, Event, Options, Parser, RefDefs};

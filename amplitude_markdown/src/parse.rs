@@ -1,12 +1,7 @@
-use std::{
-    borrow::Cow,
-    collections::HashMap,
-    fs, io,
-    path::{Path, PathBuf},
-};
+use std::{fs, path::Path};
 
-use notify::{Config, Error, Event, RecommendedWatcher, Watcher};
-use pulldown_cmark::{html, Options, Parser, RefDefs};
+use notify::{Config, RecommendedWatcher, Watcher};
+use pulldown_cmark::Options;
 use tracing::{error, info};
 
 use crate::link_concat::{get_links_of, link_concat_events, LinkDefs};

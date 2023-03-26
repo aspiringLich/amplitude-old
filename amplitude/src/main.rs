@@ -16,7 +16,7 @@ struct Args {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
-    
+
     let args = Args::parse();
 
     parse_dir(&args.input, &args.output)?;
