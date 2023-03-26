@@ -1,23 +1,26 @@
 use std::{
+    borrow::Cow,
+    collections::HashMap,
     fs, io,
     path::{Path, PathBuf},
 };
 
 use notify::{Config, Error, Event, RecommendedWatcher, Watcher};
-use pulldown_cmark::{html, Options};
+use pulldown_cmark::{html, Options, Parser, RefDefs};
 use tracing::{error, info};
 
-use crate::link_concat::{link_concat_events, parse_markdown_link_defs, LinkMap};
+use crate::link_concat::{get_links_of, link_concat_events, LinkDefs};
 
-/// Parse the input file and write the output to the output file.
-pub fn parse(links: &LinkMap, input_path: &Path, output_path: &Path) -> io::Result<()> {
-    let input = fs::read_to_string(input_path)?;
-    let events = link_concat_events(&input, Options::all(), links);
+/// Parse the input text and return the output text.
+pub(crate) fn parse(input: &str, links: &LinkDefs) -> String {
+    // let input = fs::read_to_string(input)?;
+    let other: LinkDefs;
+    get_links_of!(input, other);
+    let events = link_concat_events(&input, Options::all(), links, &other);
     let mut html_output = String::new();
-    pulldown_cmark::html::push_html(&mut html_output, events);
+    pulldown_cmark::html::push_html(&mut html_output, events.into_iter());
 
-    fs::write(output_path, html_output)?;
-    Ok(())
+    html_output
 }
 
 /// Parse all files in the input directory and all its subdirectories, and write
@@ -33,33 +36,51 @@ pub fn parse(links: &LinkMap, input_path: &Path, output_path: &Path) -> io::Resu
 /// structure:
 ///
 /// ```txt
-/// root
-/// ├── header.md
-/// ├── file1.md ⟵ these files will have the root/header.md links
-/// ├── file2.md ⟵
-/// ├── gaming
+/// courses
+/// ├── rust
 /// │   ├── header.md
-/// │   ├── file3.md ⟵ these files will have both header.md links
-/// │   └── file4.md ⟵ root/gaming/header.md will take priority
-/// ...
+/// │   ├── config.toml
+/// │   ├── types.md
+/// │   ├── functions.md
+/// │   ├── structs.md
+/// │   └── enums.md
+/// └── c
+///     ├── header.md
+///     ├── config.toml
+///     ├── variables.md
+///     ├── functions.md
+///     ├── structs.md
+///     └── enums.md
 /// ```
 ///
 /// ## Notes on Behavior
 ///
 ///  - `.md` files will be parsed and converted to `.html` files
 ///  - `.md` files in the output directory will be removed
-///  - `header.md` does not appear in the output
-/// ```
+///  - `.toml` files in the output directory will be removed
+///
+/// ## Special Files
+///
+///  - `header.md` files will be parsed as link definition files and will not be
+///    included in the output
+///  - `config.toml` files will be parsed to register the course and generate
+///    the `index.html` file
+///
 pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> std::io::Result<()> {
     if let Ok(s) = fs::read_to_string(input.as_ref().join("header.md")) {
-        let links = parse_markdown_link_defs(&s);
-        parse_dir_internal(input, output, links)
+        let links: LinkDefs;
+        get_links_of!(&s, links);
+        parse_dir_internal(input, output, &links)
     } else {
-        parse_dir_internal(input, output, LinkMap::new())
+        parse_dir_internal(input, output, &LinkDefs::default())
     }
 }
 
-fn parse_dir_internal<P: AsRef<Path>>(input: P, output: P, links: LinkMap) -> std::io::Result<()> {
+fn parse_dir_internal<P: AsRef<Path>>(
+    input: P,
+    output: P,
+    links: &LinkDefs,
+) -> std::io::Result<()> {
     let input = input.as_ref();
     let output = output.as_ref();
 
@@ -78,8 +99,9 @@ fn parse_dir_internal<P: AsRef<Path>>(input: P, output: P, links: LinkMap) -> st
                 }
             }
             // just get rid of it
-            "md" => fs::remove_file(o)?,
+            "md" | "toml" => fs::remove_file(o)?,
             _ => {
+                // dbg!(&o);
                 if !i.exists() {
                     // dbg!(&i, &o);
                     fs::remove_file(o)?;
@@ -95,13 +117,18 @@ fn parse_dir_internal<P: AsRef<Path>>(input: P, output: P, links: LinkMap) -> st
 
         // if its a dir, update links and call the fn again
         if i.is_dir() {
-            fs::create_dir(&o)?;
+            if !o.exists() {
+                fs::create_dir(&o)?;
+            }
             if let Ok(s) = fs::read_to_string(input.join("header.md")) {
-                let mut new_links = links.clone();
-                new_links.extend(parse_markdown_link_defs(&s));
-                parse_dir_internal(&i, &o, new_links)?;
+                let mut orig = (*links).clone();
+                let new: LinkDefs;
+                get_links_of!(&s, new);
+                orig.extend(new.clone());
+
+                parse_dir_internal(&i, &o, &LinkDefs(orig))?;
             } else {
-                parse_dir_internal(&i, &o, links.clone())?;
+                parse_dir_internal(&i, &o, links)?;
             }
             continue;
         }
@@ -109,26 +136,31 @@ fn parse_dir_internal<P: AsRef<Path>>(input: P, output: P, links: LinkMap) -> st
         let ext = i.extension().unwrap_or_default();
         let name = i.file_name().unwrap_or_default();
 
-        // if its a markdown file
-        if ext == "md" {
-            // ignore header.md
-            if name == "header.md" {
-                continue;
+        match ext.to_str().unwrap_or_default() {
+            "md" => {
+                // ignore header.md
+                if name == "header.md" {
+                    continue;
+                }
+
+                // otherwise, parse
+                let s = fs::read_to_string(&i)?;
+                let output = parse(&s, &links);
+                fs::write(o.with_extension("html"), output)?;
             }
+            "toml" if name == "config.toml" => {
+                // // parse the config file
+                // let config = parse_config(&i)?;
 
-            // otherwise, parse
-            let s = fs::read_to_string(i)?;
-            let events = link_concat_events(&s, Options::all(), &links);
-
-            let mut html_out = String::new();
-            html::push_html(&mut html_out, events);
-
-            let path = o.with_extension("html");
-            fs::write(path, html_out)?;
-        }
-        // else
-        else {
-            fs::copy(i, o)?;
+                // // generate the index file
+                // let index = generate_index(&config, &links);
+                // let path = o.with_file_name("index.html");
+                // fs::write(path, index)?;
+            }
+            _ => {
+                // copy over the file
+                fs::copy(i, o)?;
+            }
         }
     }
 
@@ -175,4 +207,62 @@ pub fn parse_dir_watch<P: AsRef<Path>>(input: P, output: P) -> notify::Result<()
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        link_concat::{get_links_of, LinkDefs},
+        parse::parse,
+    };
+
+    #[test]
+    fn test_links() {
+        let links: LinkDefs;
+        get_links_of!(
+            r#"  
+[link1]: /link1 "link1"   
+  [link2]: /link2 "link2" 
+[link3]:   
+       /link3       
+[link4]:   
+   </link 4>        
+         'link4'  
+        "#,
+            links
+        );
+        let mut flat = links
+            .iter()
+            .map(|(k, v)| (*k, v.url, v.title))
+            .collect::<Vec<_>>();
+        flat.sort();
+
+        assert_eq!(
+            flat,
+            [
+                ("link1", "/link1", "link1"),
+                ("link2", "/link2", "link2"),
+                ("link3", "/link3", ""),
+                ("link4", "/link 4", "link4")
+            ]
+        )
+    }
+
+    #[test]
+    fn test_link_concat() {
+        let links: LinkDefs;
+        get_links_of!(
+            "[search]: /search?q=\n\n\
+             [wiki]: /wiki",
+            links
+        );
+        let s = "[wiki+animation] [search.whyistheskyblue]\n\n\
+                 [animation]: /animation/Animation.html";
+        let s = parse(s, &links);
+        assert_eq!(
+            s,
+            "<p><a href=\"/wiki/animation/Animation.html\">wiki+animation</a> \
+             <a href=\"/search?q=whyistheskyblue\">search.whyistheskyblue</a></p>\n"
+        )
+    }
 }

@@ -1,8 +1,13 @@
 /// This module contains the code for concatenating together
 /// markdown links
-use std::{collections::HashMap, vec::IntoIter};
+use std::{
+    collections::HashMap,
+    ops::{Deref, DerefMut},
+    vec::IntoIter,
+};
 
-use pulldown_cmark::{BrokenLink, CowStr, Event, Options};
+use pulldown_cmark::{BrokenLink, CowStr, Event, Options, Parser, RefDefs};
+use tracing::warn;
 
 /// Contains information representing a Link Definition
 #[derive(Debug, Clone)]
@@ -11,133 +16,84 @@ pub struct LinkDef<'a> {
     pub title: &'a str,
 }
 
-pub type LinkMap<'a> = HashMap<&'a str, LinkDef<'a>>;
-
 /// Generates a list of events using the given links and link concat callback
-///
-/// ```
-/// # use parser::link_concat::{link_concat_events, parse_markdown_link_defs};
-/// # use pulldown_cmark::{html, Options};
-/// let link_header = "[search]: https://google.com/search?q=";
-/// let text = "[search][search+test]";
-///
-/// let links = parse_markdown_link_defs(link_header);
-/// let events = link_concat_events(text, Options::empty(), &links);
-///
-/// let mut html_output = String::new();
-/// html::push_html(&mut html_output, events);
-///
-/// assert_eq!(html_output, "<p><a href=\"https://google.com/search?q=test\">search</a></p>\n");
-/// ```
-pub fn link_concat_events<'a>(
+pub(crate) fn link_concat_events<'a>(
     text: &'a str,
     options: Options,
-    links: &'a LinkMap<'a>,
-) -> IntoIter<Event<'a>> {
-    let mut callback = |link: BrokenLink| {
-        let (first, second) = link.reference.split_once('+')?;
-        let first = links.get(first)?;
-        Some((
-            CowStr::Boxed((first.url.to_owned() + second).into_boxed_str()),
-            CowStr::Borrowed(first.title),
-        ))
+    links: &'a LinkDefs<'a>,
+    other: &'a LinkDefs<'a>,
+) -> Vec<Event<'a>> {
+    let mut callback = move |link: BrokenLink| -> Option<(CowStr, CowStr)> {
+        // adding two links together
+        if let Some((first, second)) = link.reference.split_once('+') {
+            let first = links.get(first).or(other.get(first))?;
+            let second = links.get(second).or(other.get(second))?;
+            return Some((
+                CowStr::Boxed((first.url.to_string() + second.url).into_boxed_str()),
+                CowStr::Borrowed(first.title),
+            ));
+        }
+        // adding a link and a string together
+        if let Some((first, second)) = link.reference.split_once('/') {
+            let first = links.get(first).or(other.get(first))?;
+            return Some((
+                CowStr::Boxed((first.url.to_string() + "/" + second).into_boxed_str()),
+                CowStr::Borrowed(first.title),
+            ));
+        }
+        // adding a link and a string together without the slash
+        if let Some((first, second)) = link.reference.split_once('.') {
+            let first = links.get(first).or(other.get(first))?;
+            return Some((
+                CowStr::Boxed((first.url.to_string() + second).into_boxed_str()),
+                CowStr::Borrowed(first.title),
+            ));
+        } else {
+            return None;
+        }
     };
-    // this is just for convenience when passing into `html::push_html`
     pulldown_cmark::Parser::new_with_broken_link_callback(text, options, Some(&mut callback))
         .collect::<Vec<_>>()
-        .into_iter()
 }
 
-/// Following the [commonmark spec](https://spec.commonmark.org/0.18/#link-reference-definitions),
-/// parse a file for its Link Reference Definitions.
-///
-/// Does not expect anything other than the link reference definitions, so
-/// although itll try and ignore other things, it may not work exactly like the
-/// Commonmark spec.
-///
-/// ALSO I do not account for multi-line link defs because im lazy
-pub fn parse_markdown_link_defs(input: &str) -> LinkMap {
-    let mut out = HashMap::new();
+#[derive(Default)]
+pub(crate) struct LinkDefs<'a>(pub(crate) HashMap<&'a str, LinkDef<'a>>);
 
-    let mut prev_empty_or_link = true;
-    for line in input.split('\n') {
-        // if the previous line is empty
-        if line.trim_start().is_empty() {
-            prev_empty_or_link = true;
-            continue;
-        }
+impl<'a> Deref for LinkDefs<'a> {
+    type Target = HashMap<&'a str, LinkDef<'a>>;
 
-        // bail out of the loop, as this isnt a link
-        //
-        // shhh its fine,,,
-        macro_rules! bail {
-            () => {{
-                prev_empty_or_link = false;
-                continue;
-            }};
-        }
-
-        // if the previous line wasnt empty or a link, then exit
-        if !prev_empty_or_link {
-            continue;
-        }
-
-        let mut i = 1;
-        let chars = line.chars();
-
-        // look to make sure the line starts with a `[` indented
-        // by 0-3 spaces
-        for c in chars {
-            match c {
-                '[' => break,
-                ' ' if i <= 3 => i += 1,
-                _ => {
-                    bail!();
-                }
-            }
-        }
-
-        // get the name of the link
-        let line = &line[i..];
-        let Some(split) = line.find(']') else { bail!() };
-        let (name, mut line) = line.split_at(split);
-
-        // commonmark spec says the first link definition takes priority
-        if out.contains_key(name) {
-            bail!();
-        }
-
-        if line.chars().nth(1) != Some(':') {
-            bail!()
-        }
-
-        line = line[2..].trim_start();
-        let split = line.find(|c: char| c.is_whitespace());
-
-        // yes title, get both
-        let (url, title) = if let Some(split) = split {
-            let (url, title) = line.split_at(split);
-            (url, title.trim())
-        }
-        // no title, just get the url
-        else {
-            (line, "")
-        };
-
-        let title = match title.trim_start() {
-            "" => "",
-            e => {
-                // assert that its surrounded by quotes
-                match (e.bytes().next(), e.bytes().last()) {
-                    (Some(b'\''), Some(b'\'')) | (Some(b'"'), Some(b'"')) => {}
-                    _ => bail!(),
-                }
-                &e[1..e.len() - 1]
-            }
-        };
-
-        // finally, add the link def to out
-        out.insert(name, LinkDef { url, title });
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
-    out
+}
+
+impl<'a> DerefMut for LinkDefs<'a> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl<'a> From<&'a RefDefs<'a>> for LinkDefs<'a> {
+    fn from(refs: &'a RefDefs<'a>) -> Self {
+        let mut map = HashMap::new();
+        for (key, value) in refs.iter() {
+            if key.contains('+') || key.contains('/') || key.contains('.') {
+                warn!("Link definitions should not contain '+', '/', or '.' characters, as they are used for concatenation");
+            }
+            map.insert(
+                key,
+                LinkDef {
+                    url: value.dest.as_ref(),
+                    title: value.title.as_ref().map(|s| s.as_ref()).unwrap_or(""),
+                },
+            );
+        }
+        Self(map)
+    }
+}
+
+/// This is normally impossible due to lifetime limits, so macro it is
+pub(crate) macro get_links_of($text:expr, $links:ident) {
+    let parser = Parser::new($text);
+    $links = parser.reference_definitions().into();
 }
