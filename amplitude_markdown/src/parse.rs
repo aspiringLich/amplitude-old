@@ -1,12 +1,18 @@
 use std::{fs, path::Path};
 
+use amplitude_common::{Args, ARGS};
 use notify::{Config, RecommendedWatcher, Watcher};
 use pulldown_cmark::Options;
 use tracing::{error, info};
 
 use crate::link_concat::{get_links_of, link_concat_events, LinkDefs};
 
-/// Parse the input text and return the output text.
+/// Parse the input `md` and return the output `html`.
+///
+/// ## Behavior
+///
+/// - Link concatenation is supported
+/// -
 pub(crate) fn parse(input: &str, links: &LinkDefs) -> String {
     // let input = fs::read_to_string(input)?;
     let other: LinkDefs;
@@ -166,13 +172,18 @@ fn parse_dir_internal<P: AsRef<Path>>(
 /// directory when detecting file changes using the `notify` crate.
 ///
 /// See [`parse_dir`] for more description on how this function behaves
-pub fn parse_dir_watch<P: AsRef<Path>>(input: P, output: P) -> notify::Result<()> {
+pub fn parse_dir_watch() -> notify::Result<()> {
+    let Args {
+        ref input,
+        ref output,
+        ..
+    } = *ARGS;
     let (tx, rx) = std::sync::mpsc::channel();
 
     let mut watcher = RecommendedWatcher::new(tx, Config::default())?;
     watcher.watch(&input.as_ref(), notify::RecursiveMode::Recursive)?;
 
-    info!("Watching for changes in '{}'", input.as_ref().display());
+    info!("Watching for changes in '{}'", &input);
 
     while let Ok(mut event) = rx.recv() {
         use notify::EventKind::*;
@@ -192,7 +203,7 @@ pub fn parse_dir_watch<P: AsRef<Path>>(input: P, output: P) -> notify::Result<()
         match event {
             Ok(event) if matches!(event.kind, Create(_) | Modify(_) | Remove(_)) => {
                 info!("Change detected, reparsing...");
-                if let Err(e) = parse_dir(input.as_ref(), output.as_ref()) {
+                if let Err(e) = parse_dir(&input, &output) {
                     error!("Error parsing directory: '{}'", e);
                 }
             }
@@ -206,10 +217,9 @@ pub fn parse_dir_watch<P: AsRef<Path>>(input: P, output: P) -> notify::Result<()
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        link_concat::{get_links_of, LinkDefs},
-        parse::parse,
-    };
+    use pulldown_cmark::{html, Options};
+
+    use crate::link_concat::{get_links_of, link_concat_events, LinkDefs};
 
     #[test]
     fn test_links() {
@@ -246,16 +256,21 @@ mod tests {
     #[test]
     fn test_link_concat() {
         let links: LinkDefs;
+        let other: LinkDefs;
+        let s = "[wiki+animation] [search.whyistheskyblue]\n\n\
+                 [animation]: /animation/Animation.html";
         get_links_of!(
             "[search]: /search?q=\n\n\
              [wiki]: /wiki",
             links
         );
-        let s = "[wiki+animation] [search.whyistheskyblue]\n\n\
-                 [animation]: /animation/Animation.html";
-        let s = parse(s, &links);
+        get_links_of!(&s, other);
+        let events = link_concat_events(&s, Options::all(), &links, &other);
+
+        let mut html_out = String::new();
+        html::push_html(&mut html_out, events.into_iter());
         assert_eq!(
-            s,
+            html_out,
             "<p><a href=\"/wiki/animation/Animation.html\">wiki+animation</a> \
              <a href=\"/search?q=whyistheskyblue\">search.whyistheskyblue</a></p>\n"
         )
