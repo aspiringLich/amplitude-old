@@ -183,7 +183,7 @@ pub fn parse_dir_watch() -> notify::Result<()> {
     let mut watcher = RecommendedWatcher::new(tx, Config::default())?;
     watcher.watch(&input.as_ref(), notify::RecursiveMode::Recursive)?;
 
-    info!("Watching for changes in '{}'", &input);
+    info!("Watching for changes in '{}'", &input.display());
 
     while let Ok(mut event) = rx.recv() {
         use notify::EventKind::*;

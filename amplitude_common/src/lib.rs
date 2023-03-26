@@ -1,7 +1,7 @@
 #![feature(let_chains)]
 #![feature(once_cell)]
 
-use std::sync::LazyLock;
+use std::{sync::LazyLock, path::PathBuf};
 use clap::Parser;
 
 pub mod template_builder;
@@ -15,8 +15,11 @@ pub struct Args {
     pub watch: bool,
     /// The input directory to parse files from
     #[arg(short, long, default_value = "courses")]
-    pub input: String,
+    pub input: PathBuf,
     /// The output directory to output parsed files
     #[arg(short, long, default_value = "rendered")]
-    pub output: String,
+    pub output: PathBuf,
+    /// The directory containing `/static` and `/templates`
+    #[arg(short, long, default_value = "web")]
+    pub web: PathBuf,
 }
