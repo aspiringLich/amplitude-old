@@ -3,29 +3,28 @@ use clap::Parser;
 
 #[derive(clap::Parser)]
 struct Args {
-    /// Whether to watch the input directory for changes
+    /// Watch the input directory for changes
     #[arg(short, long)]
     watch: bool,
     /// The input directory to parse files from
-    #[arg(short, long, default_value = "media/input")]
+    #[arg(short, long, default_value = "courses")]
     input: String,
-    /// The output directory to parse files from
-    #[arg(short, long, default_value = "media/output")]
+    /// The output directory to output parsed files
+    #[arg(short, long, default_value = "rendered")]
     output: String,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    tracing_subscriber::fmt::init();
+    
     let args = Args::parse();
 
-    tracing_subscriber::fmt::init();
-
-    match args.watch {
-        true => {
-            let input = args.input.clone();
-            let output = args.output.clone();
-            std::thread::spawn(move || parse_dir_watch(input, output));
-        }
-        false => parse_dir(&args.input, &args.output)?,
+    parse_dir(&args.input, &args.output)?;
+    if args.watch {
+        let input = args.input.clone();
+        let output = args.output.clone();
+        parse_dir(&input, &output)?;
+        std::thread::spawn(|| parse_dir_watch(input, output));
     }
 
     Ok(())

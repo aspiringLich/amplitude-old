@@ -3,9 +3,16 @@
 version = 3
 
 [[package]]
+name = "afire"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "749dec06bad15d56cfc5117d83efe35064c1a5a72f22acce777760159e5f884d"
+
+[[package]]
 name = "amplitude"
 version = "0.1.0"
 dependencies = [
+ "afire",
  "amplitude_markdown",
  "clap",
  "pulldown-cmark",
