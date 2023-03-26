@@ -1,9 +1,6 @@
 use afire::prelude::*;
 use amplitude_common::config;
-use std::{
-    ops::{FromResidual, Try},
-    path::{Path, PathBuf}, fmt::Display,
-};
+use std::fmt::Display;
 
 mod course;
 
@@ -44,7 +41,25 @@ where
             Ok(t) => Ok(t),
             Err(e) => Err(StatusError {
                 status,
-                body: Some(format!("{}\n[{}]: {}", body, std::panic::Location::caller(), e)),
+                body: Some(format!(
+                    "{}\n[{}]: {}",
+                    e,
+                    std::panic::Location::caller(),
+                    body
+                )),
+            }),
+        }
+    }
+}
+
+impl<T> StatusContext<T> for Option<T> {
+    #[track_caller]
+    fn status(self, status: Status, body: impl Display) -> Result<T, StatusError> {
+        match self {
+            Some(t) => Ok(t),
+            None => Err(StatusError {
+                status,
+                body: Some(format!("[{}]: {}", std::panic::Location::caller(), body)),
             }),
         }
     }

@@ -3,16 +3,16 @@ use tracing::warn;
 
 /// A struct to facilitate turning a HTML template file
 /// into the renderred HTML file
-/// 
+///
 /// ```
 /// # use amplitude_common::template_builder::TemplateBuilder;
 /// let template = "<p>{{content}}</p>";
-/// 
+///
 /// let output = TemplateBuilder::new(template)
 ///     .unwrap()
 ///     .replace("content", "Hello, world!")
 ///     .build();
-/// 
+///
 /// assert_eq!(output, "<p>Hello, world!</p>");
 /// ```
 #[derive(Debug, Clone, Default)]
@@ -62,7 +62,7 @@ impl<'a> TemplateBuilder<'a> {
 
         Ok(out)
     }
-    
+
     /// Replaces all occurences of `{{from}}` with `to`
     pub fn replace<T: ToString>(mut self, from: &str, to: T) -> Self {
         let with_string = to.to_string();
@@ -82,7 +82,7 @@ impl<'a> TemplateBuilder<'a> {
 
         self
     }
-    
+
     /// Builds the template into a string
     pub fn build(self) -> String {
         let mut out = String::new();

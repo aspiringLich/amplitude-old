@@ -41,7 +41,7 @@ pub mod config {
             &Path::new(path.0)
         }
     }
-    
+
     impl AsRef<Path> for StaticPath {
         fn as_ref(&self) -> &Path {
             Path::new(self.0)

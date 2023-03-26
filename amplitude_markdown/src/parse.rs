@@ -1,6 +1,6 @@
 use std::{fs, path::Path};
 
-use amplitude_common::{template_builder::TemplateBuilder, Args, config};
+use amplitude_common::{config, template_builder::TemplateBuilder};
 use notify::{Config, RecommendedWatcher, Watcher};
 use pulldown_cmark::Options;
 use tracing::{error, info};
@@ -26,7 +26,7 @@ pub(crate) fn parse(input: &str, links: &LinkDefs) -> anyhow::Result<String> {
     let html = TemplateBuilder::new(&template)?
         .replace("content", &content)
         .build();
-    
+
     Ok(html)
 }
 
