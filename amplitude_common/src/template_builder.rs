@@ -8,7 +8,7 @@ use tracing::warn;
 /// # use amplitude_common::template_builder::TemplateBuilder;
 /// let template = "<p>{{content}}</p>";
 /// 
-/// let output = TemplateBuilder::from_template(template)
+/// let output = TemplateBuilder::new(template)
 ///     .unwrap()
 ///     .replace("content", "Hello, world!")
 ///     .build();
@@ -24,7 +24,7 @@ pub struct TemplateBuilder<'a> {
 
 impl<'a> TemplateBuilder<'a> {
     /// Creates a new TemplateBuilder from a template string
-    pub fn from_template(template: &'a str) -> anyhow::Result<Self> {
+    pub fn new(template: &'a str) -> anyhow::Result<Self> {
         let mut out = Self::default();
 
         let mut split = template.split("{{");
@@ -118,7 +118,7 @@ mod tests {
             </html>
         "#;
 
-        let out = super::TemplateBuilder::from_template(template)
+        let out = super::TemplateBuilder::new(template)
             .unwrap()
             .replace("title", "My Title")
             .replace("content", "My Content")

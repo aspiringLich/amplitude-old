@@ -1,6 +1,6 @@
 use std::{fs, path::Path};
 
-use amplitude_common::{Args, ARGS};
+use amplitude_common::{template_builder::TemplateBuilder, Args, config};
 use notify::{Config, RecommendedWatcher, Watcher};
 use pulldown_cmark::Options;
 use tracing::{error, info};
@@ -12,16 +12,22 @@ use crate::link_concat::{get_links_of, link_concat_events, LinkDefs};
 /// ## Behavior
 ///
 /// - Link concatenation is supported
-/// -
-pub(crate) fn parse(input: &str, links: &LinkDefs) -> String {
+/// - Uses `<web>/templates/article.html` as a template
+pub(crate) fn parse(input: &str, links: &LinkDefs) -> anyhow::Result<String> {
     // let input = fs::read_to_string(input)?;
     let other: LinkDefs;
     get_links_of!(input, other);
-    let events = link_concat_events(&input, Options::all(), links, &other);
-    let mut html_output = String::new();
-    pulldown_cmark::html::push_html(&mut html_output, events.into_iter());
 
-    html_output
+    let events = link_concat_events(&input, Options::all(), links, &other);
+    let mut content = String::new();
+    pulldown_cmark::html::push_html(&mut content, events.into_iter());
+
+    let template = fs::read_to_string(config::TEMPLATE.join("article.html"))?;
+    let html = TemplateBuilder::new(&template)?
+        .replace("content", &content)
+        .build();
+    
+    Ok(html)
 }
 
 /// Parse all files in the input directory and all its subdirectories, and write
@@ -67,7 +73,7 @@ pub(crate) fn parse(input: &str, links: &LinkDefs) -> String {
 ///  - `config.toml` files will be parsed to register the course and generate
 ///    the `index.html` file
 ///
-pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> std::io::Result<()> {
+pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<()> {
     if let Ok(s) = fs::read_to_string(input.as_ref().join("header.md")) {
         let links: LinkDefs;
         get_links_of!(&s, links);
@@ -77,11 +83,7 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> std::io::Result<()> {
     }
 }
 
-fn parse_dir_internal<P: AsRef<Path>>(
-    input: P,
-    output: P,
-    links: &LinkDefs,
-) -> std::io::Result<()> {
+fn parse_dir_internal<P: AsRef<Path>>(input: P, output: P, links: &LinkDefs) -> anyhow::Result<()> {
     let input = input.as_ref();
     let output = output.as_ref();
 
@@ -146,7 +148,7 @@ fn parse_dir_internal<P: AsRef<Path>>(
 
                 // otherwise, parse
                 let s = fs::read_to_string(&i)?;
-                let output = parse(&s, &links);
+                let output = parse(&s, &links)?;
                 fs::write(o.with_extension("html"), output)?;
             }
             "toml" if name == "config.toml" => {
@@ -173,17 +175,12 @@ fn parse_dir_internal<P: AsRef<Path>>(
 ///
 /// See [`parse_dir`] for more description on how this function behaves
 pub fn parse_dir_watch() -> notify::Result<()> {
-    let Args {
-        ref input,
-        ref output,
-        ..
-    } = *ARGS;
     let (tx, rx) = std::sync::mpsc::channel();
 
     let mut watcher = RecommendedWatcher::new(tx, Config::default())?;
-    watcher.watch(&input.as_ref(), notify::RecursiveMode::Recursive)?;
+    watcher.watch(config::INPUT.as_path(), notify::RecursiveMode::Recursive)?;
 
-    info!("Watching for changes in '{}'", &input.display());
+    info!("Watching for changes in '{}'", config::INPUT);
 
     while let Ok(mut event) = rx.recv() {
         use notify::EventKind::*;
@@ -203,7 +200,7 @@ pub fn parse_dir_watch() -> notify::Result<()> {
         match event {
             Ok(event) if matches!(event.kind, Create(_) | Modify(_) | Remove(_)) => {
                 info!("Change detected, reparsing...");
-                if let Err(e) = parse_dir(&input, &output) {
+                if let Err(e) = parse_dir(&config::INPUT, &config::OUTPUT) {
                     error!("Error parsing directory: '{}'", e);
                 }
             }
