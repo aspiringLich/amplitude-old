@@ -14,4 +14,13 @@ pub fn attach(server: &mut Server) {
 
         Ok(Response::new().text(&body).content(Content::HTML))
     });
+    // Serves the index page for a course
+    server.handled_route(Method::GET, "/course/{course}", |req| {
+        let course = req.param("course").unwrap();
+
+        let path = config::OUTPUT.join(course).join("index.html");
+        let body = std::fs::read_to_string(path).status(Status::NotFound, "Course not found")?;
+
+        Ok(Response::new().text(&body).content(Content::HTML))
+    });
 }

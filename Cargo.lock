@@ -15,7 +15,6 @@ dependencies = [
  "afire",
  "amplitude_common",
  "amplitude_markdown",
- "anyhow",
  "clap",
  "pulldown-cmark",
  "tracing",
