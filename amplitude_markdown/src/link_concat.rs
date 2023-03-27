@@ -5,7 +5,7 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
-use pulldown_cmark::{BrokenLink, CowStr, Event, Options, Parser, RefDefs};
+use pulldown_cmark::{BrokenLink, CowStr, Parser, RefDefs};
 use tracing::warn;
 
 /// Contains information representing a Link Definition

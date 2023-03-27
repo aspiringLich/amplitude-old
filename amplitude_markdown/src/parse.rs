@@ -1,6 +1,6 @@
 use std::{fs, path::Path};
 
-use amplitude_common::{config, template_builder::TemplateBuilder};
+use amplitude_common::config;
 use anyhow::Context;
 use notify::{Config, RecommendedWatcher, Watcher};
 use pulldown_cmark::{Event, Options, Parser};
@@ -269,7 +269,7 @@ mod tests {
     #[test]
     fn test_link_concat() {
         let mut links: LinkDefs;
-        let other: LinkDefs;
+        let _other: LinkDefs;
         let s = "[wiki+animation] [search.whyistheskyblue]\n\n\
                  [animation]: /animation/Animation.html";
         get_links_of!(

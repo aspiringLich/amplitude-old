@@ -2,7 +2,6 @@ mod quiz;
 
 use pulldown_cmark::{CodeBlockKind, CowStr, Event, Parser, Tag};
 use std::collections::HashMap;
-use tracing::{warn, span};
 
 use crate::link_concat::LinkDefs;
 
@@ -44,7 +43,10 @@ static INJECTION_TAGS: HashMap<String, (ExpectedTag, Callback)> = {
     m
 };
 
-pub(crate) fn inject<'a>(parser: Parser<'a, '_>, links: &'a LinkDefs<'a>) -> anyhow::Result<Vec<Event<'a>>> {
+pub(crate) fn inject<'a>(
+    parser: Parser<'a, '_>,
+    links: &'a LinkDefs<'a>,
+) -> anyhow::Result<Vec<Event<'a>>> {
     use pulldown_cmark::Event::*;
     use pulldown_cmark::Tag::*;
 
@@ -105,8 +107,7 @@ pub(crate) fn inject<'a>(parser: Parser<'a, '_>, links: &'a LinkDefs<'a>) -> any
 
                 // call the callback
                 callback(buf, data, &mut out, &mut state)?;
-            }
-            else {
+            } else {
                 anyhow::bail!("Unknown `@` tag: {}", tag)
             }
             i = 0;
@@ -127,21 +128,21 @@ mod tests {
 
     // use crate::parse::{parse_into_events, parse};
 
-//     #[test]
-//     fn test_inject() {
-//         let input = 
-//             r#"
-// @quiz
-// ```toml
-// question = """
-// But like *are* you gay?
-// """
+    //     #[test]
+    //     fn test_inject() {
+    //         let input =
+    //             r#"
+    // @quiz
+    // ```toml
+    // question = """
+    // But like *are* you gay?
+    // """
 
-// [[answers]]
-// text = "answer"
-// response = "woo"
-// ```"#;
-//         panic!("{:#?}", parse(input, &default()))
-//         // panic!("{:#?}", parse_into_events(parser, &default()).unwrap().into_iter().collect::<Vec<_>>())
-//     }
+    // [[answers]]
+    // text = "answer"
+    // response = "woo"
+    // ```"#;
+    //         panic!("{:#?}", parse(input, &default()))
+    //         // panic!("{:#?}", parse_into_events(parser, &default()).unwrap().into_iter().collect::<Vec<_>>())
+    //     }
 }

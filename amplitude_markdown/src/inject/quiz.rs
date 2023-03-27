@@ -1,8 +1,8 @@
 use anyhow::Context;
-use pulldown_cmark::{html, CowStr, Event};
+use pulldown_cmark::{CowStr, Event};
 use serde::Deserialize;
 
-use crate::{link_concat::LinkDefs, parse::parse};
+use crate::parse::parse;
 
 use super::ParseState;
 
@@ -22,28 +22,30 @@ struct Quiz {
 }
 
 /// Turns a code block into a quiz
-///     
-///     @quiz
-///     ```toml
-///     question = "What is the answer to life, the universe, and everything?"
-///     
-///     [[answers]]
-///     text = "42"
-///     correct = true
-///     response = "42 is, in fact, the answer to life, the universe and everything"
-///     
-///     [[answers]]
-///     text = "30"
-///     response = "hint: 30 is too low"
-///     
-///     [[answers]]
-///     text = "41"
-///     response = "41 is close, but not quite"
-///     
-///     [[answers]]
-///     text = "0"
-///     reponse = "OK nihilist"
-///     ```
+///
+/// ```compile_fail
+///  @quiz
+///  ```toml
+///  question = "What is the answer to life, the universe, and everything?"
+///  
+///  [[answers]]
+///  text = "42"
+///  correct = true
+///  response = "42 is, in fact, the answer to life, the universe and everything"
+///  
+///  [[answers]]
+///  text = "30"
+///  response = "hint: 30 is too low"
+///  
+///  [[answers]]
+///  text = "41"
+///  response = "41 is close, but not quite"
+///  
+///  [[answers]]
+///  text = "0"
+///  reponse = "OK nihilist"
+///  ```
+/// ```
 pub(super) fn inject_quiz(
     input: Vec<Event>,
     _: &str,
