@@ -17,10 +17,15 @@ pub(crate) fn parse(input: &str, links: &LinkDefs) -> anyhow::Result<String> {
     // let input = fs::read_to_string(input)?;
     let other: LinkDefs;
     get_links_of!(input, other);
-
-    let events = link_concat_callback(&input, Options::all(), links, &other);
+    
+    let mut callback = |link| link_concat_callback(link, &links, &other);
+    let parser = pulldown_cmark::Parser::new_with_broken_link_callback(
+        input,
+        Options::all(),
+        Some(&mut callback),
+    );
     let mut content = String::new();
-    pulldown_cmark::html::push_html(&mut content, events.into_iter());
+    pulldown_cmark::html::push_html(&mut content, parser);
 
     let template = fs::read_to_string(config::TEMPLATE.join("article.html"))?;
     let html = TemplateBuilder::new(&template)?
@@ -262,10 +267,16 @@ mod tests {
             links
         );
         get_links_of!(&s, other);
-        let events = link_concat_callback(&s, Options::all(), &links, &other);
+
+        let mut callback = |link| link_concat_callback(link, &links, &other);
+        let parser = pulldown_cmark::Parser::new_with_broken_link_callback(
+            s,
+            Options::all(),
+            Some(&mut callback),
+        );
 
         let mut html_out = String::new();
-        html::push_html(&mut html_out, events.into_iter());
+        html::push_html(&mut html_out, parser);
         assert_eq!(
             html_out,
             "<p><a href=\"/wiki/animation/Animation.html\">wiki+animation</a> \
