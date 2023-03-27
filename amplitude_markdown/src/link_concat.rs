@@ -16,43 +16,38 @@ pub struct LinkDef<'a> {
 }
 
 /// Generates a list of events using the given links and link concat callback
-pub(crate) fn link_concat_events<'a>(
-    text: &'a str,
-    options: Options,
+pub(crate) fn link_concat_callback<'a>(
+    link: BrokenLink,
     links: &'a LinkDefs<'a>,
     other: &'a LinkDefs<'a>,
-) -> Vec<Event<'a>> {
-    let mut callback = move |link: BrokenLink| -> Option<(CowStr, CowStr)> {
-        // adding two links together
-        if let Some((first, second)) = link.reference.split_once('+') {
-            let first = links.get(first).or(other.get(first))?;
-            let second = links.get(second).or(other.get(second))?;
-            return Some((
-                CowStr::Boxed((first.url.to_string() + second.url).into_boxed_str()),
-                CowStr::Borrowed(first.title),
-            ));
-        }
-        // adding a link and a string together
-        if let Some((first, second)) = link.reference.split_once('/') {
-            let first = links.get(first).or(other.get(first))?;
-            return Some((
-                CowStr::Boxed((first.url.to_string() + "/" + second).into_boxed_str()),
-                CowStr::Borrowed(first.title),
-            ));
-        }
-        // adding a link and a string together without the slash
-        if let Some((first, second)) = link.reference.split_once('.') {
-            let first = links.get(first).or(other.get(first))?;
-            return Some((
-                CowStr::Boxed((first.url.to_string() + second).into_boxed_str()),
-                CowStr::Borrowed(first.title),
-            ));
-        } else {
-            return None;
-        }
-    };
-    pulldown_cmark::Parser::new_with_broken_link_callback(text, options, Some(&mut callback))
-        .collect::<Vec<_>>()
+) -> Option<(CowStr<'a>, CowStr<'a>)> {
+    // adding two links together
+    if let Some((first, second)) = link.reference.split_once('+') {
+        let first = links.get(first).or(other.get(first))?;
+        let second = links.get(second).or(other.get(second))?;
+        return Some((
+            CowStr::Boxed((first.url.to_string() + second.url).into_boxed_str()),
+            CowStr::Borrowed(first.title),
+        ));
+    }
+    // adding a link and a string together
+    if let Some((first, second)) = link.reference.split_once('/') {
+        let first = links.get(first).or(other.get(first))?;
+        return Some((
+            CowStr::Boxed((first.url.to_string() + "/" + second).into_boxed_str()),
+            CowStr::Borrowed(first.title),
+        ));
+    }
+    // adding a link and a string together without the slash
+    if let Some((first, second)) = link.reference.split_once('.') {
+        let first = links.get(first).or(other.get(first))?;
+        return Some((
+            CowStr::Boxed((first.url.to_string() + second).into_boxed_str()),
+            CowStr::Borrowed(first.title),
+        ));
+    } else {
+        return None;
+    }
 }
 
 #[derive(Default)]

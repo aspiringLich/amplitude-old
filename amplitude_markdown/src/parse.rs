@@ -5,7 +5,7 @@ use notify::{Config, RecommendedWatcher, Watcher};
 use pulldown_cmark::Options;
 use tracing::{error, info};
 
-use crate::link_concat::{get_links_of, link_concat_events, LinkDefs};
+use crate::link_concat::{get_links_of, link_concat_callback, LinkDefs};
 
 /// Parse the input `md` and return the output `html`.
 ///
@@ -18,7 +18,7 @@ pub(crate) fn parse(input: &str, links: &LinkDefs) -> anyhow::Result<String> {
     let other: LinkDefs;
     get_links_of!(input, other);
 
-    let events = link_concat_events(&input, Options::all(), links, &other);
+    let events = link_concat_callback(&input, Options::all(), links, &other);
     let mut content = String::new();
     pulldown_cmark::html::push_html(&mut content, events.into_iter());
 
@@ -216,7 +216,7 @@ pub fn parse_dir_watch() -> notify::Result<()> {
 mod tests {
     use pulldown_cmark::{html, Options};
 
-    use crate::link_concat::{get_links_of, link_concat_events, LinkDefs};
+    use crate::link_concat::{get_links_of, link_concat_callback, LinkDefs};
 
     #[test]
     fn test_links() {
@@ -262,7 +262,7 @@ mod tests {
             links
         );
         get_links_of!(&s, other);
-        let events = link_concat_events(&s, Options::all(), &links, &other);
+        let events = link_concat_callback(&s, Options::all(), &links, &other);
 
         let mut html_out = String::new();
         html::push_html(&mut html_out, events.into_iter());
