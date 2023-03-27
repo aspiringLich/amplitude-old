@@ -16,7 +16,6 @@ pub(crate) struct ParseState<'a> {
 #[derive(Debug)]
 enum ExpectedTag {
     CodeBlock(Option<&'static str>),
-    #[allow(dead_code)]
     Quote,
 }
 
@@ -45,7 +44,7 @@ static INJECTION_TAGS: HashMap<String, (ExpectedTag, Callback)> = {
 };
 
 pub(crate) fn inject<'a>(
-    mut parser: Parser<'a, '_>,
+    parser: Parser<'a, '_>,
     links: &'a LinkDefs<'a>,
 ) -> anyhow::Result<Vec<Event<'a>>> {
     use pulldown_cmark::Event::*;
@@ -53,16 +52,17 @@ pub(crate) fn inject<'a>(
 
     let mut out = Vec::new();
     let mut state = ParseState { links };
+    let mut iter = parser.into_iter();
 
     let mut s = String::new();
     let mut i = 0;
 
-    while let Some(event) = parser.next() {
+    while let Some(event) = iter.next() {
         // we want to find: [Start(Paragraph), Text(s), End(Paragraph)]
         let b = match i {
             0 => matches!(event, Start(Paragraph)),
             1 => {
-                if let Text(ref str) = event && str.as_bytes()[0] == b'@' {
+                if let Text(ref str) = event && str.as_bytes()[0] == '@' as u8 {
                     s = str.to_string();
                     true
                 } else {
@@ -86,7 +86,7 @@ pub(crate) fn inject<'a>(
             }
             // look in INJECTION_TAGS for the tag & callback to call
             if let Some((expected, callback)) = INJECTION_TAGS.get(&tag.trim()[1..]) {
-                let Some(event) = parser.next() else { anyhow::bail!("Unexpected end of `@` tag: {}", tag) };
+                let Some(event) = iter.next() else { anyhow::bail!("Unexpected end of `@` tag: {}", tag) };
                 let Start(tag) = event else { anyhow::bail!("Unexpected event: {:?}", event) };
                 if !expected.matches(&tag) {
                     anyhow::bail!("Did not expect tag: {:?}, expected {expected:?}", tag);
@@ -96,7 +96,7 @@ pub(crate) fn inject<'a>(
                 // consume everything until the end of the tag
                 let mut i = 1;
                 while i > 0 {
-                    let event = parser.next().unwrap();
+                    let event = iter.next().unwrap();
                     match event {
                         Start(_) => i += 1,
                         End(_) => i -= 1,

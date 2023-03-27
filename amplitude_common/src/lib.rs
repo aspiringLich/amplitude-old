@@ -38,7 +38,7 @@ pub mod config {
 
     impl From<StaticPath> for &Path {
         fn from(path: StaticPath) -> Self {
-            &Path::new(path.0)
+            Path::new(path.0)
         }
     }
 

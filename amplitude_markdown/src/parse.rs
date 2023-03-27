@@ -164,7 +164,7 @@ fn parse_dir_internal<P: AsRef<Path>>(input: P, output: P, links: &LinkDefs) -> 
                 // otherwise, parse
                 let s = fs::read_to_string(&i)?;
                 let i = i.display();
-                let output = parse(&s, links).context(format!("While parsing file {i}"))?;
+                let output = parse(&s, &links).context(format!("While parsing file {i}"))?;
                 fs::write(o.with_extension("html"), output)?;
             }
             "toml" if name == "config.toml" => {

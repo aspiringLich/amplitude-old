@@ -13,7 +13,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     parse_dir(&config::INPUT, &config::OUTPUT)?;
     if args.watch {
-        std::thread::spawn(parse_dir_watch);
+        std::thread::spawn(|| parse_dir_watch());
     }
 
     let mut server = afire::Server::new("localhost", 8080);
