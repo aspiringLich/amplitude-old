@@ -2,7 +2,7 @@ use std::{fs, path::Path};
 
 use amplitude_common::{config, template_builder::TemplateBuilder};
 use notify::{Config, RecommendedWatcher, Watcher};
-use pulldown_cmark::Options;
+use pulldown_cmark::{Options, Parser};
 use tracing::{error, info};
 
 use crate::link_concat::{get_links_of, link_concat_callback, LinkDefs};
@@ -14,11 +14,11 @@ use crate::link_concat::{get_links_of, link_concat_callback, LinkDefs};
 /// - Link concatenation is supported
 /// - Uses `<web>/templates/article.html` as a template
 pub(crate) fn parse(input: &str, links: &LinkDefs) -> anyhow::Result<String> {
-    // let input = fs::read_to_string(input)?;
-    let other: LinkDefs;
-    get_links_of!(input, other);
+    let mut links = links.clone();
+    let parser = Parser::new(input);
+    links.extend(&parser);
     
-    let mut callback = |link| link_concat_callback(link, &links, &other);
+    let mut callback = |link| link_concat_callback(link, &links);
     let parser = pulldown_cmark::Parser::new_with_broken_link_callback(
         input,
         Options::all(),
@@ -129,12 +129,11 @@ fn parse_dir_internal<P: AsRef<Path>>(input: P, output: P, links: &LinkDefs) -> 
                 fs::create_dir(&o)?;
             }
             if let Ok(s) = fs::read_to_string(input.join("header.md")) {
-                let mut orig = (*links).clone();
-                let new: LinkDefs;
-                get_links_of!(&s, new);
-                orig.extend(new.clone());
+                let mut links = (*links).clone();
+                let parser = Parser::new(&s);
+                links.extend(&parser);
 
-                parse_dir_internal(&i, &o, &LinkDefs(orig))?;
+                parse_dir_internal(&i, &o, &links)?;
             } else {
                 parse_dir_internal(&i, &o, links)?;
             }
@@ -219,7 +218,7 @@ pub fn parse_dir_watch() -> notify::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use pulldown_cmark::{html, Options};
+    use pulldown_cmark::{html, Options, Parser};
 
     use crate::link_concat::{get_links_of, link_concat_callback, LinkDefs};
 
@@ -257,7 +256,7 @@ mod tests {
 
     #[test]
     fn test_link_concat() {
-        let links: LinkDefs;
+        let mut links: LinkDefs;
         let other: LinkDefs;
         let s = "[wiki+animation] [search.whyistheskyblue]\n\n\
                  [animation]: /animation/Animation.html";
@@ -266,9 +265,10 @@ mod tests {
              [wiki]: /wiki",
             links
         );
-        get_links_of!(&s, other);
+        let parser = Parser::new(&s);
+        links.extend(&parser);
 
-        let mut callback = |link| link_concat_callback(link, &links, &other);
+        let mut callback = |link| link_concat_callback(link, &links);
         let parser = pulldown_cmark::Parser::new_with_broken_link_callback(
             s,
             Options::all(),

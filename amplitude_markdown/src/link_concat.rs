@@ -19,12 +19,11 @@ pub struct LinkDef<'a> {
 pub(crate) fn link_concat_callback<'a>(
     link: BrokenLink,
     links: &'a LinkDefs<'a>,
-    other: &'a LinkDefs<'a>,
 ) -> Option<(CowStr<'a>, CowStr<'a>)> {
     // adding two links together
     if let Some((first, second)) = link.reference.split_once('+') {
-        let first = links.get(first).or(other.get(first))?;
-        let second = links.get(second).or(other.get(second))?;
+        let first = links.get(first)?;
+        let second = links.get(second)?;
         return Some((
             CowStr::Boxed((first.url.to_string() + second.url).into_boxed_str()),
             CowStr::Borrowed(first.title),
@@ -32,7 +31,7 @@ pub(crate) fn link_concat_callback<'a>(
     }
     // adding a link and a string together
     if let Some((first, second)) = link.reference.split_once('/') {
-        let first = links.get(first).or(other.get(first))?;
+        let first = links.get(first)?;
         return Some((
             CowStr::Boxed((first.url.to_string() + "/" + second).into_boxed_str()),
             CowStr::Borrowed(first.title),
@@ -40,7 +39,7 @@ pub(crate) fn link_concat_callback<'a>(
     }
     // adding a link and a string together without the slash
     if let Some((first, second)) = link.reference.split_once('.') {
-        let first = links.get(first).or(other.get(first))?;
+        let first = links.get(first)?;
         return Some((
             CowStr::Boxed((first.url.to_string() + second).into_boxed_str()),
             CowStr::Borrowed(first.title),
@@ -50,8 +49,22 @@ pub(crate) fn link_concat_callback<'a>(
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub(crate) struct LinkDefs<'a>(pub(crate) HashMap<&'a str, LinkDef<'a>>);
+
+impl<'a> LinkDefs<'a> {
+    pub fn extend(&mut self, parser: &'a Parser<'a, 'a>) {
+        for (k, v) in parser.reference_definitions().iter() {
+            self.insert(
+                k,
+                LinkDef {
+                    url: &v.dest,
+                    title: v.title.as_ref().unwrap_or(&CowStr::Borrowed("")),
+                },
+            );
+        }
+    }
+}
 
 impl<'a> Deref for LinkDefs<'a> {
     type Target = HashMap<&'a str, LinkDef<'a>>;

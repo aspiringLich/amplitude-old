@@ -1,6 +1,10 @@
 use pulldown_cmark::{CowStr, Event};
 use serde::Deserialize;
 
+use crate::{link_concat::LinkDefs, parse::parse};
+
+use super::ParseState;
+
 #[derive(Deserialize, Debug, PartialEq)]
 struct Answer {
     text: String,
@@ -39,34 +43,30 @@ struct Quiz {
 ///     text = "0"
 ///     reponse = "OK nihilist"
 ///     ```
-pub(super) fn inject_quiz(input: &[&str], events: &mut Vec<Event>) -> anyhow::Result<()> {
+pub(super) fn inject_quiz(
+    input: &[&str],
+    events: &mut Vec<Event>,
+    state: &mut ParseState,
+) -> anyhow::Result<()> {
     let str = input[0];
     let quiz: Quiz = toml::from_str(str)?;
-    let question = quiz.question;
     let mut answers = String::new();
 
-    for answer in quiz.answers {
-        let text = answer.text;
+    for (i, answer) in quiz.answers.iter().enumerate() {
+        let text = parse(&answer.text, state.links)?;
         answers += &format!(
             r#"
-<div>
-<input type="radio" value="{text}" name="quiz-answer">
-<label for="{text}">{text}</label>
-</div>
-"#
+            <div>
+            <input type="radio" value="{i}" name="quiz-answer">
+            <label for="{i}">{text}</label>
+            </div>
+            "#
         );
     }
 
+    let question = parse(&quiz.question, state.links)?;
     events.push(Event::Html(CowStr::Boxed(
-        format!(
-            r#"
-<form>
-<p> {question} </p>
-{answers}
-</form>
-"#
-        )
-        .into_boxed_str(),
+        format!("<form>{question}{answers}</form>").into_boxed_str(),
     )));
 
     Ok(())
@@ -85,17 +85,15 @@ question = "e"
 text = "answer"
 response = "woo"
 "#;
+        let quiz = Quiz {
+            question: "e".to_string(),
+            answers: vec![Answer {
+                text: "answer".to_string(),
+                response: "woo".to_string(),
+                correct: false,
+            }],
+        };
 
-        assert_eq!(
-            toml::from_str::<Quiz>(toml).unwrap(),
-            Quiz {
-                question: "e".to_string(),
-                answers: vec![Answer {
-                    text: "answer".to_string(),
-                    response: "woo".to_string(),
-                    correct: false,
-                }]
-            }
-        )
+        assert_eq!(toml::from_str::<Quiz>(toml).unwrap(), quiz)
     }
 }

@@ -1,11 +1,15 @@
 mod quiz;
 
+use pulldown_cmark::Event;
 use std::collections::HashMap;
 
-use pulldown_cmark::Event;
-use serde::Deserialize;
+use crate::link_concat::LinkDefs;
 
-type Callback = fn(&[&str], &mut Vec<Event>) -> anyhow::Result<()>;
+type Callback = fn(&[&str], &mut Vec<Event>, &mut ParseState) -> anyhow::Result<()>;
+
+pub(crate) struct ParseState<'a> {
+    pub links: &'a LinkDefs<'a>
+}
 
 /// A list of tags that are expected to be found in the markdown to call the
 /// callback
@@ -34,8 +38,8 @@ mod tests {
         let parser = Parser::new(
             "
     @quiz
-    ```
-    # This is a code block
+    ```toml
+    
     ```
     ",
         );
