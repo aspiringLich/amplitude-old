@@ -24,28 +24,28 @@ pub(crate) fn link_concat_callback<'a>(
     if let Some((first, second)) = link.reference.split_once('+') {
         let first = links.get(first)?;
         let second = links.get(second)?;
-        return Some((
+        Some((
             CowStr::Boxed((first.url.to_string() + second.url).into_boxed_str()),
             CowStr::Borrowed(first.title),
-        ));
+        ))
     }
     // adding a link and a string together
-    if let Some((first, second)) = link.reference.split_once('/') {
+    else if let Some((first, second)) = link.reference.split_once('/') {
         let first = links.get(first)?;
-        return Some((
+        Some((
             CowStr::Boxed((first.url.to_string() + "/" + second).into_boxed_str()),
             CowStr::Borrowed(first.title),
-        ));
+        ))
     }
     // adding a link and a string together without the slash
-    if let Some((first, second)) = link.reference.split_once('.') {
+    else if let Some((first, second)) = link.reference.split_once('.') {
         let first = links.get(first)?;
-        return Some((
+        Some((
             CowStr::Boxed((first.url.to_string() + second).into_boxed_str()),
             CowStr::Borrowed(first.title),
-        ));
+        ))
     } else {
-        return None;
+        None
     }
 }
 

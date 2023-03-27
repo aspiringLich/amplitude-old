@@ -28,7 +28,7 @@ impl HandledRoute for Server {
             let err = handler(req);
             err.unwrap_or_else(|e| {
                 Response::new().status(e.status).text(
-                    &e.body
+                    e.body
                         .unwrap_or_else(|| e.status.reason_phrase().to_string()),
                 )
             })
