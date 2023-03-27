@@ -1,11 +1,22 @@
 use std::{fs, path::Path};
 
 use amplitude_common::{config, template_builder::TemplateBuilder};
+use anyhow::Context;
 use notify::{Config, RecommendedWatcher, Watcher};
-use pulldown_cmark::{Options, Parser};
+use pulldown_cmark::{Event, Options, Parser};
 use tracing::{error, info};
 
-use crate::link_concat::{get_links_of, link_concat_callback, LinkDefs};
+use crate::{
+    inject,
+    link_concat::{get_links_of, link_concat_callback, LinkDefs},
+};
+
+pub(crate) fn parse_into_events<'a>(
+    parser: Parser<'a, '_>,
+    links: &'a LinkDefs,
+) -> anyhow::Result<Vec<Event<'a>>> {
+    inject::inject(parser, links)
+}
 
 /// Parse the input `md` and return the output `html`.
 ///
@@ -17,20 +28,20 @@ pub(crate) fn parse(input: &str, links: &LinkDefs) -> anyhow::Result<String> {
     let mut links = links.clone();
     let parser = Parser::new(input);
     links.extend(&parser);
-    
+
     let mut callback = |link| link_concat_callback(link, &links);
     let parser = pulldown_cmark::Parser::new_with_broken_link_callback(
         input,
         Options::all(),
         Some(&mut callback),
     );
-    let mut content = String::new();
-    pulldown_cmark::html::push_html(&mut content, parser);
+    let mut html = String::new();
+    pulldown_cmark::html::push_html(&mut html, parse_into_events(parser, &links)?.into_iter());
 
-    let template = fs::read_to_string(config::TEMPLATE.join("article.html"))?;
-    let html = TemplateBuilder::new(&template)?
-        .replace("content", &content)
-        .build();
+    // let template = fs::read_to_string(config::TEMPLATE.join("article.html")).context("Missing article file")?;
+    // let html = TemplateBuilder::new(&template)?
+    //     .replace("content", &content)
+    //     .build();
 
     Ok(html)
 }
@@ -152,7 +163,8 @@ fn parse_dir_internal<P: AsRef<Path>>(input: P, output: P, links: &LinkDefs) -> 
 
                 // otherwise, parse
                 let s = fs::read_to_string(&i)?;
-                let output = parse(&s, &links)?;
+                let i = i.display();
+                let output = parse(&s, &links).context(format!("While parsing file {i}"))?;
                 fs::write(o.with_extension("html"), output)?;
             }
             "toml" if name == "config.toml" => {

@@ -1,4 +1,5 @@
-use pulldown_cmark::{CowStr, Event};
+use anyhow::Context;
+use pulldown_cmark::{html, CowStr, Event};
 use serde::Deserialize;
 
 use crate::{link_concat::LinkDefs, parse::parse};
@@ -44,16 +45,20 @@ struct Quiz {
 ///     reponse = "OK nihilist"
 ///     ```
 pub(super) fn inject_quiz(
-    input: &[&str],
+    input: Vec<Event>,
+    _: &str,
     events: &mut Vec<Event>,
     state: &mut ParseState,
 ) -> anyhow::Result<()> {
-    let str = input[0];
-    let quiz: Quiz = toml::from_str(str)?;
+    assert!(input.len() == 3);
+    let Event::Text(str) = &input[1] else { unreachable!() };
+    // dbg!(str);
+
+    let quiz: Quiz = toml::from_str(str).context("While parsing quiz TOML")?;
     let mut answers = String::new();
 
     for (i, answer) in quiz.answers.iter().enumerate() {
-        let text = parse(&answer.text, state.links)?;
+        let text = parse(&answer.text, state.links).context("While parsing answers for quiz")?;
         answers += &format!(
             r#"
             <div>
@@ -64,7 +69,7 @@ pub(super) fn inject_quiz(
         );
     }
 
-    let question = parse(&quiz.question, state.links)?;
+    let question = parse(&quiz.question, state.links).context("While parsing quiz question")?;
     events.push(Event::Html(CowStr::Boxed(
         format!("<form>{question}{answers}</form>").into_boxed_str(),
     )));
