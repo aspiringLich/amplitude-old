@@ -2,7 +2,7 @@ mod info;
 mod quiz;
 
 use anyhow::Context;
-use pulldown_cmark::{CodeBlockKind, CowStr, Event, Parser, Tag};
+use pulldown_cmark::{html, CodeBlockKind, CowStr, Event, Parser, Tag};
 use std::collections::HashMap;
 
 use crate::link_concat::LinkDefs;
@@ -42,16 +42,19 @@ static INJECTION_TAGS: HashMap<String, (ExpectedTag, Callback)> = {
     };
     use ExpectedTag::*;
     insert("quiz", CodeBlock(Some("toml")), quiz::inject_quiz);
+    insert("info", Quote, |input, id, events, state| {
+        info::inject_badge(input, id, events, state, "info")
+    });
     m
 };
+
+use pulldown_cmark::Event::*;
+use pulldown_cmark::Tag::*;
 
 pub(crate) fn inject<'a>(
     parser: Parser<'a, '_>,
     links: &'a LinkDefs<'a>,
 ) -> anyhow::Result<Vec<Event<'a>>> {
-    use pulldown_cmark::Event::*;
-    use pulldown_cmark::Tag::*;
-
     let mut out = Vec::new();
     let mut state = ParseState { links };
     let mut iter = parser.into_iter();
@@ -81,38 +84,10 @@ pub(crate) fn inject<'a>(
         if i == 3 {
             out.pop();
             out.pop();
-            let (tag, data) = s.split_once(';').unwrap_or((&s, ""));
-            // no whitespace allowed in tag or data
-            if tag.trim().contains(|c: char| c.is_whitespace()) {
-                anyhow::bail!("`@` tags cannot contain whitespace: {}", tag);
-            }
-            // look in INJECTION_TAGS for the tag & callback to call
-            if let Some((expected, callback)) = INJECTION_TAGS.get(&tag.trim()[1..]) {
-                let Some(event) = iter.next() else { anyhow::bail!("Unexpected end of `@` tag: {}", tag) };
-                let Start(t) = event else { anyhow::bail!("Unexpected event: {:?}", event) };
-                if !expected.matches(&t) {
-                    anyhow::bail!("Did not expect tag: {:?}, expected {expected:?}", t);
-                }
-                let mut buf = vec![Start(t)];
 
-                // consume everything until the end of the tag
-                let mut i = 1;
-                while i > 0 {
-                    let event = iter.next().unwrap();
-                    match event {
-                        Start(_) => i += 1,
-                        End(_) => i -= 1,
-                        _ => {}
-                    }
-                    buf.push(event);
-                }
+            parse_tag(&mut iter, &s, &mut out, &mut state)
+                .context(format!("While parsing inject tag: {}", &s))?;
 
-                // call the callback
-                callback(buf, data, &mut out, &mut state)
-                    .context(format!("While parsing tag: {}", tag))?;
-            } else {
-                anyhow::bail!("Unknown `@` tag: {}", tag)
-            }
             i = 0;
             continue;
         }
@@ -121,6 +96,47 @@ pub(crate) fn inject<'a>(
     }
 
     Ok(out)
+}
+
+fn parse_tag(
+    iter: &mut Parser,
+    s: &str,
+    out: &mut Vec<Event>,
+    state: &mut ParseState,
+) -> anyhow::Result<()> {
+    let (tag, data) = s.split_once(';').unwrap_or((&s, ""));
+    // no whitespace allowed in tag or data
+    if tag.trim().contains(|c: char| c.is_whitespace()) {
+        anyhow::bail!("`@` tags cannot contain whitespace: {}", tag);
+    }
+    // look in INJECTION_TAGS for the tag & callback to call
+    if let Some((expected, callback)) = INJECTION_TAGS.get(&tag.trim()[1..]) {
+        let Some(event) = iter.next() else { anyhow::bail!("Unexpected end of `@` tag: {}", tag) };
+        let Start(t) = event else { anyhow::bail!("Unexpected event: {:?}", event) };
+        if !expected.matches(&t) {
+            anyhow::bail!("Did not expect: {:?}, expected {expected:?}", t);
+        }
+        let mut buf = vec![Start(t)];
+
+        // consume everything until the end of the tag
+        let mut i = 1;
+        while i > 0 {
+            let event = iter.next().unwrap();
+            match event {
+                Start(_) => i += 1,
+                End(_) => i -= 1,
+                _ => {}
+            }
+            buf.push(event);
+        }
+
+        // call the callback
+        callback(buf, data, out, state).context(format!("While calling callback"))?;
+    } else {
+        anyhow::bail!("Unknown `@`")
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]
