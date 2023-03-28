@@ -48,11 +48,16 @@ struct Quiz {
 /// ```
 pub(super) fn inject_quiz(
     input: Vec<Event>,
-    _: &str,
+    id: &str,
     events: &mut Vec<Event>,
     state: &mut ParseState,
 ) -> anyhow::Result<()> {
-    assert!(input.len() == 3);
+    if input.len() != 3 {
+        anyhow::bail!("internal error: input len should be 3");
+    }
+    if id.trim().is_empty() {
+        anyhow::bail!("empty id!")
+    }
     let Event::Text(str) = &input[1] else { unreachable!() };
     // dbg!(str);
 
@@ -62,18 +67,18 @@ pub(super) fn inject_quiz(
     for (i, answer) in quiz.answers.iter().enumerate() {
         let text = parse(&answer.text, state.links).context("While parsing answers for quiz")?;
         answers += &format!(
-            r#"
-            <div>
-            <input type="radio" value="{i}" name="quiz-answer">
-            <label for="{i}">{text}</label>
-            </div>
-            "#
+            r#"<div>
+<input type="radio" value="{i}">
+<label for="{i}">{text}</label>
+</div>
+"#
         );
     }
 
+    let id = id.trim();
     let question = parse(&quiz.question, state.links).context("While parsing quiz question")?;
     events.push(Event::Html(CowStr::Boxed(
-        format!("<form>{question}{answers}</form>").into_boxed_str(),
+        format!("<form id=\"{id}\">\n{question}{answers}</form>").into_boxed_str(),
     )));
 
     Ok(())

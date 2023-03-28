@@ -1,5 +1,7 @@
+mod info;
 mod quiz;
 
+use anyhow::Context;
 use pulldown_cmark::{CodeBlockKind, CowStr, Event, Parser, Tag};
 use std::collections::HashMap;
 
@@ -87,11 +89,11 @@ pub(crate) fn inject<'a>(
             // look in INJECTION_TAGS for the tag & callback to call
             if let Some((expected, callback)) = INJECTION_TAGS.get(&tag.trim()[1..]) {
                 let Some(event) = iter.next() else { anyhow::bail!("Unexpected end of `@` tag: {}", tag) };
-                let Start(tag) = event else { anyhow::bail!("Unexpected event: {:?}", event) };
-                if !expected.matches(&tag) {
-                    anyhow::bail!("Did not expect tag: {:?}, expected {expected:?}", tag);
+                let Start(t) = event else { anyhow::bail!("Unexpected event: {:?}", event) };
+                if !expected.matches(&t) {
+                    anyhow::bail!("Did not expect tag: {:?}, expected {expected:?}", t);
                 }
-                let mut buf = vec![Start(tag)];
+                let mut buf = vec![Start(t)];
 
                 // consume everything until the end of the tag
                 let mut i = 1;
@@ -106,7 +108,8 @@ pub(crate) fn inject<'a>(
                 }
 
                 // call the callback
-                callback(buf, data, &mut out, &mut state)?;
+                callback(buf, data, &mut out, &mut state)
+                    .context(format!("While parsing tag: {}", tag))?;
             } else {
                 anyhow::bail!("Unknown `@` tag: {}", tag)
             }
