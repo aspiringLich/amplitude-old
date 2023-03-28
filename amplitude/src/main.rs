@@ -24,7 +24,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     if !PathBuf::from("web/dist").exists() {
-        panic!("[-] Web dist not built!");
+        panic!("web/dist not build! please go into web/ and run `npm run build`");
     }
 
     let mut server = Server::new("localhost", 8080);

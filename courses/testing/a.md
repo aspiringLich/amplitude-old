@@ -10,7 +10,13 @@ a.
 
 @quiz;best_letter
 ```toml
-question = "What is the best letter?"
+question = """
+We are gaming
+
+gamig
+
+gamig 2.0
+"""
 answers = [
     {text = "a", response = "woo"},
     {text = "b", response = "woo"},
@@ -21,3 +27,8 @@ answers = [
 
 @info
 > info info
+> 
+> ```rs
+> we are gamig
+> gaming gamig gaming
+> ```

@@ -212,7 +212,7 @@ pub fn parse_dir_watch() -> notify::Result<()> {
         while let Ok(e) = rx.try_recv() {
             match e {
                 Ok(e) if matches!(e.kind, Create(_) | Modify(_) | Remove(_)) => event = Ok(e),
-                Err(e) => error!("Error watching directory: {}", e),
+                Err(e) => error!("Error watching directory: {:?}", e),
                 _ => (),
             }
         }
@@ -221,10 +221,10 @@ pub fn parse_dir_watch() -> notify::Result<()> {
             Ok(event) if matches!(event.kind, Create(_) | Modify(_) | Remove(_)) => {
                 info!("Change detected, reparsing...");
                 if let Err(e) = parse_dir(&config::INPUT, &config::OUTPUT) {
-                    error!("Error parsing directory: '{}'", e);
+                    error!("Error parsing directory: '{:?}'", e);
                 }
             }
-            Err(e) => error!("Error watching directory: {}", e),
+            Err(e) => error!("Error watching directory: {:?}", e),
             _ => (),
         }
     }

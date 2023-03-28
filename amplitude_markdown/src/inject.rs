@@ -42,9 +42,17 @@ static INJECTION_TAGS: HashMap<String, (ExpectedTag, Callback)> = {
     };
     use ExpectedTag::*;
     insert("quiz", CodeBlock(Some("toml")), quiz::inject_quiz);
-    insert("info", Quote, |input, id, events, state| {
-        info::inject_badge(input, id, events, state, "info")
-    });
+    macro admonition($s:literal) {
+        insert($s, Quote, |input, id, events, state| {
+            info::inject_badge(input, id, events, state, $s)
+        });
+    }
+    admonition!("note");
+    admonition!("info");
+    admonition!("warn");
+    admonition!("error");
+    admonition!("correct");
+    admonition!("incorrect");
     m
 };
 

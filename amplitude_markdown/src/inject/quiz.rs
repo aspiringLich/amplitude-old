@@ -66,6 +66,10 @@ pub(super) fn inject_quiz(
 
     for (i, answer) in quiz.answers.iter().enumerate() {
         let text = parse(&answer.text, state.links).context("While parsing answers for quiz")?;
+        let text = text
+            .strip_prefix("<p>")
+            .and_then(|s| s.strip_suffix("</p>\n"))
+            .unwrap_or(&text);
         answers += &format!(
             r#"<div>
 <input type="radio" value="{i}">
@@ -77,6 +81,9 @@ pub(super) fn inject_quiz(
 
     let id = id.trim();
     let question = parse(&quiz.question, state.links).context("While parsing quiz question")?;
+    let question = question.strip_prefix("<p>")
+            .and_then(|s| s.strip_suffix("</p>\n"))
+            .unwrap_or(&question);
     events.push(Event::Html(CowStr::Boxed(
         format!("<form id=\"{id}\">\n{question}{answers}</form>").into_boxed_str(),
     )));
