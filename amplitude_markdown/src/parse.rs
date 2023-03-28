@@ -90,6 +90,10 @@ pub(crate) fn parse(input: &str, links: &LinkDefs) -> anyhow::Result<String> {
 ///    the `index.html` file
 ///
 pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<()> {
+    if !output.as_ref().exists() {
+        fs::create_dir_all(output.as_ref())?;
+    }
+
     if let Ok(s) = fs::read_to_string(input.as_ref().join("header.md")) {
         let links: LinkDefs;
         get_links_of!(&s, links);
