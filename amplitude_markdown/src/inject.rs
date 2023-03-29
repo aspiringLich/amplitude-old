@@ -1,8 +1,7 @@
-mod info;
-mod quiz;
+// mod info;
+// mod quiz;
 
 use anyhow::Context;
-use pulldown_cmark::{html, CodeBlockKind, CowStr, Event, Parser, Tag};
 use std::collections::HashMap;
 
 use crate::link_concat::LinkDefs;

@@ -1,49 +1,64 @@
-use std::{fs, path::Path};
+use std::{default::default, fs, path::Path};
 
 use amplitude_common::config;
 use anyhow::Context;
 use notify::{Config, RecommendedWatcher, Watcher};
-use pulldown_cmark::{Event, Options, Parser};
 use tracing::{error, info};
 
-use crate::{
-    inject,
-    link_concat::{get_links_of, link_concat_callback, LinkDefs},
+use crate::link_concat::link_concat_callback;
+use comrak::{
+    parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
+    ListStyleType, RefMap,
 };
-
-pub(crate) fn parse_into_events<'a>(
-    parser: Parser<'a, '_>,
-    links: &'a LinkDefs,
-) -> anyhow::Result<Vec<Event<'a>>> {
-    inject::inject(parser, links)
-}
 
 /// Parse the input `md` and return the output `html`.
 ///
 /// ## Behavior
 ///
 /// - Link concatenation is supported
-/// - Uses `<web>/templates/article.html` as a template
-pub(crate) fn parse(input: &str, links: &LinkDefs) -> anyhow::Result<String> {
-    let mut links = links.clone();
-    let parser = Parser::new(input);
-    links.extend(&parser);
+pub(crate) fn parse(input: &str, refs: &RefMap) -> anyhow::Result<String> {
+    let mut this_refs = parse_document_refs(&Arena::new(), input);
+    this_refs.extend(refs.clone());
 
-    let mut callback = |link| link_concat_callback(link, &links);
-    let parser = pulldown_cmark::Parser::new_with_broken_link_callback(
+    let options = ComrakOptions {
+        extension: ComrakExtensionOptions {
+            strikethrough: true,
+            tagfilter: true,
+            table: true,
+            autolink: true,
+            tasklist: true,
+            superscript: true,
+            header_ids: None,
+            footnotes: true,
+            description_lists: true,
+            front_matter_delimiter: Some("---".to_string()),
+        },
+        parse: default(),
+        render: ComrakRenderOptions {
+            github_pre_lang: true,
+            full_info_string: true,
+            unsafe_: true,
+            hardbreaks: false,
+            width: 0,
+            escape: false,
+            list_style: ListStyleType::default(),
+        },
+    };
+
+    let arena = Arena::new();
+    let out = comrak::parse_document_with_broken_link_callback(
+        &arena,
         input,
-        Options::all(),
-        Some(&mut callback),
+        &options,
+        Some(&mut |link| link_concat_callback(link, refs)),
     );
-    let mut html = String::new();
-    pulldown_cmark::html::push_html(&mut html, parse_into_events(parser, &links)?.into_iter());
+    // do things
 
-    // let template = fs::read_to_string(config::TEMPLATE.join("article.html")).context("Missing article file")?;
-    // let html = TemplateBuilder::new(&template)?
-    //     .replace("content", &content)
-    //     .build();
+    let mut cm = vec![];
+    comrak::format_commonmark(out, &comrak::ComrakOptions::default(), &mut cm)
+        .context("While parsing AST to html")?;
 
-    Ok(html)
+    Ok(String::from_utf8(cm).unwrap())
 }
 
 /// Parse all files in the input directory and all its subdirectories, and write
@@ -95,15 +110,14 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<()> {
     }
 
     if let Ok(s) = fs::read_to_string(input.as_ref().join("header.md")) {
-        let links: LinkDefs;
-        get_links_of!(&s, links);
-        parse_dir_internal(input, output, &links)
+        let refs = comrak::parse_document_refs(&Arena::new(), &s);
+        parse_dir_internal(input, output, &refs)
     } else {
-        parse_dir_internal(input, output, &LinkDefs::default())
+        parse_dir_internal(input, output, &RefMap::new())
     }
 }
 
-fn parse_dir_internal<P: AsRef<Path>>(input: P, output: P, links: &LinkDefs) -> anyhow::Result<()> {
+fn parse_dir_internal<P: AsRef<Path>>(input: P, output: P, refs: &RefMap) -> anyhow::Result<()> {
     let input = input.as_ref();
     let output = output.as_ref();
 
@@ -144,13 +158,13 @@ fn parse_dir_internal<P: AsRef<Path>>(input: P, output: P, links: &LinkDefs) -> 
                 fs::create_dir(&o)?;
             }
             if let Ok(s) = fs::read_to_string(input.join("header.md")) {
-                let mut links = (*links).clone();
-                let parser = Parser::new(&s);
-                links.extend(&parser);
+                let other_refs = comrak::parse_document_refs(&Arena::new(), &s);
+                let mut refs = refs.clone();
+                refs.extend(other_refs);
 
-                parse_dir_internal(&i, &o, &links)?;
+                parse_dir_internal(&i, &o, &refs)?;
             } else {
-                parse_dir_internal(&i, &o, links)?;
+                parse_dir_internal(&i, &o, refs)?;
             }
             continue;
         }
@@ -168,7 +182,7 @@ fn parse_dir_internal<P: AsRef<Path>>(input: P, output: P, links: &LinkDefs) -> 
                 // otherwise, parse
                 let s = fs::read_to_string(&i)?;
                 let i = i.display();
-                let output = parse(&s, &links).context(format!("While parsing file {i}"))?;
+                let output = parse(&s, refs).context(format!("While parsing file {i}"))?;
                 fs::write(o.with_extension("html"), output)?;
             }
             "toml" if name == "config.toml" => {
@@ -234,69 +248,4 @@ pub fn parse_dir_watch() -> notify::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use pulldown_cmark::{html, Options, Parser};
-
-    use crate::link_concat::{get_links_of, link_concat_callback, LinkDefs};
-
-    #[test]
-    fn test_links() {
-        let links: LinkDefs;
-        get_links_of!(
-            r#"  
-[link1]: /link1 "link1"   
-  [link2]: /link2 "link2" 
-[link3]:   
-       /link3       
-[link4]:   
-   </link 4>        
-         'link4'  
-        "#,
-            links
-        );
-        let mut flat = links
-            .iter()
-            .map(|(k, v)| (*k, v.url, v.title))
-            .collect::<Vec<_>>();
-        flat.sort();
-
-        assert_eq!(
-            flat,
-            [
-                ("link1", "/link1", "link1"),
-                ("link2", "/link2", "link2"),
-                ("link3", "/link3", ""),
-                ("link4", "/link 4", "link4")
-            ]
-        )
-    }
-
-    #[test]
-    fn test_link_concat() {
-        let mut links: LinkDefs;
-        let _other: LinkDefs;
-        let s = "[wiki+animation] [search.whyistheskyblue]\n\n\
-                 [animation]: /animation/Animation.html";
-        get_links_of!(
-            "[search]: /search?q=\n\n\
-             [wiki]: /wiki",
-            links
-        );
-        let parser = Parser::new(&s);
-        links.extend(&parser);
-
-        let mut callback = |link| link_concat_callback(link, &links);
-        let parser = pulldown_cmark::Parser::new_with_broken_link_callback(
-            s,
-            Options::all(),
-            Some(&mut callback),
-        );
-
-        let mut html_out = String::new();
-        html::push_html(&mut html_out, parser);
-        assert_eq!(
-            html_out,
-            "<p><a href=\"/wiki/animation/Animation.html\">wiki+animation</a> \
-             <a href=\"/search?q=whyistheskyblue\">search.whyistheskyblue</a></p>\n"
-        )
-    }
 }

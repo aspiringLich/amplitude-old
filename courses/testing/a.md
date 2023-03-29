@@ -8,6 +8,10 @@ a. aaaa aaa.
 
 a.
 
+[test]: https://test.com
+
+[test+/test]
+
 @quiz;best_letter
 ```toml
 question = """

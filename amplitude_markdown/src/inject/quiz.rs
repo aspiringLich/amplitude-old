@@ -1,10 +1,7 @@
 use anyhow::Context;
-use pulldown_cmark::{CowStr, Event};
 use serde::Deserialize;
 
 use crate::parse::parse;
-
-use super::ParseState;
 
 #[derive(Deserialize, Debug, PartialEq)]
 struct Answer {
