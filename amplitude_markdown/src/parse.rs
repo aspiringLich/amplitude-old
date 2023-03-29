@@ -50,12 +50,12 @@ pub(crate) fn parse(input: &str, refs: &RefMap) -> anyhow::Result<String> {
         &arena,
         input,
         &options,
-        Some(&mut |link| link_concat_callback(link, refs)),
+        Some(&mut |link| link_concat_callback(link, &this_refs)),
     );
     // do things
 
     let mut cm = vec![];
-    comrak::format_commonmark(out, &comrak::ComrakOptions::default(), &mut cm)
+    comrak::format_html(out, &comrak::ComrakOptions::default(), &mut cm)
         .context("While parsing AST to html")?;
 
     Ok(String::from_utf8(cm).unwrap())
