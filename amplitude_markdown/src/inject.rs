@@ -8,7 +8,7 @@ use std::collections::HashMap;
 
 use crate::parse::ParseState;
 
-type Callback = fn(ArticleRef, &str, &AstNode, &mut ParseState) -> anyhow::Result<()>;
+type Callback = fn(ArticleRef, &str, &AstNode, &mut ParseState, &RefMap) -> anyhow::Result<()>;
 
 #[derive(Debug, Hash, Clone)]
 pub struct ArticleRef<'a> {
@@ -44,6 +44,45 @@ impl ExpectedTag {
             Quote => matches!(val, NodeValue::BlockQuote),
         }
     }
+}
+
+fn display_node(node: &AstNode) -> String {
+    let val = &node.data.borrow().value;
+    use NodeValue::*;
+    match val {
+        CodeBlock(_) => "CodeBlock(_)",
+        BlockQuote => "BlockQuote",
+        Document => "Document",
+        FrontMatter(_) => "FrontMatter(_)",
+        List(_) => "List(_)",
+        Item(_) => "Item(_)",
+        DescriptionList => "DescriptionList",
+        DescriptionItem(_) => "DescriptionItem(_)",
+        DescriptionTerm => "DescriptionTerm",
+        DescriptionDetails => "DescriptionDetails",
+        HtmlBlock(_) => "HtmlBlock(_)",
+        Paragraph => "Paragraph",
+        Heading(_) => "Heading(_)",
+        ThematicBreak => "ThematicBreak",
+        FootnoteDefinition(_) => "FootnoteDefinition(_)",
+        Table(_) => "Table(_)",
+        TableRow(_) => "TableRow(_)",
+        TableCell => "TableCell ",
+        Text(_) => "Text(_)",
+        TaskItem { .. } => "TaskItem { .. }",
+        SoftBreak => "SoftBreak",
+        LineBreak => "LineBreak",
+        Code(_) => "Code(_)",
+        HtmlInline(_) => "HtmlInline(_)",
+        Emph => "Emph ",
+        Strong => "Strong ",
+        Strikethrough => "Strikethrough",
+        Superscript => todo!(),
+        Link(_) => "Link(_)",
+        Image(_) => "Image(_)",
+        FootnoteReference(_) => "FootnoteReference(_)",
+    }
+    .to_string()
 }
 
 #[ctor::ctor]
@@ -87,12 +126,18 @@ pub(crate) fn inject<'a>(
                         continue;
                     }
                     let (text, info) = text.split_once(';').unwrap_or((text, ""));
-                    if let Some((expected, callback)) = INJECTION_TAGS.get(text) {
+                    if let Some((expected, callback)) = INJECTION_TAGS.get(&text[1..]) {
+                        let node = node
+                            .next_sibling()
+                            .context(format!("Unexpected end of AST after tag {text}"))?;
                         if expected.matches(node) {
-                            callback(article.clone(), info, node, state)
+                            callback(article.clone(), info, node, state, refs)
                                 .context(format!("While parsing tag {text}"))?;
                         } else {
-                            anyhow::bail!("Expected tag {text} to be {expected:?}");
+                            anyhow::bail!(
+                                "Expected tag {text} to come before {expected:?}, found {}",
+                                display_node(&node)
+                            );
                         }
                     } else {
                         anyhow::bail!("Unknown tag {text}");

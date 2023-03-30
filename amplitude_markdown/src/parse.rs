@@ -16,7 +16,6 @@ use comrak::{
 
 #[derive(Debug)]
 pub(crate) struct ParseState<'a> {
-    pub refs: &'a RefMap,
     pub questions: HashMap<(ArticleRef<'a>, &'a str), inject::quiz::Quiz>,
 }
 
@@ -105,7 +104,6 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<()> {
     }
 
     let mut state = ParseState {
-        refs: &RefMap::new(),
         questions: HashMap::new(),
     };
     let article = ArticleRef {
@@ -169,9 +167,9 @@ fn parse_dir_internal<P: AsRef<Path>>(
                 fs::create_dir(&o)?;
             }
             let mut a = article.clone();
+            let name = i.file_name().unwrap().to_str().unwrap();
             match depth {
-                0 => a.course = i.file_name().unwrap().to_str().unwrap(),
-                1 => a.article = i.file_name().unwrap().to_str().unwrap(),
+                0 => a.course = name,
                 _ => {}
             }
             if let Ok(s) = fs::read_to_string(input.join("header.md")) {
@@ -199,7 +197,13 @@ fn parse_dir_internal<P: AsRef<Path>>(
                 // otherwise, parse
                 let s = fs::read_to_string(&i)?;
                 let i = i.display();
-                let output = parse(article.clone(), &s, refs, state)
+                anyhow::ensure!(
+                    depth == 1,
+                    "File: {name:?} must be in the article directory"
+                );
+                let mut article = article.clone();
+                article.article = name.to_str().unwrap();
+                let output = parse(article, &s, refs, state)
                     .context(format!("While parsing file {i}"))?;
                 fs::write(o.with_extension("html"), output)?;
             }

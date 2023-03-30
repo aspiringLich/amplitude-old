@@ -43,6 +43,7 @@ pub(super) fn inject_quiz(
     id: &str,
     node: &AstNode<'_>,
     state: &mut ParseState<'_>,
+    refs: &RefMap,
 ) -> anyhow::Result<()> {
     if id.trim().is_empty() {
         anyhow::bail!("empty id! You should have something like `@quiz;id`");
