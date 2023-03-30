@@ -8,8 +8,7 @@ use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-type Callback = fn(&
-    str, &AstNode, &mut ParseState) -> anyhow::Result<()>;
+type Callback = fn(&str, &AstNode, &mut ParseState) -> anyhow::Result<()>;
 
 pub(crate) struct ParseState<'a> {
     pub refs: &'a RefMap,
