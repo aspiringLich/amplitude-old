@@ -2,14 +2,17 @@
 // mod quiz;
 
 use anyhow::Context;
+use comrak::nodes::{Ast, AstNode, NodeValue};
+use comrak::RefMap;
+use std::borrow::Borrow;
+use std::cell::RefCell;
 use std::collections::HashMap;
 
-use crate::link_concat::LinkDefs;
-
-type Callback = fn(Vec<Event>, &str, &mut Vec<Event>, &mut ParseState) -> anyhow::Result<()>;
+type Callback = fn(&
+    str, &AstNode, &mut ParseState) -> anyhow::Result<()>;
 
 pub(crate) struct ParseState<'a> {
-    pub links: &'a LinkDefs<'a>,
+    pub refs: &'a RefMap,
 }
 
 /// A list of tags that are expected to be found in the markdown to call the
@@ -21,14 +24,23 @@ enum ExpectedTag {
 }
 
 impl ExpectedTag {
-    fn matches(&self, tag: &Tag) -> bool {
+    fn matches(&self, node: &AstNode) -> bool {
         use ExpectedTag::*;
+        let val = &node.data.borrow().value;
         match self {
-            CodeBlock(Some(lang)) => {
-                tag == &Tag::CodeBlock(CodeBlockKind::Fenced(CowStr::Borrowed(lang)))
-            }
-            CodeBlock(None) => matches!(tag, Tag::CodeBlock(CodeBlockKind::Fenced(_))),
-            Quote => matches!(tag, Tag::BlockQuote),
+            CodeBlock(Some(lang)) => match val {
+                NodeValue::CodeBlock(node) => {
+                    &node
+                        .info
+                        .split_once(|c: char| c.is_whitespace())
+                        .map(|t| t.0)
+                        .unwrap_or(node.info.as_str())
+                        == lang
+                }
+                _ => false,
+            },
+            CodeBlock(None) => matches!(val, NodeValue::CodeBlock(_)),
+            Quote => matches!(val, NodeValue::BlockQuote),
         }
     }
 }
@@ -40,107 +52,51 @@ static INJECTION_TAGS: HashMap<String, (ExpectedTag, Callback)> = {
         m.insert(tag.to_string(), (expected, callback));
     };
     use ExpectedTag::*;
-    insert("quiz", CodeBlock(Some("toml")), quiz::inject_quiz);
-    macro admonition($s:literal) {
-        insert($s, Quote, |input, id, events, state| {
-            info::inject_badge(input, id, events, state, $s)
-        });
-    }
-    admonition!("note");
-    admonition!("info");
-    admonition!("warn");
-    admonition!("error");
-    admonition!("correct");
-    admonition!("incorrect");
+    // insert("quiz", CodeBlock(Some("toml")), quiz::inject_quiz);
+    // macro admonition($s:literal) {
+    //     insert($s, Quote, |input, id, events, state| {
+    //         info::inject_badge(input, id, events, state, $s)
+    //     });
+    // }
+    // admonition!("note");
+    // admonition!("info");
+    // admonition!("warn");
+    // admonition!("error");
+    // admonition!("correct");
+    // admonition!("incorrect");
     m
 };
 
-use pulldown_cmark::Event::*;
-use pulldown_cmark::Tag::*;
+pub(crate) fn inject<'a>(node: &'a AstNode<'a>, refs: &RefMap) -> anyhow::Result<()> {
+    let mut state = ParseState { refs };
 
-pub(crate) fn inject<'a>(
-    parser: Parser<'a, '_>,
-    links: &'a LinkDefs<'a>,
-) -> anyhow::Result<Vec<Event<'a>>> {
-    let mut out = Vec::new();
-    let mut state = ParseState { links };
-    let mut iter = parser.into_iter();
-
-    let mut s = String::new();
-    let mut i = 0;
-
-    while let Some(event) = iter.next() {
-        // we want to find: [Start(Paragraph), Text(s), End(Paragraph)]
-        let b = match i {
-            0 => matches!(event, Start(Paragraph)),
-            1 => {
-                if let Text(ref str) = event && str.as_bytes()[0] == '@' as u8 {
-                    s = str.to_string();
-                    true
-                } else {
-                    false
+    for node in node.descendants().skip(1) {
+        let v = &node.data.borrow().value;
+        match v {
+            NodeValue::Paragraph => {
+                let children: Vec<_> = node.children().collect();
+                if children.len() != 1 {
+                    continue;
                 }
-            },
-            2 => matches!(event, End(Paragraph)),
-            _ => unreachable!(),
-        };
-        if b {
-            i += 1;
-        }
-        // wowie we have a tag
-        if i == 3 {
-            out.pop();
-            out.pop();
-
-            parse_tag(&mut iter, &s, &mut out, &mut state)
-                .context(format!("While parsing inject tag: {}", &s))?;
-
-            i = 0;
-            continue;
-        }
-
-        out.push(event);
-    }
-
-    Ok(out)
-}
-
-fn parse_tag(
-    iter: &mut Parser,
-    s: &str,
-    out: &mut Vec<Event>,
-    state: &mut ParseState,
-) -> anyhow::Result<()> {
-    let (tag, data) = s.split_once(';').unwrap_or((&s, ""));
-    // no whitespace allowed in tag or data
-    if tag.trim().contains(|c: char| c.is_whitespace()) {
-        anyhow::bail!("`@` tags cannot contain whitespace: {}", tag);
-    }
-    // look in INJECTION_TAGS for the tag & callback to call
-    if let Some((expected, callback)) = INJECTION_TAGS.get(&tag.trim()[1..]) {
-        let Some(event) = iter.next() else { anyhow::bail!("Unexpected end of `@` tag: {}", tag) };
-        let Start(t) = event else { anyhow::bail!("Unexpected event: {:?}", event) };
-        if !expected.matches(&t) {
-            anyhow::bail!("Did not expect: {:?}, expected {expected:?}", t);
-        }
-        let mut buf = vec![Start(t)];
-
-        // consume everything until the end of the tag
-        let mut i = 1;
-        while i > 0 {
-            let event = iter.next().unwrap();
-            match event {
-                Start(_) => i += 1,
-                End(_) => i -= 1,
-                _ => {}
+                if let NodeValue::Text(text) = &children[0].data.borrow().value {
+                    if !text.starts_with('@') {
+                        continue;
+                    }
+                    let (text, info) = text.split_once(';').unwrap_or((text, ""));
+                    if let Some((expected, callback)) = INJECTION_TAGS.get(text) {
+                        if expected.matches(node) {
+                            callback(info, node, &mut state)
+                                .context(format!("While parsing tag {text}"))?;
+                        } else {
+                            anyhow::bail!("Expected tag {text} to be {expected:?}");
+                        }
+                    } else {
+                        anyhow::bail!("Unknown tag {text}");
+                    }
+                }
             }
-            buf.push(event);
+            _ => {}
         }
-
-        // call the callback
-        callback(buf, data, out, state).context(format!("While calling callback"))?;
-    } else {
-        anyhow::bail!("Unknown `@`")
     }
 
     Ok(())

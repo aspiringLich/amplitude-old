@@ -3,7 +3,7 @@
 #![feature(if_let_guard)]
 #![feature(default_free_fn)]
 
-// mod inject;
+mod inject;
 mod link_concat;
 /// This crate parses markdown and toml files to build rendered html course
 /// pages.

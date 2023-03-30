@@ -5,7 +5,7 @@ use anyhow::Context;
 use notify::{Config, RecommendedWatcher, Watcher};
 use tracing::{error, info};
 
-use crate::link_concat::link_concat_callback;
+use crate::{link_concat::link_concat_callback, inject};
 use comrak::{
     parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
     ListStyleType, RefMap,
@@ -53,6 +53,7 @@ pub(crate) fn parse(input: &str, refs: &RefMap) -> anyhow::Result<String> {
         Some(&mut |link| link_concat_callback(link, &this_refs)),
     );
     // do things
+    inject::inject( out, refs)?;
 
     let mut cm = vec![];
     comrak::format_html(out, &comrak::ComrakOptions::default(), &mut cm)
