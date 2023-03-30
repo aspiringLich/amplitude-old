@@ -15,8 +15,34 @@ use comrak::{
 };
 
 #[derive(Debug)]
-pub(crate) struct ParseState<'a> {
-    pub questions: HashMap<(ArticleRef<'a>, &'a str), inject::quiz::Quiz>,
+pub(crate) struct ParseState {
+    questions: HashMap<(String, String, String), inject::quiz::Quiz>,
+}
+
+impl ParseState {
+    pub fn get_question(&self, article: ArticleRef, question: &str) -> Option<&inject::quiz::Quiz> {
+        self.questions.get(&(
+            article.course.to_string(),
+            article.article.to_string(),
+            question.to_string(),
+        ))
+    }
+
+    pub fn insert_question(
+        &mut self,
+        article: ArticleRef,
+        question: &str,
+        quiz: inject::quiz::Quiz,
+    ) -> Option<inject::quiz::Quiz> {
+        self.questions.insert(
+            (
+                article.course.to_string(),
+                article.article.to_string(),
+                question.to_string(),
+            ),
+            quiz,
+        )
+    }
 }
 
 /// Parse the input `md` and return the output `html`.
@@ -69,7 +95,7 @@ pub(crate) fn parse(
     inject::inject(article, out, refs, state)?;
 
     let mut cm = vec![];
-    comrak::format_html(out, &comrak::ComrakOptions::default(), &mut cm)
+    comrak::format_html(out, &options, &mut cm)
         .context("While parsing AST to html")?;
 
     Ok(String::from_utf8(cm).unwrap())
@@ -113,10 +139,13 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<()> {
 
     if let Ok(s) = fs::read_to_string(input.as_ref().join("header.md")) {
         let refs = comrak::parse_document_refs(&Arena::new(), &s);
-        parse_dir_internal(article, 0, input, output, &refs, &mut state)
+        parse_dir_internal(article, 0, input, output, &refs, &mut state)?;
     } else {
-        parse_dir_internal(article, 0, input, output, &RefMap::new(), &mut state)
+        parse_dir_internal(article, 0, input, output, &RefMap::new(), &mut state)?;
     }
+    
+    dbg!(state);
+    Ok(())
 }
 
 fn parse_dir_internal<P: AsRef<Path>>(
@@ -203,8 +232,8 @@ fn parse_dir_internal<P: AsRef<Path>>(
                 );
                 let mut article = article.clone();
                 article.article = name.to_str().unwrap();
-                let output = parse(article, &s, refs, state)
-                    .context(format!("While parsing file {i}"))?;
+                let output =
+                    parse(article, &s, refs, state).context(format!("While parsing file {i}"))?;
                 fs::write(o.with_extension("html"), output)?;
             }
             "toml" if name == "config.toml" => {

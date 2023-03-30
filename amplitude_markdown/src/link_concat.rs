@@ -38,8 +38,10 @@ mod tests {
 ";
         let mut refs = comrak::parse_document_refs(&Arena::new(), links);
         let flatten = refs.map.iter().map(|(l, r)| (l.as_str(), r.url.as_str()));
+        let mut list = flatten.collect::<Vec<_>>();
+        list.sort();
         assert_eq!(
-            flatten.collect::<Vec<_>>(),
+            list,
             [
                 ("a", "https://a.com"),
                 ("b", "https://b.com"),

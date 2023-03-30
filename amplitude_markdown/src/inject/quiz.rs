@@ -1,7 +1,7 @@
-use anyhow::Context;
-use serde::Deserialize;
 use super::*;
 use crate::parse::parse;
+use anyhow::Context;
+use serde::Deserialize;
 
 #[derive(Deserialize, Debug, PartialEq)]
 struct Answer {
@@ -18,7 +18,7 @@ pub struct Question {
     answers: Vec<Answer>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Deserialize)]
 pub struct Quiz {
     pub questions: Vec<Question>,
 }
@@ -36,19 +36,39 @@ pub struct Quiz {
 ///     { text = "41", response = "Close, but not quite" },
 ///     { text = "43", response = "Nope" },
 /// ]
-/// ``` 
+/// ```
 /// ````
 pub(super) fn inject_quiz(
     article: ArticleRef,
     id: &str,
     node: &AstNode<'_>,
-    state: &mut ParseState<'_>,
+    state: &mut ParseState,
     refs: &RefMap,
 ) -> anyhow::Result<()> {
     if id.trim().is_empty() {
         anyhow::bail!("empty id! You should have something like `@quiz;id`");
     }
-    
+
+    let val = &mut node.data.borrow_mut().value;
+    match val {
+        NodeValue::CodeBlock(ref code) => {
+            let mut quiz: Quiz = toml::from_str(&code.literal).context("failed to parse quiz")?;
+            for question in quiz.questions.iter_mut() {
+                question.question = parse(article, &question.question, refs, state)?;
+                for answer in question.answers.iter_mut() {
+                    answer.text = parse(article, &answer.text, refs, state)?;
+                    answer.response = parse(article, &answer.response, refs, state)?;
+                }
+            }
+            state
+                .insert_question(article, id, quiz)
+                .is_none()
+                .then(|| ())
+                .context(format!("Quiz id `{id}` already exists in this file"))?;
+        }
+        _ => unreachable!(),
+    }
+    *val = NodeValue::HtmlInline(format!("<Quiz id=\"{id}\"></Quiz>"));
 
     Ok(())
 }

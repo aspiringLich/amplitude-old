@@ -14,6 +14,7 @@ a.
 
 @quiz;best_letter
 ```toml
+[[questions]]
 question = """
 We are gaming
 
@@ -28,11 +29,3 @@ answers = [
     {text = "d", response = "woo"},
 ]
 ```
-
-<!-- @info
-> info info
-> 
-> ```rs
-> we are gamig
-> gaming gamig gaming
-> ``` -->

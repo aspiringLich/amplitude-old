@@ -10,7 +10,7 @@ use crate::parse::ParseState;
 
 type Callback = fn(ArticleRef, &str, &AstNode, &mut ParseState, &RefMap) -> anyhow::Result<()>;
 
-#[derive(Debug, Hash, Clone)]
+#[derive(Debug, Hash, Clone, Copy, PartialEq, Eq)]
 pub struct ArticleRef<'a> {
     pub article: &'a str,
     pub course: &'a str,
@@ -121,22 +121,24 @@ pub(crate) fn inject<'a>(
                 if children.len() != 1 {
                     continue;
                 }
-                if let NodeValue::Text(text) = &children[0].data.borrow().value {
+                let val = &children[0].data.borrow().value;
+                if let NodeValue::Text(text) = &val {
                     if !text.starts_with('@') {
                         continue;
                     }
                     let (text, info) = text.split_once(';').unwrap_or((text, ""));
                     if let Some((expected, callback)) = INJECTION_TAGS.get(&text[1..]) {
-                        let node = node
+                        let n = node
                             .next_sibling()
                             .context(format!("Unexpected end of AST after tag {text}"))?;
-                        if expected.matches(node) {
-                            callback(article.clone(), info, node, state, refs)
+                        node.detach();
+                        if expected.matches(n) {
+                            callback(article.clone(), info, n, state, refs)
                                 .context(format!("While parsing tag {text}"))?;
                         } else {
                             anyhow::bail!(
                                 "Expected tag {text} to come before {expected:?}, found {}",
-                                display_node(&node)
+                                display_node(&n)
                             );
                         }
                     } else {
