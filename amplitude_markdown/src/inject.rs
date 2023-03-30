@@ -1,17 +1,19 @@
 // mod info;
-// mod quiz;
+pub mod quiz;
 
 use anyhow::Context;
-use comrak::nodes::{Ast, AstNode, NodeValue};
+use comrak::nodes::{AstNode, NodeValue};
 use comrak::RefMap;
-use std::borrow::Borrow;
-use std::cell::RefCell;
 use std::collections::HashMap;
 
-type Callback = fn(&str, &AstNode, &mut ParseState) -> anyhow::Result<()>;
+use crate::parse::ParseState;
 
-pub(crate) struct ParseState<'a> {
-    pub refs: &'a RefMap,
+type Callback = fn(ArticleRef, &str, &AstNode, &mut ParseState) -> anyhow::Result<()>;
+
+#[derive(Debug, Hash, Clone)]
+pub struct ArticleRef<'a> {
+    pub article: &'a str,
+    pub course: &'a str,
 }
 
 /// A list of tags that are expected to be found in the markdown to call the
@@ -51,7 +53,7 @@ static INJECTION_TAGS: HashMap<String, (ExpectedTag, Callback)> = {
         m.insert(tag.to_string(), (expected, callback));
     };
     use ExpectedTag::*;
-    // insert("quiz", CodeBlock(Some("toml")), quiz::inject_quiz);
+    insert("quiz", CodeBlock(Some("toml")), quiz::inject_quiz);
     // macro admonition($s:literal) {
     //     insert($s, Quote, |input, id, events, state| {
     //         info::inject_badge(input, id, events, state, $s)
@@ -66,9 +68,12 @@ static INJECTION_TAGS: HashMap<String, (ExpectedTag, Callback)> = {
     m
 };
 
-pub(crate) fn inject<'a>(node: &'a AstNode<'a>, refs: &RefMap) -> anyhow::Result<()> {
-    let mut state = ParseState { refs };
-
+pub(crate) fn inject<'a>(
+    article: ArticleRef,
+    node: &'a AstNode<'a>,
+    refs: &RefMap,
+    state: &mut ParseState,
+) -> anyhow::Result<()> {
     for node in node.descendants().skip(1) {
         let v = &node.data.borrow().value;
         match v {
@@ -84,7 +89,7 @@ pub(crate) fn inject<'a>(node: &'a AstNode<'a>, refs: &RefMap) -> anyhow::Result
                     let (text, info) = text.split_once(';').unwrap_or((text, ""));
                     if let Some((expected, callback)) = INJECTION_TAGS.get(text) {
                         if expected.matches(node) {
-                            callback(info, node, &mut state)
+                            callback(article.clone(), info, node, state)
                                 .context(format!("While parsing tag {text}"))?;
                         } else {
                             anyhow::bail!("Expected tag {text} to be {expected:?}");

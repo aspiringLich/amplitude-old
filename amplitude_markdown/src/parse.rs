@@ -1,22 +1,36 @@
-use std::{default::default, fs, path::Path};
+use std::{collections::HashMap, default::default, fs, path::Path};
 
 use amplitude_common::config;
 use anyhow::Context;
 use notify::{Config, RecommendedWatcher, Watcher};
 use tracing::{error, info};
 
-use crate::{inject, link_concat::link_concat_callback};
+use crate::{
+    inject::{self, ArticleRef},
+    link_concat::link_concat_callback,
+};
 use comrak::{
     parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
     ListStyleType, RefMap,
 };
+
+#[derive(Debug)]
+pub(crate) struct ParseState<'a> {
+    pub refs: &'a RefMap,
+    pub questions: HashMap<(ArticleRef<'a>, &'a str), inject::quiz::Quiz>,
+}
 
 /// Parse the input `md` and return the output `html`.
 ///
 /// ## Behavior
 ///
 /// - Link concatenation is supported
-pub(crate) fn parse(input: &str, refs: &RefMap) -> anyhow::Result<String> {
+pub(crate) fn parse(
+    article: ArticleRef,
+    input: &str,
+    refs: &RefMap,
+    state: &mut ParseState,
+) -> anyhow::Result<String> {
     let mut this_refs = parse_document_refs(&Arena::new(), input);
     this_refs.extend(refs.clone());
 
@@ -53,7 +67,7 @@ pub(crate) fn parse(input: &str, refs: &RefMap) -> anyhow::Result<String> {
         Some(&mut |link| link_concat_callback(link, &this_refs)),
     );
     // do things
-    inject::inject(out, refs)?;
+    inject::inject(article, out, refs, state)?;
 
     let mut cm = vec![];
     comrak::format_html(out, &comrak::ComrakOptions::default(), &mut cm)
@@ -71,26 +85,7 @@ pub(crate) fn parse(input: &str, refs: &RefMap) -> anyhow::Result<String> {
 /// definition file and it will not be included in the output.
 ///
 /// `header.md` files will add on to each other, and apply to all the files in
-/// their directory and below it. For example consider the following directory
-/// structure:
-///
-/// ```txt
-/// courses
-/// ├── rust
-/// │   ├── header.md
-/// │   ├── config.toml
-/// │   ├── types.md
-/// │   ├── functions.md
-/// │   ├── structs.md
-/// │   └── enums.md
-/// └── c
-///     ├── header.md
-///     ├── config.toml
-///     ├── variables.md
-///     ├── functions.md
-///     ├── structs.md
-///     └── enums.md
-/// ```
+/// their directory and below it.
 ///
 /// ## Notes on Behavior
 ///
@@ -102,23 +97,38 @@ pub(crate) fn parse(input: &str, refs: &RefMap) -> anyhow::Result<String> {
 ///
 ///  - `header.md` files will be parsed as link definition files and will not be
 ///    included in the output
-///  - `config.toml` files will be parsed to register the course and generate
-///    the `index.html` file
+///  - `config.toml` files will be parsed to register the course
 ///
 pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<()> {
     if !output.as_ref().exists() {
         fs::create_dir_all(output.as_ref())?;
     }
 
+    let mut state = ParseState {
+        refs: &RefMap::new(),
+        questions: HashMap::new(),
+    };
+    let article = ArticleRef {
+        course: "",
+        article: "",
+    };
+
     if let Ok(s) = fs::read_to_string(input.as_ref().join("header.md")) {
         let refs = comrak::parse_document_refs(&Arena::new(), &s);
-        parse_dir_internal(input, output, &refs)
+        parse_dir_internal(article, 0, input, output, &refs, &mut state)
     } else {
-        parse_dir_internal(input, output, &RefMap::new())
+        parse_dir_internal(article, 0, input, output, &RefMap::new(), &mut state)
     }
 }
 
-fn parse_dir_internal<P: AsRef<Path>>(input: P, output: P, refs: &RefMap) -> anyhow::Result<()> {
+fn parse_dir_internal<P: AsRef<Path>>(
+    article: ArticleRef,
+    depth: u8,
+    input: P,
+    output: P,
+    refs: &RefMap,
+    state: &mut ParseState,
+) -> anyhow::Result<()> {
     let input = input.as_ref();
     let output = output.as_ref();
 
@@ -158,14 +168,20 @@ fn parse_dir_internal<P: AsRef<Path>>(input: P, output: P, refs: &RefMap) -> any
             if !o.exists() {
                 fs::create_dir(&o)?;
             }
+            let mut a = article.clone();
+            match depth {
+                0 => a.course = i.file_name().unwrap().to_str().unwrap(),
+                1 => a.article = i.file_name().unwrap().to_str().unwrap(),
+                _ => {}
+            }
             if let Ok(s) = fs::read_to_string(input.join("header.md")) {
                 let other_refs = comrak::parse_document_refs(&Arena::new(), &s);
                 let mut refs = refs.clone();
                 refs.extend(other_refs);
 
-                parse_dir_internal(&i, &o, &refs)?;
+                parse_dir_internal(a, depth + 1, &i, &o, &refs, state)?;
             } else {
-                parse_dir_internal(&i, &o, refs)?;
+                parse_dir_internal(a, depth + 1, &i, &o, refs, state)?;
             }
             continue;
         }
@@ -183,7 +199,8 @@ fn parse_dir_internal<P: AsRef<Path>>(input: P, output: P, refs: &RefMap) -> any
                 // otherwise, parse
                 let s = fs::read_to_string(&i)?;
                 let i = i.display();
-                let output = parse(&s, refs).context(format!("While parsing file {i}"))?;
+                let output = parse(article.clone(), &s, refs, state)
+                    .context(format!("While parsing file {i}"))?;
                 fs::write(o.with_extension("html"), output)?;
             }
             "toml" if name == "config.toml" => {
