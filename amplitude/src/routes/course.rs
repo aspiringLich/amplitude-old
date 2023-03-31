@@ -1,6 +1,6 @@
 use super::*;
 
-pub fn attach(server: &mut Server) {
+pub fn attach<T: Send + Sync>(server: &mut Server<T>) {
     // Serves a specific course page
     server.handled_route(Method::GET, "/api/course/{course}/{article}", |req| {
         let course = req.param("course").unwrap();

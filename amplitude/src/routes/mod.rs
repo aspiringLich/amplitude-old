@@ -4,7 +4,7 @@ use std::fmt::Display;
 
 mod course;
 
-pub fn attach(server: &mut Server) {
+pub fn attach<T: Send + Sync>(server: &mut Server<T>) {
     course::attach(server);
 }
 
@@ -17,7 +17,7 @@ pub(super) trait HandledRoute {
     );
 }
 
-impl HandledRoute for Server {
+impl<T: Send + Sync> HandledRoute for Server<T> {
     fn handled_route(
         &mut self,
         method: Method,

@@ -10,7 +10,7 @@ use clap::Parser;
 use std::{fs::File, path::PathBuf};
 
 use amplitude_common::{config, Args};
-use amplitude_markdown::parse::{parse_dir, parse_dir_watch};
+use amplitude_markdown::parse::{parse_dir, parse_dir_watch, ParseState};
 mod routes;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -18,16 +18,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
     let args = Args::parse();
 
-    parse_dir(&config::INPUT, &config::OUTPUT)?;
+    let state = parse_dir(&config::INPUT, &config::OUTPUT)?;
     if args.watch {
         std::thread::spawn(|| parse_dir_watch());
     }
 
     if !PathBuf::from("web/dist").exists() {
-        panic!("web/dist not build! please go into web/ and run `npm run build`");
+        panic!("web/dist not built! please go into web/ and run `npm run build`");
     }
 
-    let mut server = Server::new("localhost", 8080);
+    let mut server: Server<ParseState> = Server::new("localhost", 8080).state(state);
     ServeStatic::new("web/dist")
         .not_found(|_req, _dis| {
             Response::new()

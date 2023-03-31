@@ -15,8 +15,8 @@ use comrak::{
 };
 
 #[derive(Debug)]
-pub(crate) struct ParseState {
-    questions: HashMap<(String, String, String), inject::quiz::Quiz>,
+pub struct ParseState {
+    pub questions: HashMap<(String, String, String), inject::quiz::Quiz>,
 }
 
 impl ParseState {
@@ -124,7 +124,7 @@ pub(crate) fn parse(
 ///    included in the output
 ///  - `config.toml` files will be parsed to register the course
 ///
-pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<()> {
+pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseState> {
     if !output.as_ref().exists() {
         fs::create_dir_all(output.as_ref())?;
     }
@@ -144,8 +144,8 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<()> {
         parse_dir_internal(article, 0, input, output, &RefMap::new(), &mut state)?;
     }
     
-    dbg!(state);
-    Ok(())
+    // dbg!(state);
+    Ok(state)
 }
 
 fn parse_dir_internal<P: AsRef<Path>>(
