@@ -1,4 +1,4 @@
-use std::{collections::HashMap, default::default, fs, path::Path};
+use std::{collections::HashMap, default::default, fs, path::Path, sync::{Arc, Mutex}};
 
 use amplitude_common::config;
 use anyhow::Context;
@@ -259,7 +259,7 @@ fn parse_dir_internal<P: AsRef<Path>>(
 /// directory when detecting file changes using the `notify` crate.
 ///
 /// See [`parse_dir`] for more description on how this function behaves
-pub fn parse_dir_watch() -> notify::Result<()> {
+pub fn parse_dir_watch(state: Arc<Mutex<ParseState>>) -> notify::Result<()> {
     let (tx, rx) = std::sync::mpsc::channel();
 
     let mut watcher = RecommendedWatcher::new(tx, Config::default())?;
@@ -285,8 +285,9 @@ pub fn parse_dir_watch() -> notify::Result<()> {
         match event {
             Ok(event) if matches!(event.kind, Create(_) | Modify(_) | Remove(_)) => {
                 info!("Change detected, reparsing...");
-                if let Err(e) = parse_dir(&config::INPUT, &config::OUTPUT) {
-                    error!("Error parsing directory: '{:?}'", e);
+                match parse_dir(&config::INPUT, &config::OUTPUT) {
+                    Err(e) => error!("Error parsing directory: '{:?}'", e),
+                    Ok(s) => *state.lock().unwrap() = s,
                 }
             }
             Err(e) => error!("Error watching directory: {:?}", e),
