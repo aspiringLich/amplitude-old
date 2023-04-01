@@ -1,12 +1,14 @@
-use afire::{prelude::*, extension::ServeStatic};
-use amplitude_common::config;
-use std::{fmt::Display, fs::File};
 use crate::error::*;
+use afire::{extension::ServeStatic, prelude::*};
+use amplitude_common::{config, state::State};
+use std::{fmt::Display, fs::File, sync::Mutex};
 
 mod course;
+mod quiz;
 
-pub fn attach<T: Send + Sync>(server: &mut Server<T>) {
+pub fn attach(server: &mut Server<State>) {
     course::attach(server);
+    quiz::attach(server);
 
     ServeStatic::new("web/dist")
         .not_found(|_req, _dis| {

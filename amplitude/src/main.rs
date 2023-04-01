@@ -9,8 +9,8 @@ use afire::{
 use clap::Parser;
 use std::{fs::File, path::PathBuf, sync::Mutex};
 
-use amplitude_common::{config, Args};
-use amplitude_markdown::parse::{parse_dir, parse_dir_watch, ParseState};
+use amplitude_common::{config, state::State, Args};
+use amplitude_markdown::parse::{parse_dir, parse_dir_watch};
 mod error;
 mod routes;
 
@@ -19,20 +19,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
     let args = Args::parse();
 
-    let state = parse_dir(&config::INPUT, &config::OUTPUT)?;
+    let parse_state = parse_dir(&config::INPUT, &config::OUTPUT)?;
+    dbg!(&parse_state);
+    let state = State {
+        parse: Mutex::new(parse_state),
+    };
 
     if !PathBuf::from("web/dist").exists() {
         panic!("web/dist not built! please go into web/ and run `npm run build`");
     }
 
     if args.watch {
-        let state = Mutex::new(state);
-        let server: Server<Mutex<ParseState>> = Server::new("localhost", 8080).state(state);
+        let server: Server<State> = Server::new("localhost", 8080).state(state);
         let state = server.state.clone().unwrap();
         std::thread::spawn(|| parse_dir_watch(state));
         server.start_threaded(16).unwrap();
     } else {
-        let mut server: Server<ParseState> = Server::new("localhost", 8080).state(state);
+        let mut server: Server<State> = Server::new("localhost", 8080).state(state);
         routes::attach(&mut server);
         server.start_threaded(16).unwrap();
     }

@@ -1,17 +1,24 @@
-use std::fmt::Display;
+use std::{fmt::Display, panic, sync::Arc};
 
 use afire::{Server, Method, Request, Response, Status};
 
-pub(super) trait HandledRoute {
+pub(super) trait HandledRoute<T: Sync + Send> {
     fn handled_route(
         &mut self,
         method: Method,
         path: &str,
         handler: impl (Fn(&Request) -> Result<Response, StatusError>) + Sync + Send + 'static,
     );
+
+    fn handled_stateful_route(
+        &mut self,
+        method: Method,
+        path: &str,
+        handler: impl (Fn(Arc<T>, &Request) -> Result<Response, StatusError>) + Sync + Send + 'static,
+    );
 }
 
-impl<T: Send + Sync> HandledRoute for Server<T> {
+impl<T: Send + Sync> HandledRoute<T> for Server<T> {
     fn handled_route(
         &mut self,
         method: Method,
@@ -20,6 +27,23 @@ impl<T: Send + Sync> HandledRoute for Server<T> {
     ) {
         self.route(method, path, move |req| {
             let err = handler(req);
+            err.unwrap_or_else(|e| {
+                Response::new().status(e.status).text(
+                    &e.body
+                        .unwrap_or_else(|| e.status.reason_phrase().to_string()),
+                )
+            })
+        });
+    }
+
+    fn handled_stateful_route(
+        &mut self,
+        method: Method,
+        path: &str,
+        handler: impl (Fn(Arc<T>, &Request) -> Result<Response, StatusError>) + Sync + Send + 'static,
+    ) {
+        self.stateful_route(method, path, move |state, req| {
+            let err = handler(state, req);
             err.unwrap_or_else(|e| {
                 Response::new().status(e.status).text(
                     &e.body
@@ -75,7 +99,7 @@ where
                 body: Some(format!(
                     "{}\n[{}]: {}",
                     body,
-                    std::panic::Location::caller(),
+                    panic::Location::caller(),
                     e,
                 )),
             }),

@@ -1,27 +1,8 @@
 use super::*;
 use crate::parse::parse;
+use amplitude_common::state::{ParseState, Quiz};
 use anyhow::Context;
-use serde::Deserialize;
-
-#[derive(Deserialize, Debug, PartialEq)]
-struct Answer {
-    text: String,
-    #[serde(default)]
-    response: String,
-    #[serde(default)]
-    correct: bool,
-}
-
-#[derive(Deserialize, Debug, PartialEq)]
-pub struct Question {
-    question: String,
-    answers: Vec<Answer>,
-}
-
-#[derive(Debug, PartialEq, Deserialize)]
-pub struct Quiz {
-    pub questions: Vec<Question>,
-}
+use serde::{Deserialize, Serialize};
 
 /// Turns a code block into a quiz
 ///
@@ -60,8 +41,18 @@ pub(super) fn inject_quiz(
                     answer.response = parse(article, &answer.response, refs, state)?;
                 }
             }
+            let key = (
+                article.course.to_string(),
+                article
+                    .article
+                    .strip_suffix(".md")
+                    .context("Expected article to end with `.md`")?
+                    .to_string(),
+                id.to_string(),
+            );
             state
-                .insert_question(article, id, quiz)
+                .questions
+                .insert(key, quiz)
                 .is_none()
                 .then(|| ())
                 .context(format!("Quiz id `{id}` already exists in this file"))?;
@@ -75,7 +66,7 @@ pub(super) fn inject_quiz(
 
 #[cfg(test)]
 mod tests {
-    use crate::inject::quiz::{Answer, Question};
+    use amplitude_common::state::{Answer, Question};
 
     #[test]
     fn test_serde() {

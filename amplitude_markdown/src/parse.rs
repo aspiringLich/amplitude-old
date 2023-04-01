@@ -1,6 +1,6 @@
 use std::{collections::HashMap, default::default, fs, path::Path, sync::{Arc, Mutex}};
 
-use amplitude_common::config;
+use amplitude_common::{config, state::{ParseState, State}};
 use anyhow::Context;
 use notify::{Config, RecommendedWatcher, Watcher};
 use tracing::{error, info};
@@ -14,36 +14,7 @@ use comrak::{
     ListStyleType, RefMap,
 };
 
-#[derive(Debug)]
-pub struct ParseState {
-    pub questions: HashMap<(String, String, String), inject::quiz::Quiz>,
-}
 
-impl ParseState {
-    pub fn get_question(&self, article: ArticleRef, question: &str) -> Option<&inject::quiz::Quiz> {
-        self.questions.get(&(
-            article.course.to_string(),
-            article.article.to_string(),
-            question.to_string(),
-        ))
-    }
-
-    pub fn insert_question(
-        &mut self,
-        article: ArticleRef,
-        question: &str,
-        quiz: inject::quiz::Quiz,
-    ) -> Option<inject::quiz::Quiz> {
-        self.questions.insert(
-            (
-                article.course.to_string(),
-                article.article.to_string(),
-                question.to_string(),
-            ),
-            quiz,
-        )
-    }
-}
 
 /// Parse the input `md` and return the output `html`.
 ///
@@ -139,10 +110,10 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseSta
 
     if let Ok(s) = fs::read_to_string(input.as_ref().join("header.md")) {
         let refs = comrak::parse_document_refs(&Arena::new(), &s);
-        parse_dir_internal(article, 0, input, output, &refs, &mut state)?;
+        parse_dir_internal(article, 0, input, output, &refs, &mut state)
     } else {
-        parse_dir_internal(article, 0, input, output, &RefMap::new(), &mut state)?;
-    }
+        parse_dir_internal(article, 0, input, output, &RefMap::new(), &mut state)
+    }.context("While parsing markdown files")?;
     
     // dbg!(state);
     Ok(state)
@@ -259,7 +230,7 @@ fn parse_dir_internal<P: AsRef<Path>>(
 /// directory when detecting file changes using the `notify` crate.
 ///
 /// See [`parse_dir`] for more description on how this function behaves
-pub fn parse_dir_watch(state: Arc<Mutex<ParseState>>) -> notify::Result<()> {
+pub fn parse_dir_watch(state: Arc<State>) -> notify::Result<()> {
     let (tx, rx) = std::sync::mpsc::channel();
 
     let mut watcher = RecommendedWatcher::new(tx, Config::default())?;
@@ -287,7 +258,7 @@ pub fn parse_dir_watch(state: Arc<Mutex<ParseState>>) -> notify::Result<()> {
                 info!("Change detected, reparsing...");
                 match parse_dir(&config::INPUT, &config::OUTPUT) {
                     Err(e) => error!("Error parsing directory: '{:?}'", e),
-                    Ok(s) => *state.lock().unwrap() = s,
+                    Ok(s) => *state.parse.lock().unwrap() = s,
                 }
             }
             Err(e) => error!("Error watching directory: {:?}", e),

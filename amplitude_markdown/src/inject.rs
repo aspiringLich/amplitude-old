@@ -1,12 +1,11 @@
 // mod info;
 pub mod quiz;
 
+use amplitude_common::state::ParseState;
 use anyhow::Context;
 use comrak::nodes::{AstNode, NodeValue};
 use comrak::RefMap;
 use std::collections::HashMap;
-
-use crate::parse::ParseState;
 
 type Callback = fn(ArticleRef, &str, &AstNode, &mut ParseState, &RefMap) -> anyhow::Result<()>;
 
