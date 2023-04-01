@@ -1,13 +1,11 @@
 #![feature(try_trait_v2)]
 
 use afire::{
-    extension::ServeStatic,
-    trace::{self, Level},
-    Content, Middleware, Response, Server,
+    trace::{self, Level}, Server,
 };
 
 use clap::Parser;
-use std::{fs::File, path::PathBuf, sync::Mutex};
+use std::{path::PathBuf, sync::Mutex};
 
 use amplitude_common::{config, state::State, Args};
 use amplitude_markdown::parse::{parse_dir, parse_dir_watch};

@@ -1,4 +1,4 @@
-use std::{collections::HashMap, default::default, fs, path::Path, sync::{Arc, Mutex}};
+use std::{collections::HashMap, default::default, fs, path::Path, sync::{Arc}};
 
 use amplitude_common::{config, state::{ParseState, State}};
 use anyhow::Context;
