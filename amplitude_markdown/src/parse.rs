@@ -53,6 +53,7 @@ pub(crate) fn parse(
             width: 0,
             escape: false,
             list_style: ListStyleType::default(),
+            sourcepos: false,
         },
     };
 
