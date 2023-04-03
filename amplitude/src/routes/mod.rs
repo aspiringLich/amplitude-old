@@ -1,7 +1,7 @@
 use crate::error::*;
 use afire::{extension::ServeStatic, prelude::*};
 use amplitude_common::{config, state::State};
-use std::{fs::File};
+use std::fs::File;
 
 mod course;
 mod quiz;

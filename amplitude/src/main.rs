@@ -1,7 +1,8 @@
 #![feature(try_trait_v2)]
 
 use afire::{
-    trace::{self, Level}, Server,
+    trace::{self, Level},
+    Server,
 };
 
 use clap::Parser;

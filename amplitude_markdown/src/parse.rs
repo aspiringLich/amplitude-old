@@ -1,6 +1,9 @@
-use std::{collections::HashMap, default::default, fs, path::Path, sync::{Arc}};
+use std::{collections::HashMap, default::default, fs, path::Path, sync::Arc};
 
-use amplitude_common::{config, state::{ParseState, State}};
+use amplitude_common::{
+    config,
+    state::{ParseState, State},
+};
 use anyhow::Context;
 use notify::{Config, RecommendedWatcher, Watcher};
 use tracing::{error, info};
@@ -13,8 +16,6 @@ use comrak::{
     parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
     ListStyleType, RefMap,
 };
-
-
 
 /// Parse the input `md` and return the output `html`.
 ///
@@ -66,8 +67,7 @@ pub(crate) fn parse(
     inject::inject(article, out, refs, state)?;
 
     let mut cm = vec![];
-    comrak::format_html(out, &options, &mut cm)
-        .context("While parsing AST to html")?;
+    comrak::format_html(out, &options, &mut cm).context("While parsing AST to html")?;
 
     Ok(String::from_utf8(cm).unwrap())
 }
@@ -113,8 +113,9 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseSta
         parse_dir_internal(article, 0, input, output, &refs, &mut state)
     } else {
         parse_dir_internal(article, 0, input, output, &RefMap::new(), &mut state)
-    }.context("While parsing markdown files")?;
-    
+    }
+    .context("While parsing markdown files")?;
+
     // dbg!(state);
     Ok(state)
 }

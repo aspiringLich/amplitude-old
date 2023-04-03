@@ -3,7 +3,6 @@ use crate::parse::parse;
 use amplitude_common::state::{ParseState, Quiz};
 use anyhow::Context;
 
-
 /// Turns a code block into a quiz
 ///
 /// ````compile_fail

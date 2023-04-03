@@ -1,6 +1,6 @@
 use std::{fmt::Display, panic, sync::Arc};
 
-use afire::{Server, Method, Request, Response, Status};
+use afire::{Method, Request, Response, Server, Status};
 
 pub(super) trait HandledRoute<T: Sync + Send> {
     fn handled_route(
@@ -96,12 +96,7 @@ where
             Ok(t) => Ok(t),
             Err(e) => Err(StatusError {
                 status,
-                body: Some(format!(
-                    "{}\n[{}]: {}",
-                    body,
-                    panic::Location::caller(),
-                    e,
-                )),
+                body: Some(format!("{}\n[{}]: {}", body, panic::Location::caller(), e,)),
             }),
         }
     }

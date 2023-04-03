@@ -1,5 +1,3 @@
-
-
 use serde::Deserialize;
 
 use super::*;
@@ -17,10 +15,7 @@ pub fn attach(server: &mut Server<State>) {
         let req: QuizRequest = serde_json::from_str(&String::from_utf8(req.body.clone())?)?;
         let cpy = req.clone();
 
-        let parse_state = state
-            .parse
-            .lock()
-            .unwrap();
+        let parse_state = state.parse.lock().unwrap();
         let quiz = parse_state
             .questions
             .get(&(req.course, req.article, req.id))

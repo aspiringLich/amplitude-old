@@ -1,13 +1,11 @@
 #![feature(let_chains)]
 #![feature(decl_macro)]
 
-
-
 // use std::{sync::LazyLock, path::PathBuf};
 use clap::Parser;
 
-pub mod template_builder;
 pub mod state;
+pub mod template_builder;
 
 // pub static ARGS: LazyLock<Args> = LazyLock::new(|| Args::parse());
 
