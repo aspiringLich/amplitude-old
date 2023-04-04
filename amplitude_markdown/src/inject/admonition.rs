@@ -1,5 +1,3 @@
-use std::borrow::BorrowMut;
-
 use super::*;
 
 pub fn inject_admonition<'a>(

@@ -29,7 +29,7 @@ impl<T: Send + Sync> HandledRoute<T> for Server<T> {
             let err = handler(req);
             err.unwrap_or_else(|e| {
                 Response::new().status(e.status).text(
-                    &e.body
+                    e.body
                         .unwrap_or_else(|| e.status.reason_phrase().to_string()),
                 )
             })
@@ -46,7 +46,7 @@ impl<T: Send + Sync> HandledRoute<T> for Server<T> {
             let err = handler(state, req);
             err.unwrap_or_else(|e| {
                 Response::new().status(e.status).text(
-                    &e.body
+                    e.body
                         .unwrap_or_else(|| e.status.reason_phrase().to_string()),
                 )
             })

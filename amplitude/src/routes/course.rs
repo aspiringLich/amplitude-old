@@ -12,7 +12,7 @@ pub fn attach<T: Send + Sync>(server: &mut Server<T>) {
             .with_extension("html");
         let body = std::fs::read_to_string(path).status(Status::NotFound, "Article not found")?;
 
-        Ok(Response::new().text(&body).content(Content::HTML))
+        Ok(Response::new().text(body).content(Content::HTML))
     });
     // Serves the index page for a course
     server.handled_route(Method::GET, "/api/course/{course}", |req| {
@@ -21,6 +21,6 @@ pub fn attach<T: Send + Sync>(server: &mut Server<T>) {
         let path = config::OUTPUT.join(course).join("index.html");
         let body = std::fs::read_to_string(path).status(Status::NotFound, "Course not found")?;
 
-        Ok(Response::new().text(&body).content(Content::HTML))
+        Ok(Response::new().text(body).content(Content::HTML))
     });
 }

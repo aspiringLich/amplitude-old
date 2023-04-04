@@ -3,14 +3,13 @@ pub mod quiz;
 
 use amplitude_common::state::ParseState;
 use anyhow::Context;
-use comrak::arena_tree::Node;
+
 use comrak::nodes::{AstNode, NodeValue};
 use comrak::RefMap;
-use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
-use std::ops::{Range, RangeInclusive};
 
-use comrak::{html, nodes::Ast};
+use std::collections::HashMap;
+
+use comrak::html;
 
 type Callback = for<'a> fn(
     ArticleRef,
@@ -189,14 +188,12 @@ pub(crate) fn inject<'a>(
                     }
                 }
                 for arg in &args {
-                    if !arg.1.is_empty() {
-                        if !info.keys.contains_key(arg.0.as_str()) {
-                            anyhow::bail!(
-                                "Unexpected key `{key}` in tag `{text}`",
-                                key = arg.0,
-                                text = text
-                            );
-                        }
+                    if !arg.1.is_empty() && !info.keys.contains_key(arg.0.as_str()) {
+                        anyhow::bail!(
+                            "Unexpected key `{key}` in tag `{text}`",
+                            key = arg.0,
+                            text = text
+                        );
                     }
                 }
 
@@ -206,13 +203,13 @@ pub(crate) fn inject<'a>(
                 to_detach.push(node);
                 let expected = &info.expected;
                 if expected.matches(n) {
-                    let mut ret = (info.callback)(article.clone(), args, n, state, refs)
+                    let mut ret = (info.callback)(article, args, n, state, refs)
                         .context(format!("While calling callback for tag `{text}`"))?;
                     to_detach.append(&mut ret);
                 } else {
                     anyhow::bail!(
                         "Expected tag `{text}` to come before {expected:?}, found {}",
-                        display_node(&n)
+                        display_node(n)
                     );
                 }
             } else {

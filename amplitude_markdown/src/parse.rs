@@ -13,8 +13,8 @@ use crate::{
     link_concat::link_concat_callback,
 };
 use comrak::{
-    parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakParseOptions,
-    ComrakRenderOptions, ListStyleType, RefMap,
+    parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
+    ListStyleType, RefMap,
 };
 
 /// Parse the input `md` and return the output `html`.
@@ -169,11 +169,11 @@ fn parse_dir_internal<P: AsRef<Path>>(
             if !o.exists() {
                 fs::create_dir(&o)?;
             }
-            let mut a = article.clone();
+            let mut a = article;
             let name = i.file_name().unwrap().to_str().unwrap();
-            match depth {
-                0 => a.course = name,
-                _ => {}
+            // top level -> course
+            if depth == 0 {
+                a.course = name;
             }
             if let Ok(s) = fs::read_to_string(input.join("header.md")) {
                 let other_refs = comrak::parse_document_refs(&Arena::new(), &s);
@@ -207,7 +207,7 @@ fn parse_dir_internal<P: AsRef<Path>>(
                     depth == 1,
                     "File: {name:?} must be in the article directory"
                 );
-                let mut article = article.clone();
+                let mut article = article;
                 article.article = name
                     .to_str()
                     .unwrap()
