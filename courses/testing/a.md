@@ -12,6 +12,12 @@ a.
 
 [test+/test]
 
+@! info
+> this is a test
+> mhm
+
+sajokjf
+
 @quiz id=best_letter
 ```toml
 [[questions]]

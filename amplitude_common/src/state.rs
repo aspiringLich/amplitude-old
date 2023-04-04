@@ -24,6 +24,7 @@ pub struct Quiz {
 
 #[derive(Debug)]
 pub struct ParseState {
+    pub options: comrak::ComrakOptions,
     pub questions: HashMap<(String, String, String), Quiz>,
 }
 

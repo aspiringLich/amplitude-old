@@ -18,19 +18,20 @@ use anyhow::Context;
 /// ]
 /// ```
 /// ````
-pub(super) fn inject_quiz(
+pub(super) fn inject_quiz<'a>(
     article: ArticleRef,
     args: HashMap<String, String>,
-    node: &AstNode<'_>,
+    node: &'a AstNode<'a>,
     state: &mut ParseState,
     refs: &RefMap,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<Vec<&'a AstNode<'a>>> {
     let id = args.get("id").context("Quiz must have an id")?;
 
     let val = &mut node.data.borrow_mut().value;
     match val {
         NodeValue::CodeBlock(ref code) => {
-            let mut quiz: Quiz = toml::from_str(&code.literal).context("failed to parse quiz")?;
+            let mut quiz: Quiz =
+                toml::from_str(&code.literal).context("failed to parse toml for quiz")?;
             for question in quiz.questions.iter_mut() {
                 question.question = parse(article, &question.question, refs, state)?;
                 for answer in question.answers.iter_mut() {
@@ -43,18 +44,16 @@ pub(super) fn inject_quiz(
                 article.article.to_string(),
                 id.to_string(),
             );
-            state
-                .questions
-                .insert(key, quiz)
-                .is_none()
-                .then(|| ())
-                .context(format!("Quiz id `{id}` already exists in this file"))?;
+            anyhow::ensure!(
+                state.questions.insert(key, quiz).is_none(),
+                "Quiz id `{id}` already exists in this file"
+            )
         }
         _ => unreachable!(),
     }
     *val = NodeValue::HtmlInline(format!("<Quiz id=\"{id}\"></Quiz>"));
 
-    Ok(())
+    Ok(vec![])
 }
 
 #[cfg(test)]

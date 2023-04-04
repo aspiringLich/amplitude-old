@@ -13,8 +13,8 @@ use crate::{
     link_concat::link_concat_callback,
 };
 use comrak::{
-    parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
-    ListStyleType, RefMap,
+    parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakParseOptions,
+    ComrakRenderOptions, ListStyleType, RefMap,
 };
 
 /// Parse the input `md` and return the output `html`.
@@ -31,44 +31,18 @@ pub(crate) fn parse(
     let mut this_refs = parse_document_refs(&Arena::new(), input);
     this_refs.extend(refs.clone());
 
-    let options = ComrakOptions {
-        extension: ComrakExtensionOptions {
-            strikethrough: true,
-            tagfilter: true,
-            table: true,
-            autolink: true,
-            tasklist: true,
-            superscript: true,
-            header_ids: None,
-            footnotes: true,
-            description_lists: true,
-            front_matter_delimiter: Some("---".to_string()),
-        },
-        parse: default(),
-        render: ComrakRenderOptions {
-            github_pre_lang: true,
-            full_info_string: true,
-            unsafe_: true,
-            hardbreaks: false,
-            width: 0,
-            escape: false,
-            list_style: ListStyleType::default(),
-            sourcepos: false,
-        },
-    };
-
     let arena = Arena::new();
     let out = comrak::parse_document_with_broken_link_callback(
         &arena,
         input,
-        &options,
+        &state.options,
         Some(&mut |link| link_concat_callback(link, &this_refs)),
     );
     // do things
     inject::inject(article, out, refs, state)?;
 
     let mut cm = vec![];
-    comrak::format_html(out, &options, &mut cm).context("While parsing AST to html")?;
+    comrak::format_html(out, &state.options, &mut cm).context("While parsing AST to html")?;
 
     Ok(String::from_utf8(cm).unwrap())
 }
@@ -97,12 +71,39 @@ pub(crate) fn parse(
 ///  - `config.toml` files will be parsed to register the course
 ///
 pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseState> {
+    let options = ComrakOptions {
+        extension: ComrakExtensionOptions {
+            strikethrough: true,
+            tagfilter: true,
+            table: true,
+            autolink: true,
+            tasklist: true,
+            superscript: true,
+            header_ids: None,
+            footnotes: true,
+            description_lists: true,
+            front_matter_delimiter: Some("---".to_string()),
+        },
+        parse: default(),
+        render: ComrakRenderOptions {
+            github_pre_lang: true,
+            full_info_string: true,
+            unsafe_: true,
+            hardbreaks: false,
+            width: 0,
+            escape: false,
+            list_style: ListStyleType::default(),
+            sourcepos: false,
+        },
+    };
+
     if !output.as_ref().exists() {
         fs::create_dir_all(output.as_ref())?;
     }
 
     let mut state = ParseState {
         questions: HashMap::new(),
+        options,
     };
     let article = ArticleRef {
         course: "",
@@ -180,7 +181,7 @@ fn parse_dir_internal<P: AsRef<Path>>(
                 refs.extend(other_refs);
 
                 // also parse header.md to add any of the thigs it has
-                parse(a, &s, &refs, state);
+                parse(a, &s, &refs, state).context(format!("While parsing {}", i.display()))?;
 
                 parse_dir_internal(a, depth + 1, &i, &o, &refs, state)?;
             } else {

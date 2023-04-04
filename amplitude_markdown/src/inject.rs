@@ -1,20 +1,24 @@
-// mod info;
+pub mod admonition;
 pub mod quiz;
 
 use amplitude_common::state::ParseState;
 use anyhow::Context;
+use comrak::arena_tree::Node;
 use comrak::nodes::{AstNode, NodeValue};
 use comrak::RefMap;
+use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::ops::{Range, RangeInclusive};
 
-type Callback = fn(
+use comrak::{html, nodes::Ast};
+
+type Callback = for<'a> fn(
     ArticleRef,
     HashMap<String, String>,
-    &AstNode,
+    &'a AstNode<'a>,
     &mut ParseState,
     &RefMap,
-) -> anyhow::Result<()>;
+) -> anyhow::Result<Vec<&'a AstNode<'a>>>;
 
 #[derive(Debug, Hash, Clone, Copy, PartialEq, Eq)]
 pub struct ArticleRef<'a> {
@@ -126,13 +130,12 @@ static INJECTION_TAGS: HashMap<String, CallbackInfo> = {
     };
     use ExpectedTag::*;
     insert(
-        "quiz",
-        CallbackInfo::new(
-            ExpectedTag::CodeBlock(Some("toml")),
-            quiz::inject_quiz,
-            &[],
-            &["id"],
-        ),
+        "@quiz",
+        CallbackInfo::new(CodeBlock(Some("toml")), quiz::inject_quiz, &[], &["id"]),
+    );
+    insert(
+        "@!",
+        CallbackInfo::new(Quote, admonition::inject_admonition, &["info"], &[]),
     );
     m
 };
@@ -152,95 +155,75 @@ pub(crate) fn inject<'a>(
     refs: &RefMap,
     state: &mut ParseState,
 ) -> anyhow::Result<()> {
-    for node in node.descendants().skip(1) {
+    // variables were going to detach
+    let mut to_detach = vec![];
+    // dbg!(node);
+    for node in node.descendants() {
         let v = &node.data.borrow().value;
-        match v {
-            NodeValue::Paragraph => {
-                let children: Vec<_> = node.children().collect();
-                if children.len() != 1 {
-                    continue;
-                }
-                let val = &children[0].data.borrow().value;
-                if let NodeValue::Text(text) = &val {
-                    if !text.starts_with('@') {
-                        continue;
+        if !matches!(v, NodeValue::Paragraph) {
+            continue;
+        }
+
+        let children: Vec<_> = node.children().collect();
+        if children.len() != 1 {
+            continue;
+        }
+        let val = &children[0].data.borrow().value;
+        if let NodeValue::Text(text) = &val {
+            if !text.starts_with('@') {
+                continue;
+            }
+            let (text, post) = text
+                .split_once(|c: char| c.is_whitespace())
+                .unwrap_or((text, ""));
+
+            if let Some(info) = INJECTION_TAGS.get(text) {
+                let args = parse_args(post);
+                for (key, mandatory) in &info.keys {
+                    if !args.contains_key(*key) && *mandatory {
+                        anyhow::bail!(
+                            "Missing mandatory key `{key}` in tag `{text}`",
+                            key = key,
+                            text = text
+                        );
                     }
-                    let (text, post) = text
-                        .split_once(|c: char| c.is_whitespace())
-                        .unwrap_or((text, ""));
-
-                    if let Some(info) = INJECTION_TAGS.get(&text[1..]) {
-                        let args = parse_args(post);
-                        for (key, mandatory) in &info.keys {
-                            if !args.contains_key(*key) && *mandatory {
-                                anyhow::bail!(
-                                    "Missing mandatory key `{key}` in tag `{text}`",
-                                    key = key,
-                                    text = text
-                                );
-                            }
-                        }
-                        for arg in &args {
-                            if !arg.1.is_empty() {
-                                if !info.keys.contains_key(arg.0.as_str()) {
-                                    anyhow::bail!(
-                                        "Unexpected key `{key}` in tag `{text}`",
-                                        key = arg.0,
-                                        text = text
-                                    );
-                                }
-                            }
-                        }
-
-                        let n = node
-                            .next_sibling()
-                            .context(format!("Unexpected end of AST after tag {text}"))?;
-                        node.detach();
-                        let expected = &info.expected;
-                        if expected.matches(n) {
-                            (info.callback)(article.clone(), args, n, state, refs)
-                                .context(format!("While calling callback for tag {text}"))?;
-                        } else {
+                }
+                for arg in &args {
+                    if !arg.1.is_empty() {
+                        if !info.keys.contains_key(arg.0.as_str()) {
                             anyhow::bail!(
-                                "Expected tag {text} to come before {expected:?}, found {}",
-                                display_node(&n)
+                                "Unexpected key `{key}` in tag `{text}`",
+                                key = arg.0,
+                                text = text
                             );
                         }
-                    } else {
-                        anyhow::bail!("Unknown tag {text}");
                     }
                 }
+
+                let n = node
+                    .next_sibling()
+                    .context(format!("Unexpected end of AST after tag `{text}`"))?;
+                to_detach.push(node);
+                let expected = &info.expected;
+                if expected.matches(n) {
+                    let mut ret = (info.callback)(article.clone(), args, n, state, refs)
+                        .context(format!("While calling callback for tag `{text}`"))?;
+                    to_detach.append(&mut ret);
+                } else {
+                    anyhow::bail!(
+                        "Expected tag `{text}` to come before {expected:?}, found {}",
+                        display_node(&n)
+                    );
+                }
+            } else {
+                anyhow::bail!("Unknown tag `{text}`");
             }
-            _ => {}
         }
     }
 
+    for node in to_detach {
+        node.detach();
+    }
+
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    // use std::default::default;
-
-    // use pulldown_cmark::Parser;
-
-    // use crate::parse::{parse_into_events, parse};
-
-    //     #[test]
-    //     fn test_inject() {
-    //         let input =
-    //             r#"
-    // @quiz
-    // ```toml
-    // question = """
-    // But like *are* you gay?
-    // """
-
-    // [[answers]]
-    // text = "answer"
-    // response = "woo"
-    // ```"#;
-    //         panic!("{:#?}", parse(input, &default()))
-    //         // panic!("{:#?}", parse_into_events(parser, &default()).unwrap().into_iter().collect::<Vec<_>>())
-    //     }
 }
