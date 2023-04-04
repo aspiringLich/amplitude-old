@@ -179,6 +179,9 @@ fn parse_dir_internal<P: AsRef<Path>>(
                 let mut refs = refs.clone();
                 refs.extend(other_refs);
 
+                // also parse header.md to add any of the thigs it has
+                parse(a, &s, &refs, state);
+
                 parse_dir_internal(a, depth + 1, &i, &o, &refs, state)?;
             } else {
                 parse_dir_internal(a, depth + 1, &i, &o, refs, state)?;
@@ -204,7 +207,11 @@ fn parse_dir_internal<P: AsRef<Path>>(
                     "File: {name:?} must be in the article directory"
                 );
                 let mut article = article.clone();
-                article.article = name.to_str().unwrap();
+                article.article = name
+                    .to_str()
+                    .unwrap()
+                    .strip_suffix(".md")
+                    .context("Expected article to end with `.md`")?;
                 let output =
                     parse(article, &s, refs, state).context(format!("While parsing file {i}"))?;
                 fs::write(o.with_extension("html"), output)?;

@@ -1,5 +1,0 @@
-name = "Example course"
-
-[a.md]
-name = "Course A"
-description = "Description"

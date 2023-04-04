@@ -5,9 +5,16 @@ use amplitude_common::state::ParseState;
 use anyhow::Context;
 use comrak::nodes::{AstNode, NodeValue};
 use comrak::RefMap;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::ops::{Range, RangeInclusive};
 
-type Callback = fn(ArticleRef, &str, &AstNode, &mut ParseState, &RefMap) -> anyhow::Result<()>;
+type Callback = fn(
+    ArticleRef,
+    HashMap<String, String>,
+    &AstNode,
+    &mut ParseState,
+    &RefMap,
+) -> anyhow::Result<()>;
 
 #[derive(Debug, Hash, Clone, Copy, PartialEq, Eq)]
 pub struct ArticleRef<'a> {
@@ -84,27 +91,60 @@ fn display_node(node: &AstNode) -> String {
     .to_string()
 }
 
+struct CallbackInfo {
+    expected: ExpectedTag,
+    callback: Callback,
+    /// The keys that are expected to be present in the tag
+    /// bool for if the key is mandatory
+    keys: HashMap<&'static str, bool>,
+}
+
+impl CallbackInfo {
+    fn new(
+        expected: ExpectedTag,
+        callback: Callback,
+        expected_keys: &[&'static str],
+        mandatory_keys: &[&'static str],
+    ) -> Self {
+        Self {
+            expected,
+            callback,
+            keys: expected_keys
+                .iter()
+                .map(|s| (*s, false))
+                .chain(mandatory_keys.iter().map(|s| (*s, true)))
+                .collect(),
+        }
+    }
+}
+
 #[ctor::ctor]
-static INJECTION_TAGS: HashMap<String, (ExpectedTag, Callback)> = {
+static INJECTION_TAGS: HashMap<String, CallbackInfo> = {
     let mut m = HashMap::new();
-    let mut insert = |tag: &str, expected: ExpectedTag, callback: Callback| {
-        m.insert(tag.to_string(), (expected, callback));
+    let mut insert = |tag: &str, info: CallbackInfo| {
+        m.insert(tag.to_string(), info);
     };
     use ExpectedTag::*;
-    insert("quiz", CodeBlock(Some("toml")), quiz::inject_quiz);
-    // macro admonition($s:literal) {
-    //     insert($s, Quote, |input, id, events, state| {
-    //         info::inject_badge(input, id, events, state, $s)
-    //     });
-    // }
-    // admonition!("note");
-    // admonition!("info");
-    // admonition!("warn");
-    // admonition!("error");
-    // admonition!("correct");
-    // admonition!("incorrect");
+    insert(
+        "quiz",
+        CallbackInfo::new(
+            ExpectedTag::CodeBlock(Some("toml")),
+            quiz::inject_quiz,
+            &[],
+            &["id"],
+        ),
+    );
     m
 };
+
+fn parse_args(input: &str) -> HashMap<String, String> {
+    let mut out = HashMap::new();
+    for word in input.split(|c: char| c.is_whitespace()) {
+        let (key, value) = word.split_once('=').unwrap_or((word, ""));
+        out.insert(key.to_string(), value.to_string());
+    }
+    out
+}
 
 pub(crate) fn inject<'a>(
     article: ArticleRef,
@@ -125,15 +165,41 @@ pub(crate) fn inject<'a>(
                     if !text.starts_with('@') {
                         continue;
                     }
-                    let (text, info) = text.split_once(';').unwrap_or((text, ""));
-                    if let Some((expected, callback)) = INJECTION_TAGS.get(&text[1..]) {
+                    let (text, post) = text
+                        .split_once(|c: char| c.is_whitespace())
+                        .unwrap_or((text, ""));
+
+                    if let Some(info) = INJECTION_TAGS.get(&text[1..]) {
+                        let args = parse_args(post);
+                        for (key, mandatory) in &info.keys {
+                            if !args.contains_key(*key) && *mandatory {
+                                anyhow::bail!(
+                                    "Missing mandatory key `{key}` in tag `{text}`",
+                                    key = key,
+                                    text = text
+                                );
+                            }
+                        }
+                        for arg in &args {
+                            if !arg.1.is_empty() {
+                                if !info.keys.contains_key(arg.0.as_str()) {
+                                    anyhow::bail!(
+                                        "Unexpected key `{key}` in tag `{text}`",
+                                        key = arg.0,
+                                        text = text
+                                    );
+                                }
+                            }
+                        }
+
                         let n = node
                             .next_sibling()
                             .context(format!("Unexpected end of AST after tag {text}"))?;
                         node.detach();
+                        let expected = &info.expected;
                         if expected.matches(n) {
-                            callback(article.clone(), info, n, state, refs)
-                                .context(format!("While parsing tag {text}"))?;
+                            (info.callback)(article.clone(), args, n, state, refs)
+                                .context(format!("While calling callback for tag {text}"))?;
                         } else {
                             anyhow::bail!(
                                 "Expected tag {text} to come before {expected:?}, found {}",

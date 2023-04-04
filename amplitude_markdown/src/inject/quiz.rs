@@ -20,14 +20,12 @@ use anyhow::Context;
 /// ````
 pub(super) fn inject_quiz(
     article: ArticleRef,
-    id: &str,
+    args: HashMap<String, String>,
     node: &AstNode<'_>,
     state: &mut ParseState,
     refs: &RefMap,
 ) -> anyhow::Result<()> {
-    if id.trim().is_empty() {
-        anyhow::bail!("empty id! You should have something like `@quiz;id`");
-    }
+    let id = args.get("id").context("Quiz must have an id")?;
 
     let val = &mut node.data.borrow_mut().value;
     match val {
@@ -42,11 +40,7 @@ pub(super) fn inject_quiz(
             }
             let key = (
                 article.course.to_string(),
-                article
-                    .article
-                    .strip_suffix(".md")
-                    .context("Expected article to end with `.md`")?
-                    .to_string(),
+                article.article.to_string(),
                 id.to_string(),
             );
             state

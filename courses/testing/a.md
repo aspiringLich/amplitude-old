@@ -12,7 +12,7 @@ a.
 
 [test+/test]
 
-@quiz;best_letter
+@quiz id=best_letter
 ```toml
 [[questions]]
 question = """
