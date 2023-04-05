@@ -30,7 +30,6 @@ dependencies = [
  "afire",
  "amplitude_common",
  "amplitude_markdown",
- "clap",
  "pulldown-cmark",
  "serde",
  "serde_json",
@@ -43,7 +42,6 @@ name = "amplitude_common"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "clap",
  "comrak",
  "serde",
  "tracing",

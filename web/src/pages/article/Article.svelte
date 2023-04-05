@@ -5,11 +5,18 @@
     import { onMount } from "svelte";
     import Quiz from "./Quiz.svelte";
 
-    let article_element;
-
     // create a DOMParser from the html str
     async function fetchDOMParser() {
-        const a = await fetch(`/api/course/${course}/${article}`);
+        const a = await fetch("/api/article", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                course,
+                article,
+            }),
+        });
         // if (!a.ok) {
         //     throw new Error("Failed to fetch article");
         // }
@@ -34,12 +41,19 @@
         }
     }
 
-    onMount(() => {
-        fetchDOMParser().then((dom) => {
-            renderComponent(dom, "Quiz", Quiz);
-            article_element.replaceChildren(...dom.body.childNodes);
-        });
-    });
+    async function renderArticle() {
+        let dom = await fetchDOMParser();
+        renderComponent(dom, "quiz", Quiz);
+        return dom.body.innerHTML;
+    }
+
+    let article_html = renderArticle();
 </script>
 
-<div bind:this={article_element} id="article" />
+<div id="article">
+    {#await article_html}
+        <h1>Loading...</h1>
+    {:then article_html}
+        {@html article_html}
+    {/await}
+</div>

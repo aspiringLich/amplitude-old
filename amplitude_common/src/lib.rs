@@ -2,19 +2,19 @@
 #![feature(decl_macro)]
 
 // use std::{sync::LazyLock, path::PathBuf};
-use clap::Parser;
+// use clap::Parser;
 
 pub mod state;
 pub mod template_builder;
 
 // pub static ARGS: LazyLock<Args> = LazyLock::new(|| Args::parse());
 
-#[derive(Parser, Debug)]
-pub struct Args {
-    /// Watch the input directory for changes
-    #[arg(short, long)]
-    pub watch: bool,
-}
+// #[derive(Parser, Debug)]
+// pub struct Args {
+//     /// Watch the input directory for changes
+//     #[arg(short, long)]
+//     pub watch: bool,
+// }
 
 pub mod config {
     use std::{

@@ -28,6 +28,13 @@ pub struct ParseState {
     pub questions: HashMap<(String, String, String), Quiz>,
 }
 
+impl ParseState {
+    pub fn get_question(&self, course: &str, article: &str, id: &str) -> Option<&Quiz> {
+        self.questions
+            .get(&(course.to_string(), article.to_string(), id.to_string()))
+    }
+}
+
 pub struct State {
     pub parse: Mutex<ParseState>,
 }

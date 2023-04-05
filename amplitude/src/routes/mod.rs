@@ -1,6 +1,7 @@
 use crate::error::*;
 use afire::{extension::ServeStatic, prelude::*};
 use amplitude_common::{config, state::State};
+use serde::Deserialize;
 use std::fs::File;
 
 mod course;
