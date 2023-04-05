@@ -28,9 +28,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         panic!("web/dist not built! please go into web/ and run `npm run build`");
     }
 
-    let server: Server<State> = Server::new("localhost", 8080).state(state);
+    let mut server: Server<State> = Server::new("localhost", 8080).state(state);
     let state = server.state.clone().unwrap();
     std::thread::spawn(|| parse_dir_watch(state));
+
+    routes::attach(&mut server);
+
     server.start_threaded(16).unwrap();
 
     Ok(())

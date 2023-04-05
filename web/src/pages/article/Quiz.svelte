@@ -19,13 +19,13 @@
                 article,
             }),
         });
-        if (!a.ok) {
-            throw new Error("invalid quiz");
-        }
-        return await a.json();
+
+        return a.json();
     }
 
     let questions = fetchQuiz();
+    questions.then((x) => console.log(x));
+    // console.log(questions);
 </script>
 
 <div id="quiz" class="box">

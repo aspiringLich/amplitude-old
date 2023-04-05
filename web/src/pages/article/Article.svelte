@@ -5,6 +5,8 @@
     import { onMount } from "svelte";
     import Quiz from "./Quiz.svelte";
 
+    let article_element;
+
     // create a DOMParser from the html str
     async function fetchDOMParser() {
         const a = await fetch("/api/article", {
@@ -47,13 +49,12 @@
         return dom.body.innerHTML;
     }
 
-    let article_html = renderArticle();
+    onMount(() => {
+        fetchDOMParser().then((dom) => {
+            renderComponent(dom, "Quiz", Quiz);
+            article_element.replaceChildren(...dom.body.childNodes);
+        });
+    });
 </script>
 
-<div id="article">
-    {#await article_html}
-        <h1>Loading...</h1>
-    {:then article_html}
-        {@html article_html}
-    {/await}
-</div>
+<div bind:this={article_element} id="article" />
