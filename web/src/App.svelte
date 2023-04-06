@@ -3,7 +3,7 @@
     import { Route } from "tinro";
     import NotFound from "./NotFound.svelte";
     import Home from "./pages/Home.svelte";
-    import Article from "./pages/article/Article.svelte";
+    import Article from "./article/Article.svelte";
 </script>
 
 <main>

@@ -24,8 +24,6 @@
     }
 
     let questions = fetchQuiz();
-    questions.then((x) => console.log(x));
-    // console.log(questions);
 </script>
 
 <div id="quiz" class="box">
