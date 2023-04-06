@@ -1,18 +1,16 @@
-<script>
-    export let text;
-    export let hue;
+<script lang="ts">
+    export let text: any;
+    export let hue: number;
 </script>
 
-<div id="box">
+<div id="box" style="background-color: hsl({hue}, 100%, 95%);color:{text}">
     <slot />
 </div>
 
 <style lang="scss">
     #box {
-        background-color: hsl(var(--hue), 100%, 95%);
         border-radius: 4px;
         padding: 16px;
-        color: var(--text);
         width: 100%;
     }
 </style>

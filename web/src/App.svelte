@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     // @ts-nocheck
     import { Route } from "tinro";
     import NotFound from "./NotFound.svelte";

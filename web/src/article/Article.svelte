@@ -1,14 +1,14 @@
-<script>
-    export let course;
-    export let article;
+<script lang="ts">
+    export let course: string;
+    export let article: string;
 
-    import { onMount } from "svelte";
+    import { type ComponentType, onMount } from "svelte";
     import Quiz from "./Quiz.svelte";
 
-    let article_element;
+    let article_element: Element;
 
-    // create a DOMParser from the html str
-    async function fetchDOMParser() {
+    // create a Document from the html str
+    async function fetchDocument() {
         const a = await fetch("/api/article", {
             method: "POST",
             headers: {
@@ -26,8 +26,12 @@
         return parser.parseFromString(await a.text(), "text/html");
     }
 
-    function renderComponent(dom, query, type) {
-        let components = dom.querySelectorAll(query);
+    function renderComponent(
+        doc: Document,
+        query: string,
+        type: ComponentType
+    ) {
+        let components = doc.querySelectorAll(query);
         for (const item of components) {
             let props = {
                 course,
@@ -43,16 +47,10 @@
         }
     }
 
-    async function renderArticle() {
-        let dom = await fetchDOMParser();
-        renderComponent(dom, "quiz", Quiz);
-        return dom.body.innerHTML;
-    }
-
     onMount(() => {
-        fetchDOMParser().then((dom) => {
-            renderComponent(dom, "Quiz", Quiz);
-            article_element.replaceChildren(...dom.body.childNodes);
+        fetchDocument().then((doc) => {
+            renderComponent(doc, "Quiz", Quiz);
+            article_element.replaceChildren(...doc.body.childNodes);
         });
     });
 </script>

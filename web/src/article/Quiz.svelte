@@ -1,14 +1,10 @@
-<script>
-    export let id;
-    export let course;
-    export let article;
-
-    import { onMount } from "svelte";
-
-    let ok = true;
+<script lang="ts">
+    export let id: string;
+    export let course: string;
+    export let article: string;
 
     async function fetchQuiz() {
-        const a = await fetch(`/api/quiz`, {
+        const a = await fetch("/api/quiz", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
