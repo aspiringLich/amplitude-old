@@ -47,7 +47,7 @@
             });
         }
     }
-    
+
     let get = false;
     onMount(() => {
         fetchDocument().then((doc) => {
@@ -59,14 +59,17 @@
 </script>
 
 <div id="container" style={get ? "" : "visibility:hidden"}>
-    <Box shadow="16px">
-        <div bind:this={article_element} id="article" />
-    </Box>
+    <div bind:this={article_element} id="article" />
 </div>
 
 <style lang="scss">
     #container {
         width: clamp(300px, 80vw, 900px);
         margin: 0 auto;
+        box-shadow: 0 0 16px rgba(0, 0, 0, 0.2);
+        border: 1px solid hsl(0, 0, 90%);
+        border-radius: 4px;
+        padding: 16px;
+        margin-top: 16px;
     }
 </style>

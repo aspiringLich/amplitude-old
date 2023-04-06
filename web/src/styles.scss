@@ -8,7 +8,7 @@
     src: url("$fonts/FiraCode-Regular.ttf");
 }
 
-p {
+html {
     font-family: "Noto Sans";
 }
 
@@ -18,7 +18,7 @@ h1 {
     font-family: "Fira Code";
     margin: calc(0.67em * $margin-factor) 0;
 
-    :after {
+    &:after {
         content: " ";
         display: block;
         border: 0.5px solid black;
