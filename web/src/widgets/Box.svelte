@@ -1,5 +1,5 @@
 <script lang="ts">
-    export let text: any;
+    export let text: any = "white";
     export let hue: number;
 </script>
 

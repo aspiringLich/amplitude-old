@@ -1,4 +1,6 @@
 <script lang="ts">
+    import Box from "../widgets/Box.svelte";
+
     export let id: string;
     export let course: string;
     export let article: string;
@@ -22,7 +24,7 @@
     let questions = fetchQuiz();
 </script>
 
-<div id="quiz" class="box">
+<Box hue={0}>
     {#await questions}
         <h3>Loading Quiz...</h3>
     {:then questions}
@@ -35,13 +37,7 @@
             </ul>
         {/each}
     {/await}
-</div>
+</Box>
 
 <style lang="scss">
-    #quiz {
-        :global(p) {
-            margin-top: 4px;
-            margin-bottom: 4px;
-        }
-    }
 </style>

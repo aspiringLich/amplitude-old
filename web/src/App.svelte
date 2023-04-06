@@ -20,12 +20,12 @@
 <style lang="scss">
     @font-face {
         font-family: "Noto Sans";
-        src: url("fonts/NotoSans-Regular.ttf");
+        src: url("$fonts/NotoSans-Regular.ttf");
     }
 
     @font-face {
         font-family: "Fira Code";
-        src: url("fonts/FiraCode-Regular.ttf");
+        src: url("$fonts/FiraCode-Regular.ttf");
     }
 
     :global(p) {
