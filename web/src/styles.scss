@@ -1,0 +1,46 @@
+@font-face {
+    font-family: "Noto Sans";
+    src: url("$fonts/NotoSans-Regular.ttf");
+}
+
+@font-face {
+    font-family: "Fira Code";
+    src: url("$fonts/FiraCode-Regular.ttf");
+}
+
+p {
+    font-family: "Noto Sans";
+}
+
+$margin-factor: 0.5;
+
+h1 {
+    font-family: "Fira Code";
+    margin: calc(0.67em * $margin-factor) 0;
+
+    :after {
+        content: " ";
+        display: block;
+        border: 0.5px solid black;
+    }
+}
+
+h2 {
+    font-family: "Fira Code";
+    margin: calc(0.75em * $margin-factor) 0;
+}
+
+h3 {
+    font-family: "Fira Code";
+    margin: calc(0.83em * $margin-factor) 0;
+}
+
+h4 {
+    font-family: "Fira Code";
+    margin: calc(1.12em * $margin-factor) 0;
+}
+
+h5 {
+    font-family: "Fira Code";
+    margin: calc(1.5em * $margin-factor) 0;
+}

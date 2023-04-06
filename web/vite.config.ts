@@ -19,7 +19,9 @@ export default defineConfig({
     ],
     resolve: {
         alias: {
-            $fonts: resolve("./static/assets/fonts")
+            $static: resolve("./static"),
+            $assets: resolve("./static/assets"),
+            $fonts: resolve("./static/assets/fonts"),
         }
     }
 });

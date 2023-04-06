@@ -4,6 +4,7 @@
 
     import { type ComponentType, onMount } from "svelte";
     import Quiz from "./Quiz.svelte";
+    import Box from "../widgets/Box.svelte";
 
     let article_element: Element;
 
@@ -46,13 +47,26 @@
             });
         }
     }
-
+    
+    let get = false;
     onMount(() => {
         fetchDocument().then((doc) => {
             renderComponent(doc, "Quiz", Quiz);
+            get = true;
             article_element.replaceChildren(...doc.body.childNodes);
         });
     });
 </script>
 
-<div bind:this={article_element} id="article" />
+<div id="container" style={get ? "" : "visibility:hidden"}>
+    <Box shadow="16px">
+        <div bind:this={article_element} id="article" />
+    </Box>
+</div>
+
+<style lang="scss">
+    #container {
+        width: clamp(300px, 80vw, 900px);
+        margin: 0 auto;
+    }
+</style>

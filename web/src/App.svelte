@@ -17,22 +17,6 @@
     <Route fallback><NotFound /></Route>
 </main>
 
-<style lang="scss">
-    @font-face {
-        font-family: "Noto Sans";
-        src: url("$fonts/NotoSans-Regular.ttf");
-    }
-
-    @font-face {
-        font-family: "Fira Code";
-        src: url("$fonts/FiraCode-Regular.ttf");
-    }
-
-    :global(p) {
-        font-family: "Noto Sans";
-    }
-
-    :global(h1, h2, h3, h4, h5, h6) {
-        font-family: "Fira Code";
-    }
+<style global lang="scss">
+    @use "styles.scss"
 </style>
