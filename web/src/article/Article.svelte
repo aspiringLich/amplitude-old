@@ -32,7 +32,7 @@
     let init = false;
 
     let body_element: Element;
-    let children: ChildNode[] = [];
+    let children: NodeListOf<ChildNode>;
     onMount(() => {
         fetchDocument().then((doc) => {
             let title = doc.body.firstElementChild;
@@ -47,31 +47,15 @@
             renderComponent(doc.body, "Quiz", Quiz, { course, article });
             renderComponents(doc.body, { course, article });
 
-            while (doc.body.firstChild != null) {
-                let child: any;
-                do {
-                    child = document.body.removeChild(document.body.firstChild);
-                    // console.log(child);
-                } while (
-                    child.nodeName == "TEXT" &&
-                    (child.data != undefined || child.data.trim() == "")
-                );
-                children.push(child as ChildNode);
-            }
+            children = doc.body.childNodes;
 
             init = true;
         });
     });
 
-    let n = 0;
     // transfers a single element from the document to `article_element`
-    function transferSingle() {
-        // console.log(children);
-        setTimeout(() => {
-            n++;
-            if (n < children.length) return;
-            transferSingle();
-        }, 50);
+    function transfer() {
+        body_element.replaceChildren(...children);
     }
 </script>
 
@@ -80,12 +64,11 @@
         <div
             id="container"
             in:fly={{ y: -100, easing: quadInOut, duration: 800 }}
-            on:introend={transferSingle}
+            on:introstart={transfer}
         >
             <h1>{heading}</h1>
             <div
                 id="body"
-                in:fly|local={{ y: -10, easing: quadInOut }}
                 bind:this={body_element}
             />
         </div>
