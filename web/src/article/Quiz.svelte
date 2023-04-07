@@ -1,9 +1,6 @@
 <script lang="ts">
-    import { threadId } from "worker_threads";
     import Button from "../widgets/Button.svelte";
-    import hljs from "highlight.js/lib/common";
     import { afterUpdate } from "svelte";
-    import { fade } from "svelte/transition";
     import { renderComponents } from "./article";
 
     export let id: string;
@@ -22,14 +19,15 @@
                 article,
             }),
         });
+        if (!a.ok) {
+            throw new Error("failed to fetch quiz");
+        }
 
         return a.json();
     }
     let flex_direction = "row";
-
     let questions = fetchQuiz().then((q) => q.questions);
     let n = -1;
-
     let container_element: HTMLElement;
 
     let prev_n = n;
@@ -54,10 +52,32 @@
     let answers = {};
 </script>
 
-{#await questions then questions}
+<!-- THIS CODE IS A MESS! -->
+
+{#await questions}
     <div
         id="quiz"
-        in:fade
+        style:--flex-direction={flex_direction}
+        style:--max-width={flex_direction == "row" ? "50%" : "100%"}
+    >
+        <div id="start">
+            <Button
+                hue={120}
+                sat={50}
+                onclick={() => {
+                    n++;
+                }}
+                disabled={true}
+            >
+                Start Quiz
+            </Button>
+            <h2>Quiz</h2>
+            <h4>Loading...</h4>
+        </div>
+    </div>
+{:then questions}
+    <div
+        id="quiz"
         style:--flex-direction={flex_direction}
         style:--max-width={flex_direction == "row" ? "50%" : "100%"}
     >
@@ -81,43 +101,53 @@
             </div>
         {:else if n < questions.length}
             <div id="buttons">
-                <Button
-                    hue={120}
-                    sat={50}
-                    disabled={n == 0}
-                    onclick={() => {
-                        n--;
-                        selected = answers[n];
-                    }}>&lt; Back</Button
-                >
-                <Button
-                    hue={120}
-                    sat={50}
-                    onclick={() => {
-                        n = -1;
-                        prev_n = -1;
-                        selected = undefined;
-                        answers = {};
-                    }}>Reset</Button
-                >
-                {#if answers[n] == undefined}
+                <div>
                     <Button
                         hue={120}
                         sat={50}
-                        disabled={!submit_enabled}
-                        onclick={() => (answers[n] = selected)}>Submit</Button
-                    >
-                {:else}
-                    <Button
-                        hue={120}
-                        sat={50}
-                        disabled={n + 1 == questions.length}
+                        disabled={n == 0}
                         onclick={() => {
-                            n++;
+                            n--;
                             selected = answers[n];
-                        }}>Next &gt;</Button
-                    >
-                {/if}
+                        }}
+                        >&lt; Back
+                    </Button>
+                </div>
+                <div>
+                    <Button
+                        hue={120}
+                        sat={50}
+                        onclick={() => {
+                            n = -1;
+                            prev_n = -1;
+                            selected = undefined;
+                            answers = {};
+                        }}
+                        >Reset
+                    </Button>
+                </div>
+                <div>
+                    {#if answers[n] == undefined}
+                        <Button
+                            hue={120}
+                            sat={50}
+                            disabled={!submit_enabled}
+                            onclick={() => (answers[n] = selected)}
+                            >Submit
+                        </Button>
+                    {:else}
+                        <Button
+                            hue={120}
+                            sat={50}
+                            disabled={n + 1 == questions.length}
+                            onclick={() => {
+                                n++;
+                                selected = answers[n];
+                            }}
+                            >Next &gt;
+                        </Button>
+                    {/if}
+                </div>
             </div>
             <h3 style:margin-left="16px">Question {n + 1}</h3>
             <div id="container" bind:this={container_element}>
@@ -184,8 +214,24 @@
 
     #buttons {
         display: flex;
-        justify-content: space-between;
+        justify-content: stretch;
         padding: 8px 16px;
+
+        div {
+            display: flex;
+            flex: 1;
+            &:nth-child(1) {
+                justify-content: start;
+            }
+
+            &:nth-child(2) {
+                justify-content: center;
+            }
+
+            &:nth-child(3) {
+                justify-content: end;
+            }
+        }
     }
 
     #input {

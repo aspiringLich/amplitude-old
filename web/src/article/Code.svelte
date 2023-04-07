@@ -1,14 +1,17 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import hijs from "highlight.js/lib/common";
+    import { fade } from "svelte/transition";
+    import Icon from "../widgets/Icon.svelte";
 
     // import assert from "assert";
 
     let pre_element: HTMLElement;
     let lines_element: HTMLElement;
+    let code: HTMLElement;
 
     onMount(() => {
-        let code = pre_element.firstElementChild;
+        code = pre_element.firstElementChild as HTMLElement;
         code.classList.add("nglobal");
         console.assert(code.tagName == "CODE", code);
 
@@ -25,14 +28,39 @@
         lines_element.innerHTML = line_string;
         hijs.highlightElement(code as HTMLElement);
     });
+
+    let copy_button = false;
+
+    function copy() {
+        navigator.clipboard.writeText(code.innerText);
+    }
 </script>
 
-<div id="container" class="hljs">
-    <code id="lines" bind:this={lines_element} />
-    <pre bind:this={pre_element}><slot /></pre>
+<div
+    style:position="relative"
+    on:mouseenter={() => (copy_button = true)}
+    on:mouseleave={() => (copy_button = false)}
+>
+    <div id="container" class="hljs">
+        <code id="lines" bind:this={lines_element} />
+        <pre bind:this={pre_element}><slot /></pre>
+    </div>
+    {#if copy_button}
+        <div id="copy" transition:fade={{ delay: 500, duration: 400 }}>
+            <Icon type="button" args={{ onclick: copy }} background="#ffffffff"
+                >content_copy</Icon
+            >
+        </div>
+    {/if}
 </div>
 
 <style lang="scss">
+    #copy {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+    }
+
     #container {
         display: flex;
         flex-direction: row;
@@ -49,15 +77,16 @@
             padding: 1em 0.5em;
             display: block;
             border-right: 1px solid rgba(255, 255, 255, 0.5);
+            
+            user-select: none;
         }
-        
+
         :global(code) {
             font-family: "Jet Brains Mono";
             line-height: 1.1em;
             font-size: 0.85em;
         }
     }
-    
 
     pre {
         margin: 0;

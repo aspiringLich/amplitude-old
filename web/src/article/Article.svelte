@@ -5,6 +5,8 @@
     import { type ComponentType, onMount } from "svelte";
     import Quiz from "./Quiz.svelte";
     import { renderComponents, renderComponent } from "./article";
+    import { fly } from "svelte/transition";
+    import { quadInOut } from "svelte/easing";
 
     // create a Document from the html str
     async function fetchDocument() {
@@ -18,30 +20,78 @@
                 article,
             }),
         });
-        // if (!a.ok) {
-        //     throw new Error("Failed to fetch article");
-        // }
+        if (!a.ok) {
+            throw new Error("failed to fetch article");
+        }
+
         let parser = new DOMParser();
         return parser.parseFromString(await a.text(), "text/html");
     }
 
-    let article_element: Element;
-    let container_element: HTMLElement;
+    let heading = "";
+    let init = false;
+
+    let body_element: Element;
+    let children: ChildNode[] = [];
     onMount(() => {
         fetchDocument().then((doc) => {
+            let title = doc.body.firstElementChild;
+            console.assert(
+                title.tagName == "H1",
+                "loaded article does not have <h1> as its first element",
+                title
+            );
+            heading = title.textContent;
+            doc.body.removeChild(title);
+
             renderComponent(doc.body, "Quiz", Quiz, { course, article });
             renderComponents(doc.body, { course, article });
-            article_element.replaceChildren(...doc.body.childNodes);
 
-            container_element.style.visibility = "visible";
+            while (doc.body.firstChild != null) {
+                let child: any;
+                do {
+                    child = document.body.removeChild(document.body.firstChild);
+                    // console.log(child);
+                } while (
+                    child.nodeName == "TEXT" &&
+                    (child.data != undefined || child.data.trim() == "")
+                );
+                children.push(child as ChildNode);
+            }
+
+            init = true;
         });
     });
+
+    let n = 0;
+    // transfers a single element from the document to `article_element`
+    function transferSingle() {
+        // console.log(children);
+        setTimeout(() => {
+            n++;
+            if (n < children.length) return;
+            transferSingle();
+        }, 50);
+    }
 </script>
 
-<div id="container" bind:this={container_element} style:visibility="hidden">
-    <div bind:this={article_element} id="article" />
+<div id="article">
+    {#if init}
+        <div
+            id="container"
+            in:fly={{ y: -100, easing: quadInOut, duration: 800 }}
+            on:introend={transferSingle}
+        >
+            <h1>{heading}</h1>
+            <div
+                id="body"
+                in:fly|local={{ y: -10, easing: quadInOut }}
+                bind:this={body_element}
+            />
+        </div>
+    {/if}
+    <div style:height="50vh" />
 </div>
-<div style:height="50vh" />
 
 <style lang="scss">
     #container {
@@ -52,16 +102,16 @@
         border-radius: 10px;
         padding: 16px;
         margin-top: 16px;
-        
-        :global(h1) {
-            font-size: 3em;
-            line-height: 100%;
-            
-            &:after {
-                content: " ";
-                display: block;
-                border: 1px dashed black;
-            }
+    }
+
+    h1 {
+        font-size: 3em;
+        line-height: 100%;
+
+        &:after {
+            content: " ";
+            display: block;
+            border: 1px dashed black;
         }
     }
 </style>
