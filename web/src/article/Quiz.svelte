@@ -27,17 +27,19 @@
     let questions = fetchQuiz().then((q) => q.questions);
     let n = -1;
 
-    let text;
+    let container_element;
 
     afterUpdate(() => {
         highlight();
     });
-    
+
     function highlight() {
-        if (text == undefined) return;
-        text.querySelectorAll("pre code:not(.hljs)").forEach((el: HTMLElement) => {
-            hljs.highlightElement(el);
-        });
+        if (container_element == undefined) return;
+        container_element
+            .querySelectorAll("pre code:not(.hljs)")
+            .forEach((el: HTMLElement) => {
+                hljs.highlightElement(el);
+            });
     }
 
     let selected = undefined;
@@ -106,18 +108,21 @@
                     >
                 {/if}
             </div>
-            <div id="container">
-                <div id="left" bind:this={text}>
+            <div id="container" bind:this={container_element}>
+                <div id="left">
                     <h3>Question {n + 1}</h3>
                     {@html questions[n].question}
                 </div>
                 <div id="right">
                     {#each questions[n].answers as answer, i}
+                        {@const exists = answers[n] != undefined}
                         <div
                             id="input"
                             on:keypress
-                            on:click={() =>
-                                (selected = selected != i ? i : undefined)}
+                            on:click={() => {
+                                if (!exists)
+                                    selected = selected != i ? i : undefined;
+                            }}
                             class={answers[n] == undefined
                                 ? ""
                                 : answer.correct === true
@@ -129,10 +134,11 @@
                                 bind:group={selected}
                                 name={n.toString()}
                                 value={i}
+                                disabled={exists}
                             />
                             <label for={n.toString()}>
                                 {@html answer.text}
-                                {#if answers[n] != undefined}
+                                {#if exists}
                                     <br />
                                     {answer.correct === true
                                         ? "✔ Correct: "
@@ -194,11 +200,11 @@
             color: hsl(0, 50%, 50%);
         }
 
-        &:hover {
+        &:hover:not(.correct):not(.incorrect) {
             filter: saturate(0.97) brightness(1.015);
         }
 
-        &:active {
+        &:active:not(.correct):not(.incorrect) {
             filter: saturate(0.9) brightness(0.98);
         }
     }
@@ -217,6 +223,7 @@
         height: 100%;
         padding: 0px 16px;
         flex: 1;
+        max-width: 50%;
     }
 
     #right {
