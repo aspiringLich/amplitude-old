@@ -4,9 +4,7 @@
 
     import { type ComponentType, onMount } from "svelte";
     import Quiz from "./Quiz.svelte";
-    import { highlight } from "../main";
-
-    let article_element: Element;
+    import { renderComponents, renderComponent } from "./article";
 
     // create a Document from the html str
     async function fetchDocument() {
@@ -27,41 +25,20 @@
         return parser.parseFromString(await a.text(), "text/html");
     }
 
-    function renderComponent(
-        doc: Document,
-        query: string,
-        type: ComponentType
-    ) {
-        let components = doc.querySelectorAll(query);
-        for (const item of components) {
-            let props = {
-                course,
-                article,
-            };
-            for (const attr of item.attributes) {
-                props[attr.name] = attr.value;
-            }
-            new type({
-                target: item,
-                props,
-            });
-        }
-    }
-
-    let get = false;
+    let article_element: Element;
+    let container_element: HTMLElement;
     onMount(() => {
         fetchDocument().then((doc) => {
-            renderComponent(doc, "Quiz", Quiz);
-
-            get = true;
+            renderComponent(doc.body, "Quiz", Quiz, { course, article });
+            renderComponents(doc.body, { course, article });
             article_element.replaceChildren(...doc.body.childNodes);
 
-            highlight(document);
+            container_element.style.visibility = "visible";
         });
     });
 </script>
 
-<div id="container" style={get ? "" : "visibility:hidden"}>
+<div id="container" bind:this={container_element} style:visibility="hidden">
     <div bind:this={article_element} id="article" />
 </div>
 <div style:height="50vh" />

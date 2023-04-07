@@ -42,8 +42,9 @@ Consider the following code:
 
     fn main() {
         println!("Hello, world!");
-        let in = io::stdin().read_line(&mut String::new()).unwrap();
-        println!("You said: {}", in);
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).unwrap();
+        println!("You said: {input}");
     }
 
 If i run this code, and type `a`, what will be printed?

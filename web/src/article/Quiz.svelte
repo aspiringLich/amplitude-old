@@ -4,7 +4,7 @@
     import hljs from "highlight.js/lib/common";
     import { afterUpdate } from "svelte";
     import { fade } from "svelte/transition";
-    import { highlight } from "../main";
+    import { renderComponents } from "./article";
 
     export let id: string;
     export let course: string;
@@ -29,7 +29,7 @@
     let questions = fetchQuiz().then((q) => q.questions);
     let n = -1;
 
-    let container_element;
+    let container_element: HTMLElement;
 
     afterUpdate(() => {
         hl();
@@ -37,7 +37,7 @@
 
     function hl() {
         if (container_element == undefined) return;
-        highlight(container_element);
+        renderComponents(container_element);
     }
 
     let selected = undefined;
@@ -105,7 +105,7 @@
                     >
                 {/if}
             </div>
-            <h3 style:margin-left=16px>Question {n + 1}</h3>
+            <h3 style:margin-left="16px">Question {n + 1}</h3>
             <div id="container" bind:this={container_element}>
                 <div id="left">
                     {@html questions[n].question}
@@ -205,7 +205,7 @@
             filter: saturate(0.9) brightness(0.98);
         }
     }
-    
+
     h3 {
         margin: 0;
     }
