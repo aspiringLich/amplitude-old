@@ -30,15 +30,14 @@
     let n = -1;
 
     let container_element: HTMLElement;
-
+    
+    let prev_n = n;
     afterUpdate(() => {
-        hl();
-    });
-
-    function hl() {
         if (container_element == undefined) return;
+        if (prev_n == n) return;
+        prev_n = n;
         renderComponents(container_element);
-    }
+    });
 
     let selected = undefined;
     $: submit_enabled = selected != undefined;

@@ -70,9 +70,12 @@ export function renderComponent(
         for (const prop in extra_props) {
             props[prop] = extra_props[prop];
         }
+        let slots = target.childNodes.length > 0;
 
-        props["$$slots"] = createSlots({ default: [target, { $$scope: {} }] });
-        props["$$scope"] = {};
+        if (slots) {
+            props["$$slots"] = createSlots({ default: [...target.childNodes, { $$scope: {} }] });
+            props["$$scope"] = {};
+        }
 
         let c = new type({
             target: target.parentElement,
