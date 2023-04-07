@@ -3,6 +3,8 @@
     import Button from "../widgets/Button.svelte";
     import hljs from "highlight.js/lib/common";
     import { afterUpdate } from "svelte";
+    import { fade } from "svelte/transition";
+    import { highlight } from "../main";
 
     export let id: string;
     export let course: string;
@@ -27,17 +29,15 @@
     let questions = fetchQuiz().then((q) => q.questions);
     let n = -1;
 
-    let text;
+    let container_element;
 
     afterUpdate(() => {
-        highlight();
+        hl();
     });
-    
-    function highlight() {
-        if (text == undefined) return;
-        text.querySelectorAll("pre code:not(.hljs)").forEach((el: HTMLElement) => {
-            hljs.highlightElement(el);
-        });
+
+    function hl() {
+        if (container_element == undefined) return;
+        highlight(container_element);
     }
 
     let selected = undefined;
@@ -46,10 +46,8 @@
     let answers = {};
 </script>
 
-{#await questions}
-    <h3>Loading Quiz...</h3>
-{:then questions}
-    <div id="quiz">
+{#await questions then questions}
+    <div id="quiz" in:fade>
         {#if n == -1}
             <div id="start">
                 <Button
@@ -73,6 +71,7 @@
                 <Button
                     hue={120}
                     sat={50}
+                    disabled={n == 0}
                     onclick={() => {
                         n--;
                         selected = answers[n];
@@ -106,19 +105,22 @@
                     >
                 {/if}
             </div>
-            <div id="container">
-                <div id="left" bind:this={text}>
-                    <h3>Question {n + 1}</h3>
+            <h3 style:margin-left=16px>Question {n + 1}</h3>
+            <div id="container" bind:this={container_element}>
+                <div id="left">
                     {@html questions[n].question}
                 </div>
                 <div id="right">
                     {#each questions[n].answers as answer, i}
+                        {@const exists = answers[n] != undefined}
                         <div
                             id="input"
                             on:keypress
-                            on:click={() =>
-                                (selected = selected != i ? i : undefined)}
-                            class={answers[n] == undefined
+                            on:click={() => {
+                                if (!exists)
+                                    selected = selected != i ? i : undefined;
+                            }}
+                            class={!exists
                                 ? ""
                                 : answer.correct === true
                                 ? "correct"
@@ -129,10 +131,11 @@
                                 bind:group={selected}
                                 name={n.toString()}
                                 value={i}
+                                disabled={exists}
                             />
                             <label for={n.toString()}>
                                 {@html answer.text}
-                                {#if answers[n] != undefined}
+                                {#if exists}
                                     <br />
                                     {answer.correct === true
                                         ? "✔ Correct: "
@@ -194,13 +197,17 @@
             color: hsl(0, 50%, 50%);
         }
 
-        &:hover {
+        &:hover:not(.correct):not(.incorrect) {
             filter: saturate(0.97) brightness(1.015);
         }
 
-        &:active {
+        &:active:not(.correct):not(.incorrect) {
             filter: saturate(0.9) brightness(0.98);
         }
+    }
+    
+    h3 {
+        margin: 0;
     }
 
     #container {
@@ -217,6 +224,7 @@
         height: 100%;
         padding: 0px 16px;
         flex: 1;
+        max-width: 50%;
     }
 
     #right {

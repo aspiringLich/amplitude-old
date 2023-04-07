@@ -9,7 +9,7 @@
 <head>
     <link
         rel="stylesheet"
-        href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css"
+        href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/agate.min.css"
     />
 </head>
 
@@ -25,5 +25,5 @@
 </main>
 
 <style global lang="scss">
-    @use "styles.scss";
+    @import "styles.scss";
 </style>

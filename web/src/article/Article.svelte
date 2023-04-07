@@ -4,7 +4,7 @@
 
     import { type ComponentType, onMount } from "svelte";
     import Quiz from "./Quiz.svelte";
-    import hljs from "highlight.js/lib/common";
+    import { highlight } from "../main";
 
     let article_element: Element;
 
@@ -56,9 +56,7 @@
             get = true;
             article_element.replaceChildren(...doc.body.childNodes);
 
-            document.querySelectorAll("pre code").forEach((el: HTMLElement) => {
-                hljs.highlightElement(el);
-            });
+            highlight(document);
         });
     });
 </script>

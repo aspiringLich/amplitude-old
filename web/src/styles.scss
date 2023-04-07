@@ -8,6 +8,11 @@
     src: url("$fonts/FiraCode-Regular.ttf");
 }
 
+@font-face {
+    font-family: "Jet Brains Mono";
+    src: url("$fonts/JetBrainsMonoNL-Regular.ttf");
+}
+
 html {
     font-family: "Noto Sans";
     line-height: 150%;
@@ -45,4 +50,32 @@ h4 {
 h5 {
     font-family: "Fira Code";
     margin: calc(1.5em * $margin-factor) 0;
+}
+
+code {
+    font-family: "Jet Brains Mono";
+    line-height: 1.1em;
+    font-size: 0.9em;
+border-radius: 0.3em;
+}
+
+:not(pre) > code {
+    background-color: rgba(0, 0, 0, 0.1);
+    padding: 0.2em 0.4em;
+}
+
+.code-lines-container {
+    display: flex;
+    flex-direction: row;
+
+    font-family: "Jet Brains Mono";
+    line-height: 1.1em;
+    font-size: 0.9em;
+    border-radius: 0.3em;
+
+    .line-count {
+        padding: 1em 0.5em;
+        display: block;
+        border-right: 1px solid rgba(255, 255, 255, 0.5);
+    }
 }

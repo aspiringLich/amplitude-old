@@ -23,5 +23,10 @@ export default defineConfig({
             $assets: resolve("./static/assets"),
             $fonts: resolve("./static/assets/fonts"),
         }
+    },
+    build: {
+        watch: {
+            include: ["../src/**/*.scss"],
+        }
     }
 });
