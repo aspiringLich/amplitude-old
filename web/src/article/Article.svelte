@@ -52,5 +52,16 @@
         border-radius: 10px;
         padding: 16px;
         margin-top: 16px;
+        
+        :global(h1) {
+            font-size: 3em;
+            line-height: 100%;
+            
+            &:after {
+                content: " ";
+                display: block;
+                border: 1px dashed black;
+            }
+        }
     }
 </style>

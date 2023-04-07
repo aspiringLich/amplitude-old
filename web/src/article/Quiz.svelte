@@ -25,12 +25,13 @@
 
         return a.json();
     }
+    let flex_direction = "row";
 
     let questions = fetchQuiz().then((q) => q.questions);
     let n = -1;
 
     let container_element: HTMLElement;
-    
+
     let prev_n = n;
     afterUpdate(() => {
         if (container_element == undefined) return;
@@ -39,6 +40,14 @@
         renderComponents(container_element);
     });
 
+    onresize = () => {
+        if (window.innerWidth < 800) {
+            flex_direction = "column";
+        } else {
+            flex_direction = "row";
+        }
+    };
+
     let selected = undefined;
     $: submit_enabled = selected != undefined;
 
@@ -46,7 +55,12 @@
 </script>
 
 {#await questions then questions}
-    <div id="quiz" in:fade>
+    <div
+        id="quiz"
+        in:fade
+        style:--flex-direction={flex_direction}
+        style:--max-width={flex_direction == "row" ? "50%" : "100%"}
+    >
         {#if n == -1}
             <div id="start">
                 <Button
@@ -81,6 +95,7 @@
                     sat={50}
                     onclick={() => {
                         n = -1;
+                        prev_n = -1;
                         selected = undefined;
                         answers = {};
                     }}>Reset</Button
@@ -212,8 +227,8 @@
     #container {
         height: calc(100% - 2em);
         display: flex;
-        column-count: 2;
-        flex-direction: row;
+        // column-count: 2;
+        flex-direction: var(--flex-direction);
         flex-grow: 0;
         flex-shrink: 0;
         flex-basis: 50%;
@@ -223,7 +238,8 @@
         height: 100%;
         padding: 0px 16px;
         flex: 1;
-        max-width: 50%;
+        box-sizing: border-box;
+        max-width: var(--max-width);
     }
 
     #right {
