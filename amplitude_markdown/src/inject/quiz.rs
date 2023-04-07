@@ -35,8 +35,15 @@ pub(super) fn inject_quiz<'a>(
             for question in quiz.questions.iter_mut() {
                 question.question = parse(article, &question.question, refs, state)?;
                 for answer in question.answers.iter_mut() {
-                    answer.text = parse(article, &answer.text, refs, state)?;
-                    answer.response = parse(article, &answer.response, refs, state)?;
+                    answer.text = parse(article, &answer.text, refs, state)?
+                        .strip_prefix("<p>")
+                        .and_then(|s| s.strip_suffix("</p>\n"))
+                        .context("Expected <p> tags on quiz answer")?
+                        .to_string();
+                    answer.response = parse(article, &answer.response, refs, state)?.strip_prefix("<p>")
+                        .and_then(|s| s.strip_suffix("</p>\n"))
+                        .context("Expected <p> tags on quiz response")?
+                        .to_string();
                 }
             }
             let key = (

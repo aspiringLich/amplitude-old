@@ -3,25 +3,34 @@
     export let sat = 0;
     export let val = 100;
     export let onclick = () => {};
+    export let disabled = false;
 
-    function hsl(valFactor: number) {
-        return `hsl(${hue}, ${sat}%, ${val * valFactor}%)`;
+    let color;
+    let border;
+    let hover;
+    let text;
+    
+    $: {
+        function hsl(valFactor: number) {
+            return `hsl(${hue}, ${disabled ? 0 : sat}%, ${val * valFactor}%)`;
+        }
+        
+        color = hsl(0.95);
+        border = hsl(0.9);
+        hover = hsl(0.97);
+        text = hsl(0.5);
     }
-    let color = hsl(0.95);
-    let border = hsl(0.9);
-    let hover = hsl(0.97);
-    let text = hsl(0.5);
 </script>
 
 <div
     class="button"
     style:border="1.5px solid {border}"
     style:--color={color}
-    style:--hover={hover}
-    style:--click={border}
+    style:--hover={disabled ? color : hover}
+    style:--click={disabled ? color : border}
     style:color={text}
-    on:click={onclick}
-    on:keydown="{event => event.key == 'Enter' && onclick}"
+    on:click={() => !disabled && onclick()}
+    on:keydown={(event) => event.key == "Enter" && onclick}
 >
     <slot />
 </div>
@@ -33,7 +42,7 @@
         text-decoration: none;
         border-radius: 4px;
         user-select: none;
-        transition: 0.15s;
+        // transition: 0.15s;
         background: var(--color);
 
         &:hover {

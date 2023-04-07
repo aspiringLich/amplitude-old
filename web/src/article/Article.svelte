@@ -61,13 +61,14 @@
 <div id="container" style={get ? "" : "visibility:hidden"}>
     <div bind:this={article_element} id="article" />
 </div>
+<div style:height="50vh"></div>
 
 <style lang="scss">
     #container {
         width: clamp(300px, 80vw, 900px);
         margin: 0 auto;
         box-shadow: 0 0 16px rgba(0, 0, 0, 0.2);
-        border: 1px solid hsl(0, 0, 90%);
+        border: 1px solid hsl(0, 0%, 90%);
         border-radius: 4px;
         padding: 16px;
         margin-top: 16px;
