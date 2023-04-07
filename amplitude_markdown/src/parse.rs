@@ -86,7 +86,7 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseSta
         },
         parse: default(),
         render: ComrakRenderOptions {
-            github_pre_lang: true,
+            github_pre_lang: false,
             full_info_string: true,
             unsafe_: true,
             hardbreaks: false,

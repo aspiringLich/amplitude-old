@@ -5,16 +5,16 @@
     export let onclick = () => {};
     export let disabled = false;
 
-    let color;
-    let border;
-    let hover;
-    let text;
-    
+    let color: string;
+    let border: string;
+    let hover: string;
+    let text: string;
+
     $: {
         function hsl(valFactor: number) {
             return `hsl(${hue}, ${disabled ? 0 : sat}%, ${val * valFactor}%)`;
         }
-        
+
         color = hsl(0.95);
         border = hsl(0.9);
         hover = hsl(0.97);

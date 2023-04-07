@@ -21,6 +21,7 @@ h1 {
 
     &:after {
         content: " ";
+        transform: translateY(4px);
         display: block;
         border: 0.5px solid black;
     }

@@ -1,7 +1,8 @@
 <script lang="ts">
+    import { threadId } from "worker_threads";
     import Button from "../widgets/Button.svelte";
-    import { fly } from "svelte/transition";
-    import { quadInOut } from "svelte/easing";
+    import hljs from "highlight.js/lib/common";
+    import { afterUpdate } from "svelte";
 
     export let id: string;
     export let course: string;
@@ -26,6 +27,19 @@
     let questions = fetchQuiz().then((q) => q.questions);
     let n = -1;
 
+    let text;
+
+    afterUpdate(() => {
+        highlight();
+    });
+    
+    function highlight() {
+        if (text == undefined) return;
+        text.querySelectorAll("pre code:not(.hljs)").forEach((el: HTMLElement) => {
+            hljs.highlightElement(el);
+        });
+    }
+
     let selected = undefined;
     $: submit_enabled = selected != undefined;
 
@@ -38,7 +52,13 @@
     <div id="quiz">
         {#if n == -1}
             <div id="start">
-                <Button hue={120} sat={50} onclick={() => n++}>
+                <Button
+                    hue={120}
+                    sat={50}
+                    onclick={() => {
+                        n++;
+                    }}
+                >
                     Start Quiz
                 </Button>
                 <h2>Quiz</h2>
@@ -87,7 +107,7 @@
                 {/if}
             </div>
             <div id="container">
-                <div id="left">
+                <div id="left" bind:this={text}>
                     <h3>Question {n + 1}</h3>
                     {@html questions[n].question}
                 </div>
@@ -195,7 +215,7 @@
 
     #left {
         height: 100%;
-        padding: 8px 16px;
+        padding: 0px 16px;
         flex: 1;
     }
 

@@ -8,6 +8,12 @@ Id neque aliquam vestibulum morbi blandit cursus risus at. Faucibus vitae alique
 
 Pharetra et ultrices neque ornare aenean euismod elementum nisi. Mi sit amet mauris commodo. Blandit cursus risus at ultrices mi tempus.
 
+```rust
+fn main() {
+    println!("Hello, world!");
+}
+```
+
 [test]: https://test.com
 
 [test+/test]
@@ -21,20 +27,25 @@ sajokjf
 @quiz id=best_letter
 ```toml
 [[questions]]
-question = """
-We are gaming
-
-gamig
-
-gamig 2.0
-~~~
-we are GAMING
-~~~
-"""
 answers = [
     {text = "a", response = "woo", correct = true},
     {text = "b", response = "woo"},
     {text = "c", response = "woo"},
     {text = "d", response = "woo"},
 ]
+question = """
+Consider the following code:
+
+@code rust
+
+    use std::io;
+
+    fn main() {
+        println!("Hello, world!");
+        let in = io::stdin().read_line(&mut String::new()).unwrap();
+        println!("You said: {}", in);
+    }
+
+If i run this code, and type `a`, what will be printed?
+"""
 ```

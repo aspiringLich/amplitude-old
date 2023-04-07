@@ -6,6 +6,13 @@
     import Article from "./article/Article.svelte";
 </script>
 
+<head>
+    <link
+        rel="stylesheet"
+        href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css"
+    />
+</head>
+
 <main>
     <Route path="/"><Home /></Route>
     <Route path="/article/:course/:article" let:meta>
@@ -18,5 +25,5 @@
 </main>
 
 <style global lang="scss">
-    @use "styles.scss"
+    @use "styles.scss";
 </style>

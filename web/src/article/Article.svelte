@@ -4,7 +4,7 @@
 
     import { type ComponentType, onMount } from "svelte";
     import Quiz from "./Quiz.svelte";
-    import Box from "../widgets/Box.svelte";
+    import hljs from "highlight.js/lib/common";
 
     let article_element: Element;
 
@@ -52,8 +52,13 @@
     onMount(() => {
         fetchDocument().then((doc) => {
             renderComponent(doc, "Quiz", Quiz);
+
             get = true;
             article_element.replaceChildren(...doc.body.childNodes);
+
+            document.querySelectorAll("pre code").forEach((el: HTMLElement) => {
+                hljs.highlightElement(el);
+            });
         });
     });
 </script>
@@ -61,7 +66,7 @@
 <div id="container" style={get ? "" : "visibility:hidden"}>
     <div bind:this={article_element} id="article" />
 </div>
-<div style:height="50vh"></div>
+<div style:height="50vh" />
 
 <style lang="scss">
     #container {
@@ -69,7 +74,7 @@
         margin: 0 auto;
         box-shadow: 0 0 16px rgba(0, 0, 0, 0.2);
         border: 1px solid hsl(0, 0%, 90%);
-        border-radius: 4px;
+        border-radius: 10px;
         padding: 16px;
         margin-top: 16px;
     }
