@@ -57,28 +57,71 @@
     function transfer() {
         body_element.replaceChildren(...children);
     }
+
+    let width = window.innerWidth;
+    $: right = width > 1000;
+    $: left = width > 700;
 </script>
 
-<div id="article">
+<svelte:window on:resize={() => (width = window.innerWidth)} />
+
+<div id="article" data-right={right} data-left={left}>
     {#if init}
+        <div id="left" />
         <div
             id="container"
             in:fly={{ y: -100, easing: quadInOut, duration: 800 }}
             on:introstart={transfer}
         >
             <h1>{heading}</h1>
-            <div
-                id="body"
-                bind:this={body_element}
-            />
+            <div id="body" bind:this={body_element} />
         </div>
+        {#if right}
+            <div id="right">
+                <h2>Outline</h2>
+            </div>
+        {/if}
     {/if}
-    <div style:height="50vh" />
 </div>
+<div style:height="50vh" />
 
 <style lang="scss">
+    $right_sidebar_width: 200px;
+    $left_sidebar_width: clamp(200px, 20%, 300px);
+
+    #left {
+        position: fixed;
+        float: left;
+        top: 5px;
+        left: 10px;
+        height: 100%;
+        width: $left_sidebar_width;
+    }
+
+    #right {
+        position: fixed;
+        top: 5px;
+        right: 10px;
+        float: right;
+        height: 100%;
+        width: $right_sidebar_width;
+    }
+
+    #article {
+        display: flex;
+        flex-direction: row;
+
+        &[data-right="true"] {
+            margin-right: $right_sidebar_width;
+        }
+
+        &[data-left="true"] {
+            margin-left: $left_sidebar_width;
+        }
+    }
+
     #container {
-        width: clamp(300px, 80vw, 900px);
+        width: clamp(300px, 90%, 900px);
         margin: 0 auto;
         box-shadow: 0 0 16px rgba(0, 0, 0, 0.2);
         border: 1px solid hsl(0, 0%, 90%);

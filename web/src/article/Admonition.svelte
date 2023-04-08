@@ -6,17 +6,17 @@
     import Icon from "../widgets/Icon.svelte";
 
     let types = {
-        note: { hue: 267 },
-        info: { hue: 194 },
-        warning: { hue: 53 },
-        success: { hue: 95, icon: "check_circle" },
-        failiure: { hue: 0, icon: "error" },
+        note: { color: "purple" },
+        info: { color: "blue" },
+        warning: { color: "yellow" },
+        success: { color: "green", icon: "check_circle" },
+        failiure: { color: "red", icon: "error" },
     };
     if (!(type in types)) throw new Error(`Unknown admonition type: ${type}`);
     let capitalized = type[0].toUpperCase() + type.slice(1);
 
-    let border_color = `hsl(${types[type].hue}, 80%, 50%)`;
-    let background_color = `hsl(${types[type].hue}, 100%, 95%)`;
+    let border_color = `var(--color-${types[type].color}-d1)`;
+    let background_color = `var(--color-${types[type].color}-l1)`;
 
     let body_element: HTMLElement;
     let l_padding = "1em";
@@ -24,7 +24,6 @@
         if (body_element.children.length == 1) {
             let child = body_element.firstChild?.firstChild
                 ?.firstChild as HTMLElement;
-            console.log(child?.nodeName);
             if (child != undefined && child.nodeName == "CODE") {
                 l_padding = "0";
             }

@@ -76,7 +76,6 @@ export function renderComponent(
         let slots = target.childNodes.length > 0;
 
         if (slots) {
-            // console.log(target.childNodes);
             props["$$slots"] = createSlots({ default: [...target.children, { $$scope: {} }] });
             props["$$scope"] = {};
         }

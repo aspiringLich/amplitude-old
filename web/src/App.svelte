@@ -29,5 +29,6 @@
 </main>
 
 <style global lang="scss">
-    @import "styles.scss";
+    @import "./styles.scss";
+    @import "./colors.scss";
 </style>

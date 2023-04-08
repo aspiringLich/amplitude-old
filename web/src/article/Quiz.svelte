@@ -1,11 +1,10 @@
 <script lang="ts">
-    import Button from "../widgets/Button.svelte";
-    import { afterUpdate } from "svelte";
-    import { renderComponents } from "./article";
-
     export let id: string;
     export let course: string;
     export let article: string;
+
+    import Button from "../widgets/Button.svelte";
+    import { renderComponents } from "./article";
 
     async function fetchQuiz() {
         const a = await fetch("/api/quiz", {
@@ -25,43 +24,40 @@
 
         return a.json();
     }
-    let flex_direction = "row";
     let questions = fetchQuiz().then((q) => q.questions);
     let n = -1;
     let container_element: HTMLElement;
-
-    let prev_n = n;
-    afterUpdate(() => {
-        if (container_element == undefined) return;
-        if (prev_n == n) return;
-        prev_n = n;
-        renderComponents(container_element);
-    });
-
-    onresize = () => {
-        if (window.innerWidth < 800) {
-            flex_direction = "column";
-        } else {
-            flex_direction = "row";
-        }
-    };
-
     let selected = undefined;
     $: submit_enabled = selected != undefined;
-
     let answers = {};
+
+    $: {
+        n;
+        if (container_element != undefined) {
+            renderComponents(container_element);
+        }
+    }
+
+    let quiz_element: HTMLElement;
+    let width;
+
+    $: flex_direction = width < 600 ? "column" : "row";
+    $: max_width = width < 600 ? "100%" : "50%";
 </script>
+
+<svelte:window on:resize={() => (width = quiz_element.clientWidth)} />
 
 {#await questions}
     <div
         id="quiz"
         style:--flex-direction={flex_direction}
-        style:--max-width={flex_direction == "row" ? "50%" : "100%"}
+        style:--max-width={max_width}
+        bind:this={quiz_element}
+        bind:clientWidth={width}
     >
         <div id="start">
             <Button
-                hue={120}
-                sat={50}
+                color="green"
                 onclick={() => {
                     n++;
                 }}
@@ -77,13 +73,13 @@
     <div
         id="quiz"
         style:--flex-direction={flex_direction}
-        style:--max-width={flex_direction == "row" ? "50%" : "100%"}
+        style:--max-width={max_width}
+        bind:this={quiz_element}
     >
         {#if n == -1}
             <div id="start">
                 <Button
-                    hue={120}
-                    sat={50}
+                    color="green"
                     onclick={() => {
                         n++;
                     }}
@@ -101,8 +97,7 @@
             <div id="buttons">
                 <div>
                     <Button
-                        hue={120}
-                        sat={50}
+                        color="green"
                         disabled={n == 0}
                         onclick={() => {
                             n--;
@@ -113,11 +108,9 @@
                 </div>
                 <div>
                     <Button
-                        hue={120}
-                        sat={50}
+                        color="green"
                         onclick={() => {
                             n = -1;
-                            prev_n = -1;
                             selected = undefined;
                             answers = {};
                         }}
@@ -127,16 +120,14 @@
                 <div>
                     {#if answers[n] == undefined}
                         <Button
-                            hue={120}
-                            sat={50}
+                            color="green"
                             disabled={!submit_enabled}
                             onclick={() => (answers[n] = selected)}
                             >Submit
                         </Button>
                     {:else}
                         <Button
-                            hue={120}
-                            sat={50}
+                            color="green"
                             disabled={n + 1 == questions.length}
                             onclick={() => {
                                 n++;
