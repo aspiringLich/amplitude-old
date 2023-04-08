@@ -233,7 +233,6 @@
     #container {
         height: calc(100% - 2em);
         display: flex;
-        // column-count: 2;
 
         &[data-layout="vertical"] {
             flex-direction: column;
@@ -260,7 +259,6 @@
     }
 
     #right {
-        flex-direction: column;
         padding: 0px 16px 8px 16px;
         align-content: stretch;
         box-sizing: border-box;

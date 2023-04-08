@@ -36,31 +36,49 @@
     }
 </script>
 
-<div
-    id="code"
-    on:mouseenter={() => (copy_button = true)}
-    on:mouseleave={() => (copy_button = false)}
->
-    <div id="container" class="hljs">
-        <code id="lines" bind:this={lines_element} />
-        <div id="flex">
+<div id="code" class="hljs">
+    <code id="lines" bind:this={lines_element} />
+    <div
+        id="grid"
+        on:mouseenter={() => (copy_button = true)}
+        on:mouseleave={() => (copy_button = false)}
+    >
+        <div id="container">
             <pre bind:this={pre_element}><slot /></pre>
         </div>
+        {#if copy_button}
+            <div id="copy">
+                <Button color="1" onclick={copy} padding={1}>
+                    <Icon icon="content_copy" color="black" />
+                </Button>
+            </div>
+        {/if}
     </div>
-    {#if copy_button}
-        <div id="copy">
-            <Button color="1" onclick={copy} padding={1}>
-                <Icon icon="content_copy" color="black" />
-            </Button>
-        </div>
-    {/if}
 </div>
 
 <style lang="scss">
     #code {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        // border: 1px solid rgba(255, 255, 255, 0.5);
+        // border-radius: 0.3em;
+        // margin: 1em 0;
+    }
+    
+    #grid {
         position: relative;
-        overflow: scroll;
+        // overflow: scroll;
         display: grid;
+        width: 100%;
+    }
+
+    #lines {
+        padding: 1em 0.5em;
+        display: block;
+        border-right: 1px solid rgba(255, 255, 255, 0.5);
+
+        user-select: none;
     }
 
     #copy {
@@ -85,10 +103,6 @@
         flex-direction: row;
         border-radius: 0.3em;
         overflow: scroll;
-        
-        #flex {
-            overflow: auto;
-        }
 
         pre {
             flex-shrink: 1;
@@ -96,19 +110,11 @@
             line-height: 1.1em;
             display: table;
             overflow: scroll;
-            
+
             :global(code) {
                 overflow: scroll;
                 border-radius: 0.3em;
             }
-        }
-
-        #lines {
-            padding: 1em 0.5em;
-            display: block;
-            border-right: 1px solid rgba(255, 255, 255, 0.5);
-
-            user-select: none;
         }
 
         :global(code) {

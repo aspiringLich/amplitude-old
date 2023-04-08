@@ -22,11 +22,8 @@
     let l_padding = "1em";
     onMount(() => {
         if (body_element.children.length == 1) {
-            let child = body_element.firstChild?.firstChild
-                ?.firstChild as HTMLElement;
-            if (child != undefined && child.nodeName == "CODE") {
-                l_padding = "0";
-            }
+            let child = body_element?.firstElementChild;
+            if (child?.id == "code") l_padding = "0";
         }
     });
 
