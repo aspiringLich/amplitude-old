@@ -32,22 +32,35 @@
     let init = false;
 
     let body_element: Element;
+    let outline_element: Element;
+
     let children: NodeListOf<ChildNode>;
     let headings: Heading[] = [];
+    let positions: number[] = [];
+
+    // the section were currently reading
+    let reading = -1;
+    const threshold = 0.1;
+    
+    $: console.log(reading)
 
     function calcHeadingPositions() {
-        for (let heading of headings) {
-            heading.position = heading.element.getBoundingClientRect().top;
+        for (let i = 0; i < headings.length; i++) {
+            let heading = headings[i];
+            positions[i] = heading.element.getBoundingClientRect().top;
         }
+        reading = positions.findIndex(
+            (p) => p > window.innerHeight * threshold
+        );
+        if (reading == -1) reading = positions.length;
+        reading -= 1;
     }
 
     class Heading {
         constructor(
-            public level: number,
             public id: string,
             public text: string,
-            public element: HTMLElement,
-            public position: number
+            public element: HTMLElement
         ) {}
     }
 
@@ -78,46 +91,47 @@
                     let id = child.textContent
                         .toLowerCase()
                         .replace(/[^a-z0-9]/g, "_");
-                    headings.push(
-                        new Heading(
-                            parseInt(name[1]),
-                            id,
-                            child.textContent,
-                            child,
-                            0
-                        )
-                    );
+                    headings.push(new Heading(id, child.textContent, child));
 
                     child.id = id;
                     child.innerHTML = `<a href="#${id}">${child.innerHTML}</a>`;
                 }
             }
+            positions = new Array(headings.length);
 
             init = true;
         });
     });
 
+    function smoothAnchor(anchor: HTMLElement) {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            document.querySelector(this.getAttribute("href")).scrollIntoView({
+                behavior: "smooth",
+            });
+        });
+    }
+
+    $: if (outline_element) {
+        outline_element.querySelectorAll("a").forEach(smoothAnchor);
+    }
+
     // transfers a single element from the document to `article_element`
     function transfer() {
         body_element.replaceChildren(...children);
 
-        document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-            anchor.addEventListener("click", function (e) {
-                e.preventDefault();
-
-                document
-                    .querySelector(this.getAttribute("href"))
-                    .scrollIntoView({
-                        behavior: "smooth",
-                    });
-            });
-        });
+        document.querySelectorAll('a[href^="#"]').forEach(smoothAnchor);
         calcHeadingPositions();
     }
 
     function onResize() {
         calcHeadingPositions();
         width = window.innerWidth;
+    }
+
+    function onScroll() {
+        calcHeadingPositions();
     }
 
     let flyOptions = { y: -100, easing: quadInOut, duration: 400 };
@@ -127,7 +141,7 @@
     $: left = width >= 700;
 </script>
 
-<svelte:window on:resize={onResize} />
+<svelte:window on:resize={onResize} on:scroll={onScroll} />
 
 {#if init}
     <div id="article" data-right={right} data-left={left}>
@@ -137,15 +151,12 @@
             <div id="body" bind:this={body_element} />
         </div>
         {#if right}
-            <div id="outline">
+            <div id="outline" bind:this={outline_element}>
                 <h1>Outline</h1>
                 <ul>
-                    {#each headings as heading}
-                        <li id="item">
-                            <a
-                                href={"#" + heading.id}
-                                data-level={heading.level}
-                            >
+                    {#each headings as heading, i}
+                        <li id="item" data-on={i == reading}>
+                            <a href={"#" + heading.id}>
                                 {heading.text}
                             </a>
                         </li>
@@ -165,10 +176,11 @@
     #outline {
         position: fixed;
         top: 16px;
-        right: 10px;
+        right: 0;
         float: right;
         height: 100%;
         width: $outline-width;
+        padding-right: 10px;
         padding-left: 1em;
 
         ul {
@@ -186,6 +198,12 @@
             border-color: black;
             border-left: 4px solid;
             margin-left: 4px;
+            transition: 0.5s;
+            
+            &[data-on="true"] {
+                border-color: var(--color-blue-d2);
+                background-color: var(--color-blue-l1);
+            }
         }
 
         a {

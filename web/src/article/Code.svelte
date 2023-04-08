@@ -61,9 +61,7 @@
         display: flex;
         flex-direction: row;
         align-items: flex-start;
-        // border: 1px solid rgba(255, 255, 255, 0.5);
-        // border-radius: 0.3em;
-        // margin: 1em 0;
+        border-radius: 0.3em;
     }
     
     #grid {
@@ -89,19 +87,18 @@
         justify-content: end;
     }
 
-    :global(.n-top-border-radius) #container {
+    :global(.n-top-border-radius) #code {
         border-top-left-radius: 0;
         border-top-right-radius: 0;
     }
 
-    :global(.n-border-radius) #container {
+    :global(.n-border-radius) #code {
         border-radius: 0;
     }
 
     #container {
         display: flex;
         flex-direction: row;
-        border-radius: 0.3em;
         overflow: scroll;
 
         pre {
