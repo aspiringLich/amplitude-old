@@ -48,8 +48,8 @@
     </div>
     {#if copy_button}
         <div id="copy">
-            <Button color="0" onclick={copy} small="true">
-                <Icon icon="content_copy" color="black"/>
+            <Button color="0" onclick={copy} padding={1}>
+                <Icon icon="content_copy" color="black" />
             </Button>
         </div>
     {/if}
@@ -68,6 +68,10 @@
     :global(.n-top-border-radius) #container {
         border-top-left-radius: 0;
         border-top-right-radius: 0;
+    }
+    
+    :global(.n-border-radius) #container {
+        border-radius: 0;
     }
 
     #container {

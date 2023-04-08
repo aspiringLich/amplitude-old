@@ -37,29 +37,29 @@
 
     // width formatting stuffs
     let width: number;
-    $: layout = width > 600 ? "horizontal" : "vertical";
+    $: layout = width > 750 ? "horizontal" : "vertical";
 
-    function button(onclick, enabled = true) {
+    let button = (onclick, enabled = true) => {
         return {
             color: "green",
             onclick,
             enabled,
         };
-    }
-
-    let dec = () => {
-        n--;
     };
+    let answer_color = (exists: boolean, correct: boolean) => {
+        if (!exists) return "2";
+        if (correct) return "green";
+        return "red";
+    };
+
+    let dec = () => n--;
+    let inc = () => n++;
+    let submit = () => (answers[n] = selected);
     let reset = () => {
         n = -1;
         answers = {};
     };
-    let inc = () => {
-        n++;
-    };
-    let submit = () => {
-        answers[n] = selected;
-    };
+    let select = (i) => (selected = i);
 
     let n = -1;
     let answers = {};
@@ -69,7 +69,7 @@
 <svelte:window on:resize={() => (width = quiz_element.clientWidth)} />
 
 {#await questions}
-    <div id="quiz" bind:this={quiz_element} bind:clientWidth={width}>
+    <div id="quiz" bind:this={quiz_element}>
         <div id="start">
             <Button {...button(inc, false)}>Start Quiz</Button>
             <h2>Quiz</h2>
@@ -78,7 +78,7 @@
     </div>
 {:then questions}
     {@const len = questions.length}
-    <div id="quiz" bind:this={quiz_element}>
+    <div id="quiz" bind:clientWidth={width} bind:this={quiz_element}>
         {#if n == -1}
             <div id="start">
                 <Button {...button(inc)}>Start Quiz</Button>
@@ -104,13 +104,13 @@
                             Submit
                         </Button>
                     {:else}
-                        <Button {...button(inc, n + 1 == questions.length)}>
+                        <Button {...button(inc, n + 1 < questions.length)}>
                             Next &gt;
                         </Button>
                     {/if}
                 </div>
             </div>
-            <h3 style:margin-left="16px">Question {n + 1}</h3>
+            <h3 style:margin-left="16px">Question {n + 1} / {len}</h3>
             <div
                 id="container"
                 data-layout={layout}
@@ -122,37 +122,45 @@
                 <div id="right">
                     {#each questions[n].answers as answer, i}
                         {@const exists = answers[n] != undefined}
-                        {@const correct = exists ? answer.correct : null}
-                        <div id="box" data-correct={correct}>
-                            <div
-                                id="input"
-                                on:keypress
-                                on:click={() => {
-                                    if (!exists)
-                                        selected =
-                                            selected != i ? i : undefined;
-                                }}
+                        {@const correct = exists && answer.correct}
+                        {@const this_selected = exists && answers[n] == i}
+                        <div
+                            class="input"
+                            role="radio"
+                            tabindex="-1"
+                            aria-checked={this_selected}
+                            on:keypress
+                            on:click={() => !exists && select(i)}
+                        >
+                            <Button
+                                color={answer_color(exists, correct)}
+                                stretch={true}
                             >
-                                <input
-                                    type="radio"
-                                    bind:group={selected}
-                                    name={n.toString()}
-                                    value={i}
-                                    disabled={exists}
-                                />
-                                <label for={n.toString()}>
-                                    {@html answer.text}
-                                </label>
-                            </div>
-                            {#if exists}
-                                <div style:margin="0.5em 0 0 2em">
-                                    {(answer.correct === true
-                                        ? "✔ Correct"
-                                        : "✘ Incorrect") +
-                                        (answer.response == "" ? "!" : ":")}
-                                    {@html answer.response}
+                                <div class="answer">
+                                    <input
+                                        type="radio"
+                                        bind:group={selected}
+                                        name={n.toString()}
+                                        value={i}
+                                        disabled={exists}
+                                    />
+                                    <label
+                                        for={n.toString()}
+                                        class="n-border-radius"
+                                    >
+                                        {@html answer.text}
+                                    </label>
                                 </div>
-                            {/if}
+                                {#if exists}
+                                    <div style:margin="0.5em 0 0 2em">
+                                        {(answer.correct === true
+                                            ? "✔ Correct"
+                                            : "✘ Incorrect") +
+                                            (answer.response == "" ? "!" : ":")}
+                                        {@html answer.response}
+                                    </div>
+                                {/if}
+                            </Button>
                         </div>
                     {/each}
                 </div>
@@ -199,20 +207,34 @@
             }
         }
     }
-    #input {
-        // height: 25%;
-        display: flex;
-        flex-direction: row;
-        // transition: 0.2s ease-in-out;
+    .input {
+        margin: 0.5em 0;
 
-        :nth-child(2) {
-            margin-left: 0.5em;
-            width: 100%;
+        .answer {
+            display: flex;
+            align-items: center;
+
+            input {
+                margin-left: 0;
+            }
+
+            label {
+                margin-left: 0.5em;
+                width: 100%;
+            }
         }
     }
 
     h3 {
         margin: 0;
+
+        // &:after {
+        //     content: " ";
+        //     display: block;
+        //     transform: translateY(-4px);
+        //     margin-right: 16px;
+        //     border: 0.5px solid black;
+        // }
     }
 
     #container {
@@ -228,14 +250,16 @@
 
             #left {
                 max-width: 100%;
+                min-width: 100%;
             }
         }
 
-        &[data-layout="vertical"] {
+        &[data-layout="horizontal"] {
             flex-direction: row;
 
             #left {
                 max-width: 50%;
+                min-width: 50%;
             }
         }
     }
@@ -251,5 +275,6 @@
         flex-direction: column;
         padding: 0px 16px 8px 16px;
         flex: 1;
+        align-content: stretch;
     }
 </style>

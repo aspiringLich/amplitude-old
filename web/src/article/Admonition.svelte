@@ -56,6 +56,7 @@
         flex-direction: column;
         align-items: flex-start;
         border: 1.5px solid;
+        overflow: hidden;
 
         #body {
             padding-left: var(--l-padding);
@@ -69,7 +70,6 @@
 
         #title {
             height: 2.5em;
-            border-radius: 0.3em;
             width: 100%;
             padding: 0.5em;
             box-sizing: border-box;
