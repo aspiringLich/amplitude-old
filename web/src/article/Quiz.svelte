@@ -239,7 +239,7 @@
             flex-direction: column;
 
             #left {
-                max-width: 100%;
+                width: 100%;
             }
         }
 
@@ -247,7 +247,7 @@
             flex-direction: row;
 
             #left {
-                max-width: 50%;
+                min-width: 50%;
             }
         }
     }
@@ -263,6 +263,7 @@
         flex-direction: column;
         padding: 0px 16px 8px 16px;
         align-content: stretch;
+        box-sizing: border-box;
         width: 100%;
     }
 </style>
