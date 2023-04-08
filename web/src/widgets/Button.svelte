@@ -2,6 +2,7 @@
     export let color: string;
     export let onclick = () => {};
     export let enabled = true;
+    export let grayout = true;
     // 0 - 8px 16px
     // 1 - 4px
     // 2 - 0px
@@ -14,7 +15,7 @@
         2: "0px",
     }[padding];
 
-    $: col = enabled ? color : "1";
+    $: col = enabled || !grayout ? color : "1";
 </script>
 
 <div

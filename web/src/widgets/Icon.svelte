@@ -2,7 +2,9 @@
     export let icon;
     export let color = "inherit";
     export let size = "1rem";
-
+    export let reverse = false;
+    
+    let flex = reverse ? "row-reverse" : "fl-row";
     $: style = `
         color: ${color};
         font-size: ${size};
@@ -10,14 +12,14 @@
 </script>
 
 {#if $$slots.default}
-    <div class="flex">
+    <span class="flex" style:flex-direction={flex}>
         <span class="material-symbols-sharp" {style}>
             {icon}
         </span>
         <div style:color={color}>
             <slot />
         </div>
-    </div>
+    </span>
 {:else}
     <span class="material-symbols-sharp" {style}>
         {icon}
@@ -29,7 +31,6 @@
         display: flex;
         align-content: center;
         align-items: center;
-        flex-direction: row;
     }
 
     .material-symbols-sharp {

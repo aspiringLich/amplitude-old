@@ -33,6 +33,16 @@
 
     let body_element: Element;
     let children: NodeListOf<ChildNode>;
+    let headings = [];
+
+    class Heading {
+        constructor(
+            public level: number,
+            public id: string,
+            public text: string
+        ) {}
+    }
+
     onMount(() => {
         fetchDocument().then((doc) => {
             let title = doc.body.firstElementChild;
@@ -49,6 +59,25 @@
 
             children = doc.body.childNodes;
 
+            let ids = {};
+
+            for (let c of children) {
+                if (!(c instanceof Element)) continue;
+
+                let child = c as HTMLElement;
+                let name = child.localName;
+                if (["h2"].includes(name)) {
+                    let id = child.textContent
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]/g, "_");
+                    headings.push(
+                        new Heading(parseInt(name[1]), id, child.textContent)
+                    );
+                    child.id = id;
+                    child.innerHTML = `<a href="#${id}">${child.innerHTML}</a>`;
+                }
+            }
+
             init = true;
         });
     });
@@ -56,7 +85,21 @@
     // transfers a single element from the document to `article_element`
     function transfer() {
         body_element.replaceChildren(...children);
+
+        document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+            anchor.addEventListener("click", function (e) {
+                e.preventDefault();
+
+                document
+                    .querySelector(this.getAttribute("href"))
+                    .scrollIntoView({
+                        behavior: "smooth",
+                    });
+            });
+        });
     }
+
+    let flyOptions = { y: -100, easing: quadInOut, duration: 400 };
 
     let width = window.innerWidth;
     $: right = width > 1000;
@@ -65,29 +108,73 @@
 
 <svelte:window on:resize={() => (width = window.innerWidth)} />
 
-<div id="article" data-right={right} data-left={left}>
-    {#if init}
+{#if init}
+    <div id="article" data-right={right} data-left={left}>
         <div id="left" />
-        <div
-            id="container"
-            in:fly={{ y: -100, easing: quadInOut, duration: 800 }}
-            on:introstart={transfer}
-        >
+        <div id="container" in:fly={flyOptions} on:introstart|once={transfer}>
             <h1>{heading}</h1>
             <div id="body" bind:this={body_element} />
         </div>
         {#if right}
             <div id="right">
-                <h2>Outline</h2>
+                <h1>Outline</h1>
+                <ul>
+                    {#each headings as heading}
+                        <li id="item">
+                            <a
+                                href={"#" + heading.id}
+                                data-level={heading.level}
+                            >
+                                {heading.text}
+                            </a>
+                        </li>
+                    {/each}
+                </ul>
             </div>
         {/if}
-    {/if}
-</div>
+    </div>
+{/if}
 <div style:height="50vh" />
 
 <style lang="scss">
-    $right_sidebar_width: 200px;
+    $right_sidebar_width: 270px;
     $left_sidebar_width: clamp(200px, 20%, 300px);
+
+    #right {
+        position: fixed;
+        top: 5px;
+        right: 10px;
+        float: right;
+        height: 100%;
+        width: $right_sidebar_width;
+        padding-left: 1em;
+
+        ul {
+            padding-left: 0;
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 1.5em;
+        }
+
+        li {
+            list-style: none;
+            padding: 0.25em 0 0.25em 1em;
+            border-color: black;
+            border-left: 4px solid;
+            margin-left: 4px;
+        }
+
+        a {
+            text-decoration: none;
+            color: var(--color-0-d2);
+
+            &:hover {
+                color: var(--color-blue-d2);
+            }
+        }
+    }
 
     #left {
         position: fixed;
@@ -98,18 +185,10 @@
         width: $left_sidebar_width;
     }
 
-    #right {
-        position: fixed;
-        top: 5px;
-        right: 10px;
-        float: right;
-        height: 100%;
-        width: $right_sidebar_width;
-    }
-
     #article {
         display: flex;
         flex-direction: row;
+        padding: 0 2em;
 
         &[data-right="true"] {
             margin-right: $right_sidebar_width;
@@ -121,23 +200,32 @@
     }
 
     #container {
-        width: clamp(300px, 90%, 900px);
         margin: 0 auto;
         box-shadow: 0 0 16px rgba(0, 0, 0, 0.2);
         border: 1px solid hsl(0, 0%, 90%);
         border-radius: 10px;
         padding: 16px;
         margin-top: 16px;
-    }
 
-    h1 {
-        font-size: 3em;
-        line-height: 100%;
+        h1 {
+            font-size: 3.5em;
+            line-height: 100%;
 
-        &:after {
-            content: " ";
-            display: block;
-            border: 1px dashed black;
+            &:after {
+                content: " ";
+                display: block;
+                border: 1px dashed black;
+            }
+        }
+        
+        :global(h2) {
+            font-size: 1.75em;
+            margin: 0.75em 0 0.75em 0;
+        }
+
+        :global(h2 > a) {
+            color: black;
+            text-decoration: none;
         }
     }
 </style>

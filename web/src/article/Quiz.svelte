@@ -28,7 +28,6 @@
 
     let questions = fetchQuiz().then((q) => q.questions);
     let container_element: HTMLElement;
-    let quiz_element: HTMLElement;
 
     // render the quiz markdown whenever you change the question
     $: if (container_element != undefined && n >= 0) {
@@ -36,8 +35,8 @@
     }
 
     // width formatting stuffs
-    let width: number;
-    $: layout = width > 750 ? "horizontal" : "vertical";
+    let width: number = window.innerWidth;
+    $: layout = width > 790 ? "horizontal" : "vertical";
 
     let button = (onclick, enabled = true) => {
         return {
@@ -59,17 +58,20 @@
         n = -1;
         answers = {};
     };
-    let select = (i) => (selected = i);
+    let select = (i) => {
+        if (selected == i) selected = undefined;
+        else selected = i;
+    };
 
     let n = -1;
     let answers = {};
     $: selected = answers[n];
 </script>
 
-<svelte:window on:resize={() => (width = quiz_element.clientWidth)} />
+<svelte:window on:resize={() => (width = window.innerWidth)} />
 
 {#await questions}
-    <div id="quiz" bind:this={quiz_element}>
+    <div id="quiz">
         <div id="start">
             <Button {...button(inc, false)}>Start Quiz</Button>
             <h2>Quiz</h2>
@@ -78,7 +80,7 @@
     </div>
 {:then questions}
     {@const len = questions.length}
-    <div id="quiz" bind:clientWidth={width} bind:this={quiz_element}>
+    <div id="quiz">
         {#if n == -1}
             <div id="start">
                 <Button {...button(inc)}>Start Quiz</Button>
@@ -89,23 +91,26 @@
             </div>
         {:else if n < len}
             <div id="buttons">
-                <div>
+                <div style:justify-content="left">
                     <Button {...button(dec, n > 0)}>
                         <Icon icon="arrow_back">Back</Icon>
                     </Button>
                 </div>
-                <div>
+                <div style:justify-content="center">
                     <Button {...button(reset)}>Reset</Button>
                 </div>
-                <div>
+                <div style:justify-content="right">
                     {#if answers[n] == undefined}
                         {@const submit_enabled = selected != undefined}
                         <Button {...button(submit, submit_enabled)}>
                             Submit
                         </Button>
                     {:else}
-                        <Button {...button(inc, n + 1 < questions.length)}>
-                            Next &gt;
+                        {@const last = n + 1 < questions.length}
+                        <Button {...button(inc, last)}>
+                            <Icon icon="arrow_forward" reverse={true}>
+                                Next
+                            </Icon>
                         </Button>
                     {/if}
                 </div>
@@ -135,6 +140,8 @@
                             <Button
                                 color={answer_color(exists, correct)}
                                 stretch={true}
+                                enabled={!exists}
+                                grayout={false}
                             >
                                 <div class="answer">
                                     <input
@@ -194,17 +201,6 @@
         div {
             display: flex;
             flex: 1;
-            &:nth-child(1) {
-                justify-content: start;
-            }
-
-            &:nth-child(2) {
-                justify-content: center;
-            }
-
-            &:nth-child(3) {
-                justify-content: end;
-            }
         }
     }
     .input {
