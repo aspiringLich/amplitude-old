@@ -1,7 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import hijs from "highlight.js/lib/common";
-    import { fade, fly } from "svelte/transition";
     import Icon from "../widgets/Icon.svelte";
 
     // import assert from "assert";
@@ -64,6 +63,11 @@
         position: absolute;
         top: 5px;
         right: 5px;
+    }
+
+    :global(.n-top-border-radius) #container {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
     }
 
     #container {

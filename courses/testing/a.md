@@ -8,19 +8,31 @@ Id neque aliquam vestibulum morbi blandit cursus risus at. Faucibus vitae alique
 
 Pharetra et ultrices neque ornare aenean euismod elementum nisi. Mi sit amet mauris commodo. Blandit cursus risus at ultrices mi tempus.
 
-```rust
-fn main() {
-    println!("Hello, world!");
-}
-```
+@! success
+> ```rust
+> fn main() {
+>     println!("Hello, world!");
+> }
+> ```
 
 [test]: https://test.com
 
 [test+/test]
 
+@! note
+> take note!
+
 @! info
-> this is a test
-> mhm
+> this is an info box
+
+@! warning
+> this is an info box
+
+@! success
+> something went right!
+
+@! failiure
+> something went wrong!
 
 sajokjf
 
@@ -28,10 +40,10 @@ sajokjf
 ```toml
 [[questions]]
 answers = [
-    {text = "a", response = "woo", correct = true},
-    {text = "b", response = "woo"},
-    {text = "c", response = "woo"},
-    {text = "d", response = "woo"},
+    {text = "~~~txt\nHello World!\nYou said: a", response = "yay", correct = true},
+    {text = "~~~txt\nHello World!\nYou said: b", response = "no"},
+    {text = "~~~txt\na", response = "I mean, close?"},
+    {text = "~~~txt\nisadoai\ndaskfaifj\n~~~", response = "what?"},
 ]
 question = """
 Consider the following code:

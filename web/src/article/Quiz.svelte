@@ -52,8 +52,6 @@
     let answers = {};
 </script>
 
-<!-- THIS CODE IS A MESS! -->
-
 {#await questions}
     <div
         id="quiz"
@@ -158,35 +156,42 @@
                     {#each questions[n].answers as answer, i}
                         {@const exists = answers[n] != undefined}
                         <div
-                            id="input"
-                            on:keypress
-                            on:click={() => {
-                                if (!exists)
-                                    selected = selected != i ? i : undefined;
-                            }}
+                            id="box"
                             class={!exists
                                 ? ""
                                 : answer.correct === true
                                 ? "correct"
                                 : "incorrect"}
                         >
-                            <input
-                                type="radio"
-                                bind:group={selected}
-                                name={n.toString()}
-                                value={i}
-                                disabled={exists}
-                            />
-                            <label for={n.toString()}>
-                                {@html answer.text}
-                                {#if exists}
-                                    <br />
-                                    {answer.correct === true
-                                        ? "✔ Correct: "
-                                        : "✘ Incorrect: "}
+                            <div
+                                id="input"
+                                on:keypress
+                                on:click={() => {
+                                    if (!exists)
+                                        selected =
+                                            selected != i ? i : undefined;
+                                }}
+                            >
+                                <input
+                                    type="radio"
+                                    bind:group={selected}
+                                    name={n.toString()}
+                                    value={i}
+                                    disabled={exists}
+                                />
+                                <label for={n.toString()}>
+                                    {@html answer.text}
+                                </label>
+                            </div>
+                            {#if exists}
+                                <div style:margin="0.5em 0 0 2em">
+                                    {(answer.correct === true
+                                        ? "✔ Correct"
+                                        : "✘ Incorrect") +
+                                        (answer.response == "" ? "!" : ":")}
                                     {@html answer.response}
-                                {/if}
-                            </label>
+                                </div>
+                            {/if}
                         </div>
                     {/each}
                 </div>
@@ -234,8 +239,7 @@
         }
     }
 
-    #input {
-        // height: 25%;
+    #box {
         border-radius: 4px;
         border: 1px solid hsl(0, 0%, 90%);
         background: hsl(0, 0%, 97%);
@@ -243,7 +247,6 @@
         padding: 8px;
         align-items: center;
         user-select: none;
-        // transition: 0.2s ease-in-out;
 
         &.correct {
             border: 1px solid hsl(120, 50%, 90%);
@@ -256,13 +259,17 @@
             background: hsl(0, 50%, 97%);
             color: hsl(0, 50%, 50%);
         }
+    }
 
-        &:hover:not(.correct):not(.incorrect) {
-            filter: saturate(0.97) brightness(1.015);
-        }
+    #input {
+        // height: 25%;
+        display: flex;
+        flex-direction: row;
+        // transition: 0.2s ease-in-out;
 
-        &:active:not(.correct):not(.incorrect) {
-            filter: saturate(0.9) brightness(0.98);
+        :nth-child(2) {
+            margin-left: 0.5em;
+            width: 100%;
         }
     }
 
