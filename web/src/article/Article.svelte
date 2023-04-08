@@ -33,13 +33,21 @@
 
     let body_element: Element;
     let children: NodeListOf<ChildNode>;
-    let headings = [];
+    let headings: Heading[] = [];
+
+    function calcHeadingPositions() {
+        for (let heading of headings) {
+            heading.position = heading.element.getBoundingClientRect().top;
+        }
+    }
 
     class Heading {
         constructor(
             public level: number,
             public id: string,
-            public text: string
+            public text: string,
+            public element: HTMLElement,
+            public position: number
         ) {}
     }
 
@@ -71,8 +79,15 @@
                         .toLowerCase()
                         .replace(/[^a-z0-9]/g, "_");
                     headings.push(
-                        new Heading(parseInt(name[1]), id, child.textContent)
+                        new Heading(
+                            parseInt(name[1]),
+                            id,
+                            child.textContent,
+                            child,
+                            0
+                        )
                     );
+
                     child.id = id;
                     child.innerHTML = `<a href="#${id}">${child.innerHTML}</a>`;
                 }
@@ -97,16 +112,22 @@
                     });
             });
         });
+        calcHeadingPositions();
+    }
+
+    function onResize() {
+        calcHeadingPositions();
+        width = window.innerWidth;
     }
 
     let flyOptions = { y: -100, easing: quadInOut, duration: 400 };
 
     let width = window.innerWidth;
-    $: right = width > 1000;
-    $: left = width > 700;
+    $: right = width >= 1100;
+    $: left = width >= 700;
 </script>
 
-<svelte:window on:resize={() => (width = window.innerWidth)} />
+<svelte:window on:resize={onResize} />
 
 {#if init}
     <div id="article" data-right={right} data-left={left}>
@@ -116,7 +137,7 @@
             <div id="body" bind:this={body_element} />
         </div>
         {#if right}
-            <div id="right">
+            <div id="outline">
                 <h1>Outline</h1>
                 <ul>
                     {#each headings as heading}
@@ -137,16 +158,17 @@
 <div style:height="50vh" />
 
 <style lang="scss">
-    $right_sidebar_width: 270px;
-    $left_sidebar_width: clamp(200px, 20%, 300px);
+    $outline-width: 270px;
+    $article-list-width: clamp(200px, 20%, 300px);
+    // $article-width: calc(100vw - #{$outline-width} - #{$article-list-width});
 
-    #right {
+    #outline {
         position: fixed;
-        top: 5px;
+        top: 16px;
         right: 10px;
         float: right;
         height: 100%;
-        width: $right_sidebar_width;
+        width: $outline-width;
         padding-left: 1em;
 
         ul {
@@ -182,7 +204,7 @@
         top: 5px;
         left: 10px;
         height: 100%;
-        width: $left_sidebar_width;
+        width: $article-list-width;
     }
 
     #article {
@@ -191,11 +213,11 @@
         padding: 0 2em;
 
         &[data-right="true"] {
-            margin-right: $right_sidebar_width;
+            margin-right: $outline-width !important;
         }
 
         &[data-left="true"] {
-            margin-left: $left_sidebar_width;
+            margin-left: $article-list-width !important;
         }
     }
 
@@ -217,10 +239,16 @@
                 border: 1px dashed black;
             }
         }
-        
-        :global(h2) {
+    }
+
+    #body {
+        > :global(h2) {
             font-size: 1.75em;
             margin: 0.75em 0 0.75em 0;
+
+            &:hover {
+                text-decoration: underline 2px;
+            }
         }
 
         :global(h2 > a) {

@@ -36,7 +36,7 @@
 
     // width formatting stuffs
     let width: number = window.innerWidth;
-    $: layout = width > 790 ? "horizontal" : "vertical";
+    $: layout = width >= 1100 ? "horizontal" : "vertical";
 
     let button = (onclick, enabled = true) => {
         return {
@@ -151,10 +151,7 @@
                                         value={i}
                                         disabled={exists}
                                     />
-                                    <label
-                                        for={n.toString()}
-                                        class="n-border-radius"
-                                    >
+                                    <label for={n.toString()}>
                                         {@html answer.text}
                                     </label>
                                 </div>
@@ -181,7 +178,7 @@
         transition: 0.5s;
         border-radius: 4px;
         border: 1px solid hsl(0, 0%, 90%);
-        overflow: hidden;
+        overflow: auto;
 
         :global(p) {
             margin: 12px 0;
@@ -237,16 +234,16 @@
         height: calc(100% - 2em);
         display: flex;
         // column-count: 2;
-        flex-grow: 0;
-        flex-shrink: 0;
-        flex-basis: 50%;
 
         &[data-layout="vertical"] {
             flex-direction: column;
 
             #left {
                 max-width: 100%;
-                min-width: 100%;
+                
+                :global(*) {
+                    max-width: 100%;
+                }
             }
         }
 
@@ -255,7 +252,6 @@
 
             #left {
                 max-width: 50%;
-                min-width: 50%;
             }
         }
     }
@@ -263,14 +259,14 @@
     #left {
         height: 100%;
         padding: 0px 16px;
-        flex: 1;
         box-sizing: border-box;
+        overflow: auto;
     }
 
     #right {
         flex-direction: column;
         padding: 0px 16px 8px 16px;
-        flex: 1;
         align-content: stretch;
+        width: 100%;
     }
 </style>

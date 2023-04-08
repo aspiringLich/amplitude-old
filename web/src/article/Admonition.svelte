@@ -29,15 +29,21 @@
             }
         }
     });
+
+    $: col = types[type].color;
 </script>
 
 <div
     class={`admonition`}
-    style:border-color={border_color}
+    style:border-color="var(--color-{col}-d1)"
     style:--l-padding={l_padding}
 >
-    <div id="title" style:background-color={background_color}>
-        <Icon icon={types[type].icon ?? type} size="1.5em" color={border_color}>
+    <div id="title" style:background-color="var(--color-{col}-l1">
+        <Icon
+            icon={types[type].icon ?? type}
+            size="1.5em"
+            color="var(--color-{col}-d2)"
+        >
             {capitalized}
         </Icon>
     </div>

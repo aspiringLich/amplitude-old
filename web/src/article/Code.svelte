@@ -37,8 +37,7 @@
 </script>
 
 <div
-    style:position="relative"
-    style:overflow-y="hidden"
+    id="code"
     on:mouseenter={() => (copy_button = true)}
     on:mouseleave={() => (copy_button = false)}
 >
@@ -48,7 +47,7 @@
     </div>
     {#if copy_button}
         <div id="copy">
-            <Button color="0" onclick={copy} padding={1}>
+            <Button color="1" onclick={copy} padding={1}>
                 <Icon icon="content_copy" color="black" />
             </Button>
         </div>
@@ -56,11 +55,15 @@
 </div>
 
 <style lang="scss">
+    #code {
+        position: relative;
+        overflow: scroll;
+    }
+    
     #copy {
         position: absolute;
         top: 5px;
         right: 5px;
-        width: 100%;
         display: flex;
         justify-content: end;
     }
@@ -78,10 +81,16 @@
         display: flex;
         flex-direction: row;
         border-radius: 0.3em;
+        overflow: scroll;
 
         pre {
-            overflow-x: auto;
+            white-space: pre;
+            line-height: 1.1em;
+            display: table;
+            overflow: scroll;
+            min-width: none;
             :global(code) {
+                overflow: scroll;
                 border-radius: 0.3em;
             }
         }

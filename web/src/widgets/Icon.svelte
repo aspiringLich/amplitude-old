@@ -4,7 +4,6 @@
     export let size = "1rem";
     export let reverse = false;
     
-    let flex = reverse ? "row-reverse" : "fl-row";
     $: style = `
         color: ${color};
         font-size: ${size};
@@ -12,7 +11,7 @@
 </script>
 
 {#if $$slots.default}
-    <span class="flex" style:flex-direction={flex}>
+    <span class="flex" data-reverse="{reverse}">
         <span class="material-symbols-sharp" {style}>
             {icon}
         </span>
@@ -31,10 +30,25 @@
         display: flex;
         align-content: center;
         align-items: center;
+        flex-direction: row;
+        
+        &[data-reverse="true"] {
+            flex-direction: row-reverse;
+        }
     }
 
     .material-symbols-sharp {
         user-select: none;
         position: relative;
+    }
+    
+    div {
+        &[data-reverse="true"] {
+            margin-right: 0.5em;
+        }
+        
+        &[data-reverse="false"] {
+            margin-left: 0.5em;
+        }
     }
 </style>
