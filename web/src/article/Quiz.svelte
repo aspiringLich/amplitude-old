@@ -240,10 +240,6 @@
 
             #left {
                 max-width: 100%;
-                
-                :global(*) {
-                    max-width: 100%;
-                }
             }
         }
 

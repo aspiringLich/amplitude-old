@@ -58,9 +58,9 @@
 
 <style lang="scss">
     #code {
-        display: grid;
         position: relative;
         overflow: scroll;
+        display: grid;
     }
 
     #copy {
@@ -84,10 +84,9 @@
         display: flex;
         flex-direction: row;
         border-radius: 0.3em;
-        overflow: auto;
+        overflow: scroll;
         
         #flex {
-            display: grid;
             overflow: auto;
         }
 
@@ -105,7 +104,6 @@
         }
 
         #lines {
-            position: fixed;
             padding: 1em 0.5em;
             display: block;
             border-right: 1px solid rgba(255, 255, 255, 0.5);
