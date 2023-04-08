@@ -29,7 +29,7 @@ Pharetra et ultrices neque ornare aenean euismod elementum nisi. Mi sit amet mau
 @! success
 > ```rust
 > fn main() {
->     println!("Hello, world!");
+>     println!("this is a really long piece of text that should scroll please god let it scroll aaaa");
 > }
 > ```
 

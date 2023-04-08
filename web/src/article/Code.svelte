@@ -43,7 +43,9 @@
 >
     <div id="container" class="hljs">
         <code id="lines" bind:this={lines_element} />
-        <pre bind:this={pre_element}><slot /></pre>
+        <div id="flex">
+            <pre bind:this={pre_element}><slot /></pre>
+        </div>
     </div>
     {#if copy_button}
         <div id="copy">
@@ -56,10 +58,11 @@
 
 <style lang="scss">
     #code {
+        display: grid;
         position: relative;
         overflow: scroll;
     }
-    
+
     #copy {
         position: absolute;
         top: 5px;
@@ -72,7 +75,7 @@
         border-top-left-radius: 0;
         border-top-right-radius: 0;
     }
-    
+
     :global(.n-border-radius) #container {
         border-radius: 0;
     }
@@ -81,14 +84,20 @@
         display: flex;
         flex-direction: row;
         border-radius: 0.3em;
-        overflow: scroll;
+        overflow: auto;
+        
+        #flex {
+            display: grid;
+            overflow: auto;
+        }
 
         pre {
+            flex-shrink: 1;
             white-space: pre;
             line-height: 1.1em;
             display: table;
             overflow: scroll;
-            min-width: none;
+            
             :global(code) {
                 overflow: scroll;
                 border-radius: 0.3em;
@@ -96,6 +105,7 @@
         }
 
         #lines {
+            position: fixed;
             padding: 1em 0.5em;
             display: block;
             border-right: 1px solid rgba(255, 255, 255, 0.5);
