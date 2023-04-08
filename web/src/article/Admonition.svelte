@@ -37,12 +37,9 @@
     style:--l-padding={l_padding}
 >
     <div id="title" style:background-color={background_color}>
-        <Icon type="inline" size="1.5em" color={border_color}>
-            {types[type].icon ?? type}
-        </Icon>
-        <span style:color={border_color} id="title-span">
+        <Icon icon={types[type].icon ?? type} size="1.5em" color={border_color}>
             {capitalized}
-        </span>
+        </Icon>
     </div>
     <div id="body" class="n-top-border-radius" bind:this={body_element}>
         <slot />
@@ -76,12 +73,6 @@
             width: 100%;
             padding: 0.5em;
             box-sizing: border-box;
-        }
-
-        #title-span {
-            font-weight: 900;
-            position: relative;
-            top: -0.35em;
         }
     }
 </style>

@@ -2,6 +2,7 @@
     import { onMount } from "svelte";
     import hijs from "highlight.js/lib/common";
     import Icon from "../widgets/Icon.svelte";
+    import Button from "../widgets/Button.svelte";
 
     // import assert from "assert";
 
@@ -47,13 +48,9 @@
     </div>
     {#if copy_button}
         <div id="copy">
-            <Icon
-                type="button"
-                args={{ onclick: copy }}
-                background="rgba(255, 255, 255, 0.5)"
-            >
-                content_copy
-            </Icon>
+            <Button color="0" onclick={copy} small="true">
+                <Icon icon="content_copy" color="black"/>
+            </Button>
         </div>
     {/if}
 </div>
@@ -63,6 +60,9 @@
         position: absolute;
         top: 5px;
         right: 5px;
+        width: 100%;
+        display: flex;
+        justify-content: end;
     }
 
     :global(.n-top-border-radius) #container {

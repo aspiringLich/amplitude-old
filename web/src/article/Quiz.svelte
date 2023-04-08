@@ -4,6 +4,7 @@
     export let article: string;
 
     import Button from "../widgets/Button.svelte";
+    import Icon from "../widgets/Icon.svelte";
     import { renderComponents } from "./article";
 
     async function fetchQuiz() {
@@ -24,136 +25,105 @@
 
         return a.json();
     }
-    let questions = fetchQuiz().then((q) => q.questions);
-    let n = -1;
-    let container_element: HTMLElement;
-    let selected = undefined;
-    $: submit_enabled = selected != undefined;
-    let answers = {};
 
-    $: {
-        n;
-        if (container_element != undefined) {
-            renderComponents(container_element);
-        }
+    let questions = fetchQuiz().then((q) => q.questions);
+    let container_element: HTMLElement;
+    let quiz_element: HTMLElement;
+
+    // render the quiz markdown whenever you change the question
+    $: if (container_element != undefined && n >= 0) {
+        renderComponents(container_element);
     }
 
-    let quiz_element: HTMLElement;
-    let width;
+    // width formatting stuffs
+    let width: number;
+    $: layout = width > 600 ? "horizontal" : "vertical";
 
-    $: flex_direction = width < 600 ? "column" : "row";
-    $: max_width = width < 600 ? "100%" : "50%";
+    function button(onclick, enabled = true) {
+        return {
+            color: "green",
+            onclick,
+            enabled,
+        };
+    }
+
+    let dec = () => {
+        n--;
+    };
+    let reset = () => {
+        n = -1;
+        answers = {};
+    };
+    let inc = () => {
+        n++;
+    };
+    let submit = () => {
+        answers[n] = selected;
+    };
+
+    let n = -1;
+    let answers = {};
+    $: selected = answers[n];
 </script>
 
 <svelte:window on:resize={() => (width = quiz_element.clientWidth)} />
 
 {#await questions}
-    <div
-        id="quiz"
-        style:--flex-direction={flex_direction}
-        style:--max-width={max_width}
-        bind:this={quiz_element}
-        bind:clientWidth={width}
-    >
+    <div id="quiz" bind:this={quiz_element} bind:clientWidth={width}>
         <div id="start">
-            <Button
-                color="green"
-                onclick={() => {
-                    n++;
-                }}
-                disabled={true}
-            >
-                Start Quiz
-            </Button>
+            <Button {...button(inc, false)}>Start Quiz</Button>
             <h2>Quiz</h2>
             <h4>Loading...</h4>
         </div>
     </div>
 {:then questions}
-    <div
-        id="quiz"
-        style:--flex-direction={flex_direction}
-        style:--max-width={max_width}
-        bind:this={quiz_element}
-    >
+    {@const len = questions.length}
+    <div id="quiz" bind:this={quiz_element}>
         {#if n == -1}
             <div id="start">
-                <Button
-                    color="green"
-                    onclick={() => {
-                        n++;
-                    }}
-                >
-                    Start Quiz
-                </Button>
+                <Button {...button(inc)}>Start Quiz</Button>
                 <h2>Quiz</h2>
                 <h4>
-                    {`${questions.length} question${
-                        questions.length == 1 ? "" : "s"
-                    }`}
+                    {`${len} question${len == 1 ? "" : "s"}`}
                 </h4>
             </div>
-        {:else if n < questions.length}
+        {:else if n < len}
             <div id="buttons">
                 <div>
-                    <Button
-                        color="green"
-                        disabled={n == 0}
-                        onclick={() => {
-                            n--;
-                            selected = answers[n];
-                        }}
-                        >&lt; Back
+                    <Button {...button(dec, n > 0)}>
+                        <Icon icon="arrow_back">Back</Icon>
                     </Button>
                 </div>
                 <div>
-                    <Button
-                        color="green"
-                        onclick={() => {
-                            n = -1;
-                            selected = undefined;
-                            answers = {};
-                        }}
-                        >Reset
-                    </Button>
+                    <Button {...button(reset)}>Reset</Button>
                 </div>
                 <div>
                     {#if answers[n] == undefined}
-                        <Button
-                            color="green"
-                            disabled={!submit_enabled}
-                            onclick={() => (answers[n] = selected)}
-                            >Submit
+                        {@const submit_enabled = selected != undefined}
+                        <Button {...button(submit, submit_enabled)}>
+                            Submit
                         </Button>
                     {:else}
-                        <Button
-                            color="green"
-                            disabled={n + 1 == questions.length}
-                            onclick={() => {
-                                n++;
-                                selected = answers[n];
-                            }}
-                            >Next &gt;
+                        <Button {...button(inc, n + 1 == questions.length)}>
+                            Next &gt;
                         </Button>
                     {/if}
                 </div>
             </div>
             <h3 style:margin-left="16px">Question {n + 1}</h3>
-            <div id="container" bind:this={container_element}>
+            <div
+                id="container"
+                data-layout={layout}
+                bind:this={container_element}
+            >
                 <div id="left">
                     {@html questions[n].question}
                 </div>
                 <div id="right">
                     {#each questions[n].answers as answer, i}
                         {@const exists = answers[n] != undefined}
-                        <div
-                            id="box"
-                            class={!exists
-                                ? ""
-                                : answer.correct === true
-                                ? "correct"
-                                : "incorrect"}
-                        >
+                        {@const correct = exists ? answer.correct : null}
+                        <div id="box" data-correct={correct}>
                             <div
                                 id="input"
                                 on:keypress
@@ -229,29 +199,6 @@
             }
         }
     }
-
-    #box {
-        border-radius: 4px;
-        border: 1px solid hsl(0, 0%, 90%);
-        background: hsl(0, 0%, 97%);
-        margin: 8px 0;
-        padding: 8px;
-        align-items: center;
-        user-select: none;
-
-        &.correct {
-            border: 1px solid hsl(120, 50%, 90%);
-            background: hsl(120, 50%, 97%);
-            color: hsl(120, 50%, 50%);
-        }
-
-        &.incorrect {
-            border: 1px solid hsl(0, 50%, 90%);
-            background: hsl(0, 50%, 97%);
-            color: hsl(0, 50%, 50%);
-        }
-    }
-
     #input {
         // height: 25%;
         display: flex;
@@ -272,10 +219,25 @@
         height: calc(100% - 2em);
         display: flex;
         // column-count: 2;
-        flex-direction: var(--flex-direction);
         flex-grow: 0;
         flex-shrink: 0;
         flex-basis: 50%;
+
+        &[data-layout="vertical"] {
+            flex-direction: column;
+
+            #left {
+                max-width: 100%;
+            }
+        }
+
+        &[data-layout="vertical"] {
+            flex-direction: row;
+
+            #left {
+                max-width: 50%;
+            }
+        }
     }
 
     #left {
@@ -283,7 +245,6 @@
         padding: 0px 16px;
         flex: 1;
         box-sizing: border-box;
-        max-width: var(--max-width);
     }
 
     #right {

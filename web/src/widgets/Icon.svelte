@@ -1,54 +1,39 @@
 <script lang="ts">
-    export let type = "inline";
-    export let args: any = {};
-    export let background: string = undefined;
-    export let color = "#000000";
-    export let size = "inherit";
+    export let icon;
+    export let color = "inherit";
+    export let size = "1rem";
+
+    $: style = `
+        color: ${color};
+        font-size: ${size};
+    `;
 </script>
 
-<span
-    class="material-symbols-sharp {type}"
-    style:color
-    style:font-size={size}
-    style:background-color={background}
->
-    {#if type == "inline"}
-        <slot />
-    {:else if type == "button"}
-        <div on:click={args.onclick} on:keydown={args.onclick}>
+{#if $$slots.default}
+    <div class="flex">
+        <span class="material-symbols-sharp" {style}>
+            {icon}
+        </span>
+        <div style:color={color}>
             <slot />
         </div>
-    {/if}
-</span>
+    </div>
+{:else}
+    <span class="material-symbols-sharp" {style}>
+        {icon}
+    </span>
+{/if}
 
 <style lang="scss">
-    div {
-        display: inline;
+    .flex {
+        display: flex;
+        align-content: center;
+        align-items: center;
+        flex-direction: row;
     }
 
     .material-symbols-sharp {
         user-select: none;
-
-        &.inline {
-            display: inline;
-            position: relative;
-        }
-        
-        &.button {
-            display: inline-block;
-            cursor: pointer;
-            // background: rgb(255, 255, 255);
-            border-radius: 10%;
-            line-height: 100%;
-            padding: 5px;
-
-            &:hover {
-                filter: opacity(90%);
-            }
-
-            &:active {
-                filter: opacity(50%);
-            }
-        }
+        position: relative;
     }
 </style>
