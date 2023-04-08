@@ -95,3 +95,13 @@ export function renderComponents(el: HTMLElement, extra_props: any = {}) {
     renderComponent(el, "pre", Code, extra_props);
     renderComponent(el, "Admonition", Admonition, extra_props);
 }
+
+export function smoothAnchor(anchor: Element) {
+    anchor.addEventListener("click", function (e) {
+        e.preventDefault();
+
+        document.querySelector(this.getAttribute("href")).scrollIntoView({
+            behavior: "smooth",
+        });
+    });
+}
