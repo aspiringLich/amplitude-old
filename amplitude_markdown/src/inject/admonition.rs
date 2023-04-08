@@ -21,7 +21,7 @@ pub fn inject_admonition<'a>(
         .context("expected blockquote tags in html")?;
     let mut data = node.data.borrow_mut();
     data.value = NodeValue::HtmlInline(format!(
-        "<Admonition type=\"{}\">{}</Admonition>",
+        "<Admonition type=\"{}\">{}</Admonition>\n",
         tag, html
     ));
 

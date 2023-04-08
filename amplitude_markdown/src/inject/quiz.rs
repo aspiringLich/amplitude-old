@@ -61,7 +61,7 @@ pub(super) fn inject_quiz<'a>(
         }
         _ => unreachable!(),
     }
-    *val = NodeValue::HtmlInline(format!("<Quiz id=\"{id}\"></Quiz>"));
+    *val = NodeValue::HtmlInline(format!("<Quiz id=\"{id}\"></Quiz>\n"));
 
     Ok(vec![])
 }
