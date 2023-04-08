@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { fade } from "svelte/transition";
+
     export let article_body: Element;
 
     import { smoothAnchor } from "./article";
@@ -20,7 +22,7 @@
 
     // the section were currently reading
     let reading = -1;
-    const threshold = 0.1;
+    const threshold = 0.2;
 
     // get the headings from the article
     let children = article_body.childNodes;
@@ -63,7 +65,12 @@
     on:resize={calcHeadingPositions}
 />
 
-<div id="outline" bind:this={outline_element}>
+<div
+    id="outline"
+    bind:this={outline_element}
+    in:fade={{ duration: 400, delay: 200 }}
+    on:introend={calcHeadingPositions}
+>
     <h1>Outline</h1>
     <ul>
         {#each headings as heading, i}

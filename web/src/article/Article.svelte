@@ -32,6 +32,7 @@
 
     let heading = "";
     let init = false;
+    let sidebars = false;
 
     let body_element: Element;
     let outline_element: Element;
@@ -73,7 +74,7 @@
         width = window.innerWidth;
     }
 
-    let flyOptions = { y: -100, easing: quadInOut, duration: 400 };
+    let flyOptions = { y: -20, duration: 300 };
 
     let width = window.innerWidth;
     $: right = width >= 1100 && body_element != undefined;
@@ -85,11 +86,16 @@
 {#if init}
     <div id="article" data-right={right} data-left={left}>
         <div id="left" />
-        <div id="container" in:fly={flyOptions} on:introstart|once={transfer}>
+        <div
+            id="container"
+            in:fly={flyOptions}
+            on:introstart|once={transfer}
+            on:introend|once={() => (sidebars = true)}
+        >
             <h1>{heading}</h1>
             <div id="body" bind:this={body_element} />
         </div>
-        {#if right}
+        {#if right && sidebars}
             <Outline article_body={body_element} />
         {/if}
     </div>

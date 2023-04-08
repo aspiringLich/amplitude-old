@@ -86,7 +86,7 @@
                 <Button {...button(inc)}>Start Quiz</Button>
                 <h2>Quiz</h2>
                 <h4>
-                    {`${len} question${len == 1 ? "" : "s"}`}
+                    {len} question{len == 1 ? "" : "s"}
                 </h4>
             </div>
         {:else if n < len}
