@@ -1,6 +1,6 @@
 mod admonition;
-mod quiz;
 mod code;
+mod quiz;
 
 use amplitude_common::state::ParseState;
 use anyhow::Context;
@@ -135,7 +135,12 @@ static INJECTION_TAGS: HashMap<String, CallbackInfo> = {
     );
     insert(
         "@!",
-        CallbackInfo::new(Quote, admonition::inject_admonition, &["info"], &[]),
+        CallbackInfo::new(
+            Quote,
+            admonition::inject_admonition,
+            &["note", "info", "warning", "success", "failiure"],
+            &[],
+        ),
     );
     insert(
         "@code",

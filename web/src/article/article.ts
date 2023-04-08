@@ -1,5 +1,8 @@
 import type { ComponentType } from "svelte";
+
 import Code from "./Code.svelte";
+import Admonition from "./Admonition.svelte";
+
 import {
     destroy_component,
     detach,
@@ -73,19 +76,23 @@ export function renderComponent(
         let slots = target.childNodes.length > 0;
 
         if (slots) {
-            props["$$slots"] = createSlots({ default: [...target.childNodes, { $$scope: {} }] });
+            // console.log(target.childNodes);
+            props["$$slots"] = createSlots({ default: [...target.children, { $$scope: {} }] });
             props["$$scope"] = {};
         }
 
-        let c = new type({
+        new type({
             target: target.parentElement,
             anchor: target,
             props,
         });
+
+        target.remove();
     });
 }
 
 // renders a document from a html str
 export function renderComponents(el: HTMLElement, extra_props: any = {}) {
     renderComponent(el, "pre", Code, extra_props);
+    renderComponent(el, "Admonition", Admonition, extra_props);
 }

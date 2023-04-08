@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import hijs from "highlight.js/lib/common";
-    import { fade } from "svelte/transition";
+    import { fade, fly } from "svelte/transition";
     import Icon from "../widgets/Icon.svelte";
 
     // import assert from "assert";
@@ -38,6 +38,7 @@
 
 <div
     style:position="relative"
+    style:overflow-y="hidden"
     on:mouseenter={() => (copy_button = true)}
     on:mouseleave={() => (copy_button = false)}
 >
@@ -46,10 +47,14 @@
         <pre bind:this={pre_element}><slot /></pre>
     </div>
     {#if copy_button}
-        <div id="copy" transition:fade={{ delay: 500, duration: 400 }}>
-            <Icon type="button" args={{ onclick: copy }} background="#ffffffff"
-                >content_copy</Icon
+        <div id="copy">
+            <Icon
+                type="button"
+                args={{ onclick: copy }}
+                background="rgba(255, 255, 255, 0.5)"
             >
+                content_copy
+            </Icon>
         </div>
     {/if}
 </div>
@@ -77,7 +82,7 @@
             padding: 1em 0.5em;
             display: block;
             border-right: 1px solid rgba(255, 255, 255, 0.5);
-            
+
             user-select: none;
         }
 

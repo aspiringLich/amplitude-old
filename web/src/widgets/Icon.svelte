@@ -3,10 +3,10 @@
     export let args: any = {};
     export let background: string = undefined;
     export let color = "#000000";
-    export let size = "1em";
+    export let size = "inherit";
 </script>
 
-<div
+<span
     class="material-symbols-sharp {type}"
     style:color
     style:font-size={size}
@@ -19,13 +19,21 @@
             <slot />
         </div>
     {/if}
-</div>
+</span>
 
 <style lang="scss">
     div {
-        line-height: 100%;
+        display: inline;
+    }
+
+    .material-symbols-sharp {
         user-select: none;
 
+        &.inline {
+            display: inline;
+            position: relative;
+        }
+        
         &.button {
             display: inline-block;
             cursor: pointer;
