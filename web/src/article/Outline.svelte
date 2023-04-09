@@ -79,7 +79,8 @@
     on:introend={activate}
 >
     <h1>Outline</h1>
-    <ul>
+    <div id="scroll">
+        <ul>
         {#each headings as heading, i}
             <li id="item" data-on={i == reading}>
                 <a href={"#" + heading.id}>
@@ -88,6 +89,7 @@
             </li>
         {/each}
     </ul>
+    </div>
 </div>
 
 <style lang="scss">
@@ -102,6 +104,11 @@
         width: $outline-width;
         padding-right: 10px;
         padding-left: 1em;
+        
+        #scroll {
+            overflow-y: scroll;
+            overflow-x: hidden;
+        }
 
         ul {
             padding-left: 0;
@@ -109,7 +116,7 @@
         }
 
         h1 {
-            font-size: 1.5em;
+            font-size: 1.7em;
         }
 
         li {

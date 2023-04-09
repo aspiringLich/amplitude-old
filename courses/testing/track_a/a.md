@@ -18,10 +18,7 @@ Id neque aliquam vestibulum morbi blandit cursus risus at. Faucibus vitae alique
 
 Pharetra et ultrices neque ornare aenean euismod elementum nisi. Mi sit amet mauris commodo. Blandit cursus risus at ultrices mi tempus.
 
-
-[test]: https://test.com
-
-[test+/test]
+[test/test]
 
 ## Admonitions
 

@@ -9,6 +9,7 @@
     import { fly } from "svelte/transition";
     import Outline from "./Outline.svelte";
     import { smoothAnchor } from "./article";
+    import Explorer from "./Explorer.svelte";
 
     // create a Document from the html str
     async function fetchDocument() {
@@ -81,15 +82,17 @@
     let flyOptions = { y: -20, duration: 300 };
 
     let width = window.innerWidth;
-    $: right = width >= 1100 && body_element != undefined;
-    $: left = width >= 700;
+    $: outline = width >= 1100 && body_element != undefined;
+    $: explorer = width >= 700;
 </script>
 
 <svelte:window on:resize={onResize} />
 
 {#if init}
-    <div id="article" data-right={right} data-left={left}>
-        <div id="left" />
+    <div id="article" data-right={outline} data-left={explorer}>
+        {#if explorer && sidebars}
+            <Explorer {...{ course, track, article }} />
+        {/if}
         <div
             id="container"
             in:fly={flyOptions}
@@ -99,7 +102,7 @@
             <h1>{heading}</h1>
             <div id="body" bind:this={body_element} />
         </div>
-        {#if right && sidebars}
+        {#if outline && sidebars}
             <Outline article_body={body_element} />
         {/if}
     </div>
@@ -109,15 +112,6 @@
 <style lang="scss">
     @use "variables.scss" as *;
     // $article-width: calc(100vw - #{$outline-width} - #{$article-list-width});
-
-    #left {
-        position: fixed;
-        float: left;
-        top: 5px;
-        left: 10px;
-        height: 100%;
-        width: $article-list-width;
-    }
 
     #article {
         display: flex;
@@ -129,7 +123,7 @@
         }
 
         &[data-left="true"] {
-            margin-left: $article-list-width !important;
+            margin-left: $explorer-width !important;
         }
     }
 

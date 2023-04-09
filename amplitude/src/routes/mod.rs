@@ -5,7 +5,10 @@ use amplitude_common::{
     state::{ArticleRef, State},
 };
 use serde::Deserialize;
-use std::{fs::File, path::PathBuf};
+use std::{
+    fs::{self, File},
+    path::PathBuf,
+};
 
 mod article;
 mod quiz;
@@ -19,6 +22,8 @@ pub struct ArticleReq {
 
 impl ArticleReq {
     pub fn into_article_ref(self) -> ArticleRef {
+        assert!(self.sanitized(), "Article path not valid");
+
         let mut vec = vec![self.course, self.track];
         if let Some(article) = self.article {
             vec.push(article);
@@ -26,8 +31,25 @@ impl ArticleReq {
         ArticleRef { levels: vec }
     }
 
+    #[must_use]
+    pub fn sanitized(&self) -> bool {
+        let sanitize =
+            |s: &str| s.contains(|c: char| !(c.is_ascii_alphanumeric() || "-_".contains(c)));
+        if sanitize(&self.course) || sanitize(&self.track) {
+            return false;
+        }
+        if let Some(article) = &self.article {
+            !sanitize(article)
+        } else {
+            true
+        }
+    }
+
     pub fn into_path(self) -> PathBuf {
         let mut path = PathBuf::from(config::RENDERED.clone());
+
+        assert!(self.sanitized(), "Article path not valid");
+
         path.push(self.course);
         path.push(self.track);
         if let Some(article) = self.article {

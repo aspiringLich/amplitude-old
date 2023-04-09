@@ -1,25 +1,35 @@
 /// This module contains the code for concatenating together
 /// markdown links
 use comrak::RefMap;
+use tracing::error;
 
 /// A link concatenation callback
 pub(crate) fn link_concat_callback(link: &str, links: &RefMap) -> Option<(String, String)> {
-    // Add a to b, parsing them as links if they are links
-    if let Some((left, right)) = link.split_once(|c| matches!(c, '+')) {
-        let title = links
-            .map
-            .get(left)
-            .map(|l| l.title.clone())
-            .unwrap_or_default();
-        let l = links.map.get(left).map(|l| l.url.as_str()).unwrap_or(left);
-        let r = links
-            .map
-            .get(right)
-            .map(|l| l.url.as_str())
-            .unwrap_or(right);
-        Some((l.to_string() + r, title))
+    let ch;
+    let (left, right);
+    if let Some((index, c)) = link.chars().enumerate().find(|(i, c)| "+/".contains(*c)) {
+        (left, right) = link.split_at(index);
+        ch = c;
     } else {
-        None
+        error!("Broken link: {}", link);
+        return None;
+    }
+
+    let title = links
+        .map
+        .get(left)
+        .map(|l| l.title.clone())
+        .unwrap_or_default();
+    let l = links.map.get(left).map(|l| l.url.as_str()).unwrap_or(left);
+    let r = links
+        .map
+        .get(right)
+        .map(|l| l.url.as_str())
+        .unwrap_or(right);
+    match ch {
+        '+' => Some((title, format!("{}{}", l, r))),
+        '/' => Some((title, format!("{}/{}", l, r))),
+        _ => unreachable!(),
     }
 }
 

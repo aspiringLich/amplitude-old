@@ -39,6 +39,7 @@ pub(crate) fn parse<'a>(
 
     let arena = Arena::new();
     let options = &state.options;
+    tracing::warn_span!("parse");
     let out = comrak::parse_document_with_broken_link_callback(
         &arena,
         input,
