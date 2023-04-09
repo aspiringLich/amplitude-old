@@ -1,8 +1,8 @@
 use super::*;
 
 pub fn inject_admonition<'a>(
-    _: ArticleRef,
-    args: HashMap<String, String>,
+    _: &ArticleRef,
+    args: &HashMap<String, String>,
     node: &'a AstNode<'a>,
     state: &mut ParseState,
     _: &RefMap,

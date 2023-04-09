@@ -18,7 +18,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
     // let args = Args::parse();
 
-    let parse_state = parse_dir(&config::INPUT, &config::OUTPUT)?;
+    let parse_state = parse_dir(&config::INPUT, &config::RENDERED)?;
     dbg!(&parse_state);
     let state = State {
         parse: Mutex::new(parse_state),

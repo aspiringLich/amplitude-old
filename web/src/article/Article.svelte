@@ -1,26 +1,30 @@
 <script lang="ts">
     export let course: string;
-    export let article: string;
+    export let track: string;
+    export let article: string = undefined;
 
-    import { type ComponentType, onMount } from "svelte";
+    import { onMount } from "svelte";
     import Quiz from "./Quiz.svelte";
     import { renderComponents, renderComponent } from "./article";
     import { fly } from "svelte/transition";
-    import { quadInOut } from "svelte/easing";
     import Outline from "./Outline.svelte";
     import { smoothAnchor } from "./article";
 
     // create a Document from the html str
     async function fetchDocument() {
+        let map = {
+            course,
+            track,
+        };
+        if (article) {
+            map["article"] = article;
+        }
         const a = await fetch("/api/article", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                course,
-                article,
-            }),
+            body: JSON.stringify(map),
         });
         if (!a.ok) {
             throw new Error("failed to fetch article");

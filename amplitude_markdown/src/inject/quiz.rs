@@ -1,6 +1,8 @@
+use std::cell::RefCell;
+
 use super::*;
 use crate::parse::parse;
-use amplitude_common::state::{ParseState, Quiz};
+use amplitude_common::state::{ArticleRef, ParseState, Quiz};
 use anyhow::Context;
 
 /// Turns a code block into a quiz
@@ -19,9 +21,9 @@ use anyhow::Context;
 /// ```
 /// ````
 pub(super) fn inject_quiz<'a>(
-    article: ArticleRef,
-    args: HashMap<String, String>,
-    node: &'a AstNode<'a>,
+    article: &ArticleRef,
+    args: &HashMap<String, String>,
+    node: &AstNode<'a>,
     state: &mut ParseState,
     refs: &RefMap,
 ) -> anyhow::Result<Vec<&'a AstNode<'a>>> {
@@ -49,13 +51,8 @@ pub(super) fn inject_quiz<'a>(
                         .to_string();
                 }
             }
-            let key = (
-                article.course.to_string(),
-                article.article.to_string(),
-                id.to_string(),
-            );
             anyhow::ensure!(
-                state.questions.insert(key, quiz).is_none(),
+                state.insert_question(article, id, quiz).is_none(),
                 "Quiz id `{id}` already exists in this file"
             )
         }

@@ -1,8 +1,7 @@
 <script lang="ts">
-    import { fade } from "svelte/transition";
-
     export let article_body: Element;
 
+    import { fade } from "svelte/transition";
     import { smoothAnchor } from "./article";
 
     class Heading {
@@ -46,15 +45,23 @@
 
     // get the positions of the headings and find the one we're currently on
     function calcHeadingPositions() {
+        if (headings.length == 0 || !active) return;
+        let height = headings[0].element.getBoundingClientRect().height;
+        let thresh = height * 6 + 32;
         for (let i = 0; i < headings.length; i++) {
-            let heading = headings[i];
-            positions[i] = heading.element.getBoundingClientRect().top;
+            let top = headings[i].element.getBoundingClientRect().top;
+            if (top > thresh) {
+                reading = i - 1;
+                return;
+            }
         }
-        reading = positions.findIndex(
-            (p) => p > window.innerHeight * threshold
-        );
-        if (reading == -1) reading = positions.length;
-        reading -= 1;
+        reading = headings.length - 1;
+    }
+
+    let active = false;
+    function activate() {
+        active = true;
+        calcHeadingPositions();
     }
 
     let outline_element: Element;
@@ -69,7 +76,7 @@
     id="outline"
     bind:this={outline_element}
     in:fade={{ duration: 400, delay: 200 }}
-    on:introend={calcHeadingPositions}
+    on:introend={activate}
 >
     <h1>Outline</h1>
     <ul>

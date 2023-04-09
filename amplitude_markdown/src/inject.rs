@@ -2,29 +2,25 @@ mod admonition;
 mod code;
 mod quiz;
 
-use amplitude_common::state::ParseState;
+use amplitude_common::state::{ArticleRef, ParseState};
 use anyhow::Context;
 
 use comrak::nodes::{AstNode, NodeValue};
 use comrak::RefMap;
 
+use std::borrow::Cow;
+use std::cell::RefCell;
 use std::collections::HashMap;
 
 use comrak::html;
 
 type Callback = for<'a> fn(
-    ArticleRef,
-    HashMap<String, String>,
+    &ArticleRef,
+    &HashMap<String, String>,
     &'a AstNode<'a>,
     &mut ParseState,
     &RefMap,
 ) -> anyhow::Result<Vec<&'a AstNode<'a>>>;
-
-#[derive(Debug, Hash, Clone, Copy, PartialEq, Eq)]
-pub struct ArticleRef<'a> {
-    pub article: &'a str,
-    pub course: &'a str,
-}
 
 /// A list of tags that are expected to be found in the markdown to call the
 /// callback
@@ -159,10 +155,10 @@ fn parse_args(input: &str) -> HashMap<String, String> {
 }
 
 pub(crate) fn inject<'a>(
-    article: ArticleRef,
+    article: &'a ArticleRef,
     node: &'a AstNode<'a>,
     refs: &RefMap,
-    state: &mut ParseState,
+    state: &'a mut ParseState,
 ) -> anyhow::Result<()> {
     // variables were going to detach
     let mut to_detach = vec![];
@@ -213,7 +209,7 @@ pub(crate) fn inject<'a>(
                 to_detach.push(node);
                 let expected = &info.expected;
                 if expected.matches(n) {
-                    let mut ret = (info.callback)(article, args, n, state, refs)
+                    let mut ret = (info.callback)(article, &args, n, state, refs)
                         .context(format!("While calling callback for tag `{text}`"))?;
                     to_detach.append(&mut ret);
                 } else {

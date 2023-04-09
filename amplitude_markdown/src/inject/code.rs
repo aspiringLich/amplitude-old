@@ -1,9 +1,9 @@
 use super::*;
 
 pub fn inject_code<'a>(
-    _: ArticleRef,
-    args: HashMap<String, String>,
-    node: &'a AstNode<'a>,
+    _: &ArticleRef,
+    args: &HashMap<String, String>,
+    node: &AstNode<'a>,
     _: &mut ParseState,
     _: &RefMap,
 ) -> anyhow::Result<Vec<&'a AstNode<'a>>> {

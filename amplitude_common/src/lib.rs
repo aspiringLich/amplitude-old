@@ -22,7 +22,13 @@ pub mod config {
         path::{Path, PathBuf},
     };
 
+    def_static!(INPUT, "courses");
+    def_static!(RENDERED, "rendered");
+    def_static!(TEMPLATE, "web/templates");
+    def_static!(STATIC, "web/static");
+
     /// A struct that represents a path, which can be initialized statically.
+    #[derive(Clone)]
     pub struct StaticPath(&'static str);
 
     impl Display for StaticPath {
@@ -64,9 +70,4 @@ pub mod config {
     macro def_static($name:ident, $str:literal) {
         pub static $name: StaticPath = StaticPath($str);
     }
-
-    def_static!(INPUT, "courses");
-    def_static!(OUTPUT, "rendered");
-    def_static!(TEMPLATE, "web/templates");
-    def_static!(STATIC, "web/static");
 }

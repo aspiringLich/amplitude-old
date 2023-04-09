@@ -1,15 +1,17 @@
-use std::{collections::HashMap, default::default, fs, path::Path, sync::Arc};
+use std::{
+    borrow::Cow, cell::RefCell, collections::HashMap, default::default, fs, path::Path, sync::Arc,
+};
 
 use amplitude_common::{
     config,
-    state::{ParseState, State},
+    state::{ArticleRef, ParseState, State},
 };
 use anyhow::Context;
 use notify::{Config, RecommendedWatcher, Watcher};
 use tracing::{error, info};
 
 use crate::{
-    inject::{self, ArticleRef},
+    inject::{self},
     link_concat::link_concat_callback,
 };
 use comrak::{
@@ -22,8 +24,8 @@ use comrak::{
 /// ## Behavior
 ///
 /// - Link concatenation is supported
-pub(crate) fn parse(
-    article: ArticleRef,
+pub(crate) fn parse<'a>(
+    article: &ArticleRef,
     input: &str,
     refs: &RefMap,
     state: &mut ParseState,
@@ -31,18 +33,23 @@ pub(crate) fn parse(
     let mut this_refs = parse_document_refs(&Arena::new(), input);
     this_refs.extend(refs.clone());
 
+    // were not modifying options, so we can be sneaky
+    // also im just too lazy to refactor this
+    let ptr = unsafe { &mut *(state as *mut ParseState) };
+
     let arena = Arena::new();
+    let options = &state.options;
     let out = comrak::parse_document_with_broken_link_callback(
         &arena,
         input,
-        &state.options,
+        options,
         Some(&mut |link| link_concat_callback(link, &this_refs)),
     );
     // do things
-    inject::inject(article, out, refs, state)?;
+    inject::inject(article, out, refs, ptr)?;
 
     let mut cm = vec![];
-    comrak::format_html(out, &state.options, &mut cm).context("While parsing AST to html")?;
+    comrak::format_html(out, options, &mut cm).context("While parsing AST to html")?;
 
     Ok(String::from_utf8(cm).unwrap())
 }
@@ -70,7 +77,7 @@ pub(crate) fn parse(
 ///    included in the output
 ///  - `config.toml` files will be parsed to register the course
 ///
-pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseState> {
+pub fn parse_dir<'a, P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseState> {
     let options = ComrakOptions {
         extension: ComrakExtensionOptions {
             strikethrough: true,
@@ -105,16 +112,13 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseSta
         questions: HashMap::new(),
         options,
     };
-    let article = ArticleRef {
-        course: "",
-        article: "",
-    };
+    let article = ArticleRef { levels: vec![] };
 
     if let Ok(s) = fs::read_to_string(input.as_ref().join("header.md")) {
         let refs = comrak::parse_document_refs(&Arena::new(), &s);
-        parse_dir_internal(article, 0, input, output, &refs, &mut state)
+        parse_dir_internal(&article, 0, input, output, &refs, &mut state)
     } else {
-        parse_dir_internal(article, 0, input, output, &RefMap::new(), &mut state)
+        parse_dir_internal(&article, 0, input, output, &RefMap::new(), &mut state)
     }
     .context("While parsing markdown files")?;
 
@@ -123,7 +127,7 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseSta
 }
 
 fn parse_dir_internal<P: AsRef<Path>>(
-    article: ArticleRef,
+    article: &ArticleRef,
     depth: u8,
     input: P,
     output: P,
@@ -152,8 +156,11 @@ fn parse_dir_internal<P: AsRef<Path>>(
             _ => {
                 // dbg!(&o);
                 if !i.exists() {
-                    // dbg!(&i, &o);
-                    fs::remove_file(o)?;
+                    if o.is_dir() {
+                        fs::remove_dir_all(o)?;
+                    } else {
+                        fs::remove_file(o)?;
+                    }
                 }
             }
         }
@@ -169,24 +176,19 @@ fn parse_dir_internal<P: AsRef<Path>>(
             if !o.exists() {
                 fs::create_dir(&o)?;
             }
-            let mut a = article;
             let name = i.file_name().unwrap().to_str().unwrap();
             // top level -> course
-            if depth == 0 {
-                a.course = name;
-            }
+            let mut a = article.clone();
+            a.push(name.to_string());
             if let Ok(s) = fs::read_to_string(input.join("header.md")) {
                 let other_refs = comrak::parse_document_refs(&Arena::new(), &s);
                 let mut refs = refs.clone();
                 refs.extend(other_refs);
 
                 // also parse header.md to add any of the thigs it has
-                parse(a, &s, &refs, state).context(format!("While parsing {}", i.display()))?;
-
-                parse_dir_internal(a, depth + 1, &i, &o, &refs, state)?;
-            } else {
-                parse_dir_internal(a, depth + 1, &i, &o, refs, state)?;
+                parse(&a, &s, &refs, state).context(format!("While parsing {}", i.display()))?;
             }
+            parse_dir_internal(&a, depth + 1, &i, &o, &refs, state)?;
             continue;
         }
 
@@ -201,20 +203,21 @@ fn parse_dir_internal<P: AsRef<Path>>(
                 }
 
                 // otherwise, parse
-                let s = fs::read_to_string(&i)?;
+                let s = fs::read_to_string(&i).context("While reading file")?;
                 let i = i.display();
                 anyhow::ensure!(
-                    depth == 1,
+                    depth >= 1,
                     "File: {name:?} must be in the article directory"
                 );
-                let mut article = article;
-                article.article = name
+                let mut a = article.clone();
+                let name = name
                     .to_str()
                     .unwrap()
                     .strip_suffix(".md")
                     .context("Expected article to end with `.md`")?;
+                a.push(name.to_string());
                 let output =
-                    parse(article, &s, refs, state).context(format!("While parsing file {i}"))?;
+                    parse(&a, &s, refs, state).context(format!("While parsing file {i}"))?;
                 fs::write(o.with_extension("html"), output)?;
             }
             "toml" if name == "config.toml" => {
@@ -266,7 +269,7 @@ pub fn parse_dir_watch(state: Arc<State>) -> notify::Result<()> {
         match event {
             Ok(event) if matches!(event.kind, Create(_) | Modify(_) | Remove(_)) => {
                 info!("Change detected, reparsing...");
-                match parse_dir(&config::INPUT, &config::OUTPUT) {
+                match parse_dir(&config::INPUT, &config::RENDERED) {
                     Err(e) => error!("Error parsing directory: '{:?}'", e),
                     Ok(s) => *state.parse.lock().unwrap() = s,
                 }

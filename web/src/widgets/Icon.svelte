@@ -42,7 +42,7 @@
         position: relative;
     }
     
-    div {
+    span {
         &[data-reverse="true"] {
             margin-right: 0.5em;
         }

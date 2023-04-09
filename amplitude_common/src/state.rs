@@ -1,4 +1,8 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::{
+    collections::HashMap,
+    ops::{Deref, DerefMut},
+    sync::Mutex,
+};
 
 use serde::{Deserialize, Serialize};
 
@@ -22,16 +26,41 @@ pub struct Quiz {
     pub questions: Vec<Question>,
 }
 
+const DEPTH_NAMES: [&str; 3] = ["course", "track", "article"];
+
+#[derive(Debug, Hash, Clone, PartialEq, Eq)]
+pub struct ArticleRef {
+    pub levels: Vec<String>,
+}
+
+impl Deref for ArticleRef {
+    type Target = Vec<String>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.levels
+    }
+}
+
+impl DerefMut for ArticleRef {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.levels
+    }
+}
+
 #[derive(Debug)]
 pub struct ParseState {
     pub options: comrak::ComrakOptions,
-    pub questions: HashMap<(String, String, String), Quiz>,
+    pub questions: HashMap<(Vec<String>, String), Quiz>,
 }
 
 impl ParseState {
-    pub fn get_question(&self, course: &str, article: &str, id: &str) -> Option<&Quiz> {
+    pub fn get_question(&self, article: ArticleRef, id: String) -> Option<&Quiz> {
+        self.questions.get(&(article.levels, id))
+    }
+
+    pub fn insert_question<'a>(&'a mut self, article: &ArticleRef, id: &String, quiz: Quiz) -> Option<Quiz> {
         self.questions
-            .get(&(course.to_string(), article.to_string(), id.to_string()))
+            .insert((article.levels.clone(), id.clone()), quiz)
     }
 }
 
