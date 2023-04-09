@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    fmt::Display,
     ops::{Deref, DerefMut},
     sync::Mutex,
 };
@@ -58,7 +59,12 @@ impl ParseState {
         self.questions.get(&(article.levels, id))
     }
 
-    pub fn insert_question<'a>(&'a mut self, article: &ArticleRef, id: &String, quiz: Quiz) -> Option<Quiz> {
+    pub fn insert_question<'a>(
+        &'a mut self,
+        article: &ArticleRef,
+        id: &String,
+        quiz: Quiz,
+    ) -> Option<Quiz> {
         self.questions
             .insert((article.levels.clone(), id.clone()), quiz)
     }

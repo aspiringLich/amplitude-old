@@ -92,8 +92,8 @@ export function renderComponent(
 
 // renders a document from a html str
 export function renderComponents(el: HTMLElement, extra_props: any = {}) {
-    renderComponent(el, "pre", Code, extra_props);
-    renderComponent(el, "Admonition", Admonition, extra_props);
+    renderComponent(el, "pre", Code);
+    renderComponent(el, "Admonition", Admonition);
 }
 
 export function smoothAnchor(anchor: Element) {

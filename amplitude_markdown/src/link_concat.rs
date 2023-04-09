@@ -11,24 +11,28 @@ pub(crate) fn link_concat_callback(link: &str, links: &RefMap) -> Option<(String
         (left, right) = link.split_at(index);
         ch = c;
     } else {
-        error!("Broken link: {}", link);
         return None;
     }
 
-    let title = links
-        .map
-        .get(left)
-        .map(|l| l.title.clone())
-        .unwrap_or_default();
-    let l = links.map.get(left).map(|l| l.url.as_str()).unwrap_or(left);
-    let r = links
+    let Some(prefix) = links.map.get(left) else {
+        return None;
+    };
+
+    let title = &prefix.title;
+    let mut l = prefix.url.as_str();
+    let mut r = links
         .map
         .get(right)
-        .map(|l| l.url.as_str())
+        .map(|l| &l.url.as_str()[1..])
         .unwrap_or(right);
+
+    let s = r.replace("//", "/");
+    r = &s;
+    r = r.strip_prefix("/").unwrap_or(r);
+    l = l.strip_suffix("/").unwrap_or(l);
+    let out = format!("{}/{}", l, r);
     match ch {
-        '+' => Some((title, format!("{}{}", l, r))),
-        '/' => Some((title, format!("{}/{}", l, r))),
+        '+' | '/' => Some((out, title.to_string())),
         _ => unreachable!(),
     }
 }
