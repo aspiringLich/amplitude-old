@@ -21,5 +21,3 @@ pub fn parse_frontmatter(input: &str) -> anyhow::Result<ArticleConfig> {
 
     toml::from_str(&header).context("While parsing frontmatter")
 }
-
-#[derive(Debug)]
