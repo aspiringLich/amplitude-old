@@ -2,7 +2,7 @@ use std::cell::RefCell;
 
 use super::*;
 use crate::parse::parse;
-use amplitude_common::state::{ArticleRef, ParseState, Quiz};
+use amplitude_common::state::{quiz::Quiz, ArticleRef, ParseState};
 use anyhow::Context;
 
 /// Turns a code block into a quiz
@@ -52,7 +52,7 @@ pub(super) fn inject_quiz<'a>(
                 }
             }
             anyhow::ensure!(
-                state.insert_question(article, id, quiz).is_none(),
+                state.insert_quiz(article, id, quiz).is_none(),
                 "Quiz id `{id}` already exists in this file"
             )
         }
@@ -65,7 +65,7 @@ pub(super) fn inject_quiz<'a>(
 
 #[cfg(test)]
 mod tests {
-    use amplitude_common::state::{Answer, Question};
+    use amplitude_common::state::quiz::{Answer, Question};
 
     #[test]
     fn test_serde() {

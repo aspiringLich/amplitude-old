@@ -1,33 +1,14 @@
+use anyhow::Context;
 use std::{
     collections::HashMap,
-    fmt::Display,
     ops::{Deref, DerefMut},
     sync::Mutex,
 };
 
+pub mod config;
+pub mod quiz;
+
 use serde::{Deserialize, Serialize};
-
-#[derive(Deserialize, Serialize, Debug, PartialEq)]
-pub struct Answer {
-    pub text: String,
-    #[serde(default)]
-    pub response: String,
-    #[serde(default)]
-    pub correct: bool,
-}
-
-#[derive(Deserialize, Serialize, Debug, PartialEq)]
-pub struct Question {
-    pub question: String,
-    pub answers: Vec<Answer>,
-}
-
-#[derive(Deserialize, Serialize, Debug, PartialEq)]
-pub struct Quiz {
-    pub questions: Vec<Question>,
-}
-
-const DEPTH_NAMES: [&str; 3] = ["course", "track", "article"];
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
 pub struct ArticleRef {
@@ -51,20 +32,20 @@ impl DerefMut for ArticleRef {
 #[derive(Debug)]
 pub struct ParseState {
     pub options: comrak::ComrakOptions,
-    pub questions: HashMap<(Vec<String>, String), Quiz>,
+    pub questions: HashMap<(Vec<String>, String), quiz::Quiz>,
 }
 
 impl ParseState {
-    pub fn get_question(&self, article: ArticleRef, id: String) -> Option<&Quiz> {
+    pub fn get_quiz(&self, article: ArticleRef, id: String) -> Option<&quiz::Quiz> {
         self.questions.get(&(article.levels, id))
     }
 
-    pub fn insert_question<'a>(
+    pub fn insert_quiz<'a>(
         &'a mut self,
         article: &ArticleRef,
         id: &String,
-        quiz: Quiz,
-    ) -> Option<Quiz> {
+        quiz: quiz::Quiz,
+    ) -> Option<quiz::Quiz> {
         self.questions
             .insert((article.levels.clone(), id.clone()), quiz)
     }

@@ -53,6 +53,7 @@ dependencies = [
  "anyhow",
  "comrak",
  "serde",
+ "toml",
  "tracing",
 ]
 

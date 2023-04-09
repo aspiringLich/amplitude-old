@@ -243,13 +243,8 @@ fn parse_dir_internal<P: AsRef<Path>>(
                 fs::write(o.with_extension("html"), output)?;
             }
             "toml" if name == "config.toml" => {
-                // // parse the config file
+                // parse the config file
                 // let config = parse_config(&i)?;
-
-                // // generate the index file
-                // let index = generate_index(&config, &links);
-                // let path = o.with_file_name("index.html");
-                // fs::write(path, index)?;
             }
             _ => {
                 // copy over the file

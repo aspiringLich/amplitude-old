@@ -5,7 +5,6 @@
 // use clap::Parser;
 
 pub mod state;
-pub mod template_builder;
 
 // pub static ARGS: LazyLock<Args> = LazyLock::new(|| Args::parse());
 

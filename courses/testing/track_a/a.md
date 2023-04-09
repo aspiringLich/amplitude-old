@@ -1,4 +1,7 @@
-# ABCDEFG
+---
+title = "ABCDEFG"
+author = "Brandon Li"
+---
 
 ## Lorem Ipsum
 
