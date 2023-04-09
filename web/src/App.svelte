@@ -22,11 +22,11 @@
     <Route path="/article/:course/:track" let:meta>
         <Article course={meta.params.course} track={meta.params.track} />
     </Route>
-    <Route path="/article/:course/:track/:a" let:meta>
+    <Route path="/article/:course/:track/:article" let:meta>
         <Article
             course={meta.params.course}
             track={meta.params.track}
-            article={meta.params.a}
+            article={meta.params.article}
         />
     </Route>
     <!-- <Route path="/about"><About /></Route>

@@ -54,8 +54,8 @@
             heading = title.textContent;
             doc.body.removeChild(title);
 
-            renderComponent(doc.body, "Quiz", Quiz, { course, article });
-            renderComponents(doc.body, { course, article });
+            renderComponent(doc.body, "Quiz", Quiz, { course, track, article });
+            renderComponents(doc.body, { course, track, article });
 
             children = doc.body.childNodes;
 

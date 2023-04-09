@@ -1,23 +1,32 @@
 <script lang="ts">
     export let id: string;
     export let course: string;
-    export let article: string;
+    export let track: string;
+    export let article: string = undefined;
 
     import Button from "../widgets/Button.svelte";
     import Icon from "../widgets/Icon.svelte";
     import { renderComponents } from "./article";
 
     async function fetchQuiz() {
+        let article_map = {
+            course,
+            track,
+        };
+        if (article) {
+            article_map["article"] = article;
+        }
+        let map = {
+            id,
+            article: article_map,
+        };
+
         const a = await fetch("/api/quiz", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                id,
-                course,
-                article,
-            }),
+            body: JSON.stringify(map),
         });
         if (!a.ok) {
             throw new Error("failed to fetch quiz");
