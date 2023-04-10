@@ -21,6 +21,6 @@ pub fn inject_code<'a>(
         }
         _ => unreachable!(),
     }
-    
+
     Ok(vec![])
 }

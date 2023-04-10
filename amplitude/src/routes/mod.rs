@@ -4,8 +4,8 @@ use amplitude_common::{config, state::State};
 use derive_more::{Deref, DerefMut};
 use serde::{de, Deserialize, Serialize};
 use std::{
-    fs::{self, File},
-    path::{self, Component, PathBuf},
+    fs::File,
+    path::{Component, PathBuf},
 };
 
 mod article;
@@ -32,7 +32,7 @@ impl<'de> Deserialize<'de> for ArticlePath {
     where
         D: serde::Deserializer<'de>,
     {
-        let mut path = PathBuf::from(String::deserialize(deserializer)?);
+        let path = PathBuf::from(String::deserialize(deserializer)?);
         for c in path.components() {
             match c {
                 Component::CurDir => {}

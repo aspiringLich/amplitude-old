@@ -30,7 +30,7 @@ use comrak::{
 /// ## Behavior
 ///
 /// - Link concatenation is supported
-pub(crate) fn parse_and_refs<'a>(
+pub(crate) fn parse_and_refs(
     article: &PathBuf,
     input: &str,
     refs: &RefMap,
@@ -71,7 +71,7 @@ pub(crate) fn parse(
     refs: &RefMap,
     state: &mut ParseState,
 ) -> anyhow::Result<String> {
-    let (out, _) = parse_and_refs(article, input, &refs, state)?;
+    let (out, _) = parse_and_refs(article, input, refs, state)?;
     Ok(out)
 }
 
@@ -98,7 +98,7 @@ pub(crate) fn parse(
 ///    included in the output
 ///  - `config.toml` files will be parsed to register the course
 ///
-pub fn parse_dir<'a, P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseState> {
+pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseState> {
     let options = ComrakOptions {
         extension: ComrakExtensionOptions {
             strikethrough: true,
@@ -203,12 +203,12 @@ fn parse_dir_internal<P: AsRef<Path>>(
                 let mut refs = refs.clone();
                 refs.extend(other_refs);
 
-                // also parse header.md to add any of the thigs it has
+                // also parse header.md to add any of the things it has
                 let (_, new_refs) = parse_and_refs(&i, &s, &refs, state)
                     .context(format!("While parsing {}", i.display()))?;
                 parse_dir_internal(depth + 1, &i, &o, &new_refs, state)?;
             } else {
-                parse_dir_internal(depth + 1, &i, &o, &refs, state)?;
+                parse_dir_internal(depth + 1, &i, &o, refs, state)?;
             }
             continue;
         }
