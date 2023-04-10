@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use anyhow::ensure;
 
 use super::*;
@@ -5,7 +7,6 @@ use super::*;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ArticleConfig {
     pub title: String,
-    pub author: String,
 }
 
 pub fn parse_frontmatter(input: &str) -> anyhow::Result<ArticleConfig> {
@@ -20,4 +21,16 @@ pub fn parse_frontmatter(input: &str) -> anyhow::Result<ArticleConfig> {
     dbg!(&header);
 
     toml::from_str(&header).context("While parsing frontmatter")
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Track {
+    pub name: String,
+    pub path: String,
+    pub description: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Tracks {
+    pub tracks: Vec<Track>,
 }

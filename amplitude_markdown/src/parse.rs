@@ -1,10 +1,14 @@
 use std::{
-    borrow::Cow, cell::RefCell, collections::HashMap, default::default, fs, path::Path, sync::Arc,
+    collections::HashMap,
+    default::default,
+    fs,
+    path::{Path, PathBuf},
+    sync::Arc,
 };
 
 use amplitude_common::{
     config,
-    state::{ArticleRef, ParseState, State},
+    state::{ParseState, State},
 };
 use anyhow::Context;
 use notify::{Config, RecommendedWatcher, Watcher};
@@ -25,7 +29,7 @@ use comrak::{
 ///
 /// - Link concatenation is supported
 pub(crate) fn parse_and_refs<'a>(
-    article: &ArticleRef,
+    article: &PathBuf,
     input: &str,
     refs: &RefMap,
     state: &mut ParseState,
@@ -35,10 +39,9 @@ pub(crate) fn parse_and_refs<'a>(
 
     // were not modifying options, so we can be sneaky
     // also im just too lazy to refactor this
-    let ptr = unsafe { &mut *(state as *mut ParseState) };
+    let options = unsafe { &*(&state.options as *const ComrakOptions) };
 
     let arena = Arena::new();
-    let options = &state.options;
     let out = comrak::parse_document_with_broken_link_callback(
         &arena,
         input,
@@ -52,7 +55,7 @@ pub(crate) fn parse_and_refs<'a>(
         }),
     );
     // do things
-    inject::inject(article, out, &this_refs, ptr)?;
+    inject::inject(article, out, &this_refs, state)?;
 
     let mut cm = vec![];
     comrak::format_html(out, options, &mut cm).context("While parsing AST to html")?;
@@ -61,7 +64,7 @@ pub(crate) fn parse_and_refs<'a>(
 }
 
 pub(crate) fn parse(
-    article: &ArticleRef,
+    article: &PathBuf,
     input: &str,
     refs: &RefMap,
     state: &mut ParseState,
@@ -128,13 +131,12 @@ pub fn parse_dir<'a, P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<Pars
         questions: HashMap::new(),
         options,
     };
-    let article = ArticleRef { levels: vec![] };
 
     if let Ok(s) = fs::read_to_string(input.as_ref().join("header.md")) {
         let refs = comrak::parse_document_refs(&Arena::new(), &s);
-        parse_dir_internal(&article, 0, input, output, &refs, &mut state)
+        parse_dir_internal(0, input, output, &refs, &mut state)
     } else {
-        parse_dir_internal(&article, 0, input, output, &RefMap::new(), &mut state)
+        parse_dir_internal(0, input, output, &RefMap::new(), &mut state)
     }
     .context("While parsing markdown files")?;
 
@@ -143,7 +145,6 @@ pub fn parse_dir<'a, P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<Pars
 }
 
 fn parse_dir_internal<P: AsRef<Path>>(
-    article: &ArticleRef,
     depth: u8,
     input: P,
     output: P,
@@ -194,8 +195,6 @@ fn parse_dir_internal<P: AsRef<Path>>(
             }
             let name = i.file_name().unwrap().to_str().unwrap();
             // top level -> course
-            let mut a = article.clone();
-            a.push(name.to_string());
 
             // parse header.md
             if let Ok(s) = fs::read_to_string(input.join("header.md")) {
@@ -204,11 +203,11 @@ fn parse_dir_internal<P: AsRef<Path>>(
                 refs.extend(other_refs);
 
                 // also parse header.md to add any of the thigs it has
-                let (_, new_refs) = parse_and_refs(&a, &s, &refs, state)
+                let (_, new_refs) = parse_and_refs(&i, &s, &refs, state)
                     .context(format!("While parsing {}", i.display()))?;
-                parse_dir_internal(&a, depth + 1, &i, &o, &new_refs, state)?;
+                parse_dir_internal(depth + 1, &i, &o, &new_refs, state)?;
             } else {
-                parse_dir_internal(&a, depth + 1, &i, &o, &refs, state)?;
+                parse_dir_internal(depth + 1, &i, &o, &refs, state)?;
             }
             continue;
         }
@@ -225,20 +224,12 @@ fn parse_dir_internal<P: AsRef<Path>>(
 
                 // otherwise, parse
                 let s = fs::read_to_string(&i).context("While reading file")?;
-                let i = i.display();
                 anyhow::ensure!(
                     depth >= 1,
                     "File: {name:?} must be in the article directory"
                 );
-                let mut a = article.clone();
-                let name = name
-                    .to_str()
-                    .unwrap()
-                    .strip_suffix(".md")
-                    .context("Expected article to end with `.md`")?;
-                a.push(name.to_string());
-                let output =
-                    parse(&a, &s, refs, state).context(format!("While parsing file {i}"))?;
+                let output = parse(&i, &s, refs, state)
+                    .context(format!("While parsing file {}", i.display()))?;
 
                 fs::write(o.with_extension("html"), output)?;
             }

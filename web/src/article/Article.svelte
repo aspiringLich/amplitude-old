@@ -1,11 +1,7 @@
 <script lang="ts">
-    export let course: string;
-    export let track: string;
-    export let article: string = undefined;
-
     import { onMount } from "svelte";
     import Quiz from "./Quiz.svelte";
-    import { renderComponents, renderComponent } from "./article";
+    import { renderComponents, renderComponent, articlePath } from "./article";
     import { fly } from "svelte/transition";
     import Outline from "./Outline.svelte";
     import { smoothAnchor } from "./article";
@@ -13,19 +9,12 @@
 
     // create a Document from the html str
     async function fetchDocument() {
-        let map = {
-            course,
-            track,
-        };
-        if (article) {
-            map["article"] = article;
-        }
         const a = await fetch("/api/article", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(map),
+            body: JSON.stringify({ article: articlePath() }),
         });
         if (!a.ok) {
             throw new Error("failed to fetch article");
@@ -55,8 +44,8 @@
             heading = title.textContent;
             doc.body.removeChild(title);
 
-            renderComponent(doc.body, "Quiz", Quiz, { course, track, article });
-            renderComponents(doc.body, { course, track, article });
+            renderComponent(doc.body, "Quiz", Quiz);
+            renderComponents(doc.body);
 
             children = doc.body.childNodes;
 
@@ -91,7 +80,7 @@
 {#if init}
     <div id="article" data-right={outline} data-left={explorer}>
         {#if explorer && sidebars}
-            <Explorer {...{ course, track, article }} />
+            <!-- <Explorer {...{ course, track, article }} /> -->
         {/if}
         <div
             id="container"

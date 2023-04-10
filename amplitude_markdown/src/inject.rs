@@ -2,20 +2,19 @@ mod admonition;
 mod code;
 mod quiz;
 
-use amplitude_common::state::{ArticleRef, ParseState};
+use amplitude_common::state::ParseState;
 use anyhow::Context;
 
 use comrak::nodes::{AstNode, NodeValue};
 use comrak::RefMap;
 
-use std::borrow::Cow;
-use std::cell::RefCell;
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 use comrak::html;
 
 type Callback = for<'a> fn(
-    &ArticleRef,
+    &PathBuf,
     &HashMap<String, String>,
     &'a AstNode<'a>,
     &mut ParseState,
@@ -155,7 +154,7 @@ fn parse_args(input: &str) -> HashMap<String, String> {
 }
 
 pub(crate) fn inject<'a>(
-    article: &'a ArticleRef,
+    article: &'a PathBuf,
     node: &'a AstNode<'a>,
     refs: &RefMap,
     state: &'a mut ParseState,

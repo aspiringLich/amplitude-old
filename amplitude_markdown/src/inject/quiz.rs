@@ -2,7 +2,7 @@ use std::cell::RefCell;
 
 use super::*;
 use crate::parse::parse;
-use amplitude_common::state::{quiz::Quiz, ArticleRef, ParseState};
+use amplitude_common::state::{quiz::Quiz, ParseState};
 use anyhow::Context;
 
 /// Turns a code block into a quiz
@@ -21,7 +21,7 @@ use anyhow::Context;
 /// ```
 /// ````
 pub(super) fn inject_quiz<'a>(
-    article: &ArticleRef,
+    article: &PathBuf,
     args: &HashMap<String, String>,
     node: &AstNode<'a>,
     state: &mut ParseState,

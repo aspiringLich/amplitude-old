@@ -105,3 +105,23 @@ export function smoothAnchor(anchor: Element) {
         });
     });
 }
+
+export function articlePath() {
+    let path = window.location.href.split("/").slice(3);
+    console.log(path);
+    if (path[0] != "article") return undefined;
+    let joined = path.slice(1).join("/");
+
+    // article/{course}/{track} -> {course}/{track}/index.md
+    // article/{course}/{track}/{article} -> {course}/{track}/{article}.md
+    switch (path.length) {
+        // too short
+        case 0:
+        case 1:
+            return undefined;
+        case 2:
+            return `${joined}/index.md`;
+        default:
+            return `${joined}.md`;
+    }
+}

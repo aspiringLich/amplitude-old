@@ -2,7 +2,6 @@
 title = "ABCDEFG"
 author = "Brandon Li"
 ---
-
 ## Lorem Ipsum
 
 ### Paragraph 1

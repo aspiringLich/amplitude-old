@@ -1,7 +1,6 @@
 /// This module contains the code for concatenating together
 /// markdown links
 use comrak::RefMap;
-use tracing::error;
 
 /// A link concatenation callback
 pub(crate) fn link_concat_callback(link: &str, links: &RefMap) -> Option<(String, String)> {

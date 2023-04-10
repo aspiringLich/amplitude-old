@@ -11,7 +11,7 @@ pulldown-cmark = "0.9.2"
 tracing = "0.1.37"
 tracing-subscriber = "0.3.16"
 amplitude_common = { path = "../amplitude_common" }
-# clap = "4.1.13"
 serde_json = "1.0.95"
 serde = "1.0.159"
+derive_more = "0.99.17"
 # anyhow = "1.0.70"

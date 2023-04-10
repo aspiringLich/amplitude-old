@@ -2,7 +2,6 @@
 #![feature(decl_macro)]
 
 // use std::{sync::LazyLock, path::PathBuf};
-// use clap::Parser;
 
 pub mod state;
 
