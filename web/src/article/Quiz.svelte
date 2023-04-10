@@ -16,17 +16,17 @@
                 id,
             }),
         });
-        
+
         if (!a.ok) {
             throw new Error("failed to fetch quiz");
         }
 
         return a;
     }
-    
+
     let quiz = fetchQuiz();
     let questions = quiz.then((a) => a.json());
-    
+
     let container_element: HTMLElement;
 
     // render the quiz markdown whenever you change the question
@@ -173,7 +173,7 @@
         <div id="start">
             <Button {...button(inc, false)}>Start Quiz</Button>
             <h2>Quiz</h2>
-            <h4 style:color=red>Something went wrong! D;</h4>
+            <h4 style:color="red">Something went wrong! D;</h4>
             {error}
         </div>
     {/await}

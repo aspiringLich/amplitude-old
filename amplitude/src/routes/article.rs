@@ -1,3 +1,4 @@
+
 use amplitude_common::state::config::{parse_frontmatter, ArticleConfig};
 
 use super::*;

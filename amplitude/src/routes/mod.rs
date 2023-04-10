@@ -4,7 +4,7 @@ use amplitude_common::{config, state::State};
 use derive_more::{Deref, DerefMut};
 use serde::{de, Deserialize, Serialize};
 use std::{
-    fs::File,
+    fs::{self, File},
     path::{Component, PathBuf},
 };
 
