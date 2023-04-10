@@ -6,7 +6,7 @@ default-run = "amplitude"
 
 [dependencies]
 # afire = { version = "2.0.0", features = ["extensions", "tracing"] }
-afire = { git = "https://github.com/Basicprogrammer10/afire", branch = "dev", features = [
+afire = { git = "https://github.com/Basicprogrammer10/afire", branch = "dev", default-features = false, features = [
     "extensions",
     "tracing",
 ] }
