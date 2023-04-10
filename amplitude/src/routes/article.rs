@@ -8,7 +8,7 @@ struct ArticleResponse<'a> {
     config: &'a ArticleConfig,
 }
 
-pub fn attach(server: &mut Server<State>) {
+pub fn attach(server: &mut Server<App>) {
     // Returns the html for a course
     server.handled_stateful_route(Method::POST, "/api/article", |state, req| {
         let s = String::from_utf8(req.body.clone())?;
@@ -19,7 +19,7 @@ pub fn attach(server: &mut Server<State>) {
             format!("Article not found: {:?}", req.display()),
         )?;
 
-        let parse_state = &state.parse.read().unwrap();
+        let parse_state = &state.documents.read();
         let config = parse_state
             .get_article_config(&req.path())
             .context("Article config not found")?;

@@ -15,6 +15,7 @@ use amplitude_common::{
 };
 use anyhow::Context;
 use notify::{Config, RecommendedWatcher, Watcher};
+use parking_lot::RwLock;
 use tracing::{error, info, warn};
 
 use crate::{
@@ -262,7 +263,7 @@ fn parse_dir_internal<P: AsRef<Path>>(
 /// directory when detecting file changes using the `notify` crate.
 ///
 /// See [`parse_dir`] for more description on how this function behaves
-pub fn parse_dir_watch(state: Arc<State>) -> notify::Result<()> {
+pub fn parse_dir_watch(state: Arc<RwLock<ParseState>>) -> notify::Result<()> {
     let (tx, rx) = sync::mpsc::channel();
 
     let mut watcher = RecommendedWatcher::new(tx, Config::default())?;
@@ -290,7 +291,7 @@ pub fn parse_dir_watch(state: Arc<State>) -> notify::Result<()> {
                 info!("Change detected, reparsing...");
                 match parse_dir(&config::INPUT, &config::RENDERED) {
                     Err(e) => error!("Error parsing directory: '{:?}'", e),
-                    Ok(s) => *state.parse.write().unwrap() = s,
+                    Ok(s) => *state.write() = s,
                 }
             }
             Err(e) => error!("Error watching directory: {:?}", e),

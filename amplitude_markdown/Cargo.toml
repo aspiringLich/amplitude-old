@@ -13,3 +13,4 @@ toml = "0.7.3"
 serde = { version = "1.0.158", features = ["derive"] }
 marksman_escape = "0.1.2"
 comrak = { git = "https://github.com/aspiringLich/comrak.git" }
+parking_lot = "0.12.1"

@@ -18,4 +18,8 @@ amplitude_common = { path = "../amplitude_common" }
 serde_json = "1.0.95"
 serde = "1.0.159"
 derive_more = "0.99.17"
+rusqlite = { version = "0.29.0", features = ["bundled"] }
+toml = "0.7.3"
+parking_lot = "0.12.1"
+anyhow = "1.0.70"
 # anyhow = "1.0.70"

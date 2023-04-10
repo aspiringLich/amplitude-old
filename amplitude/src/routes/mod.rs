@@ -1,13 +1,13 @@
-use crate::error::*;
 use afire::{extension::ServeStatic, prelude::*};
-use amplitude_common::{config, state::State};
 use derive_more::{Deref, DerefMut};
 use serde::{de, Deserialize, Serialize};
 use std::{
     fs::{self, File},
-    path::{Component, PathBuf, Path},
+    path::{Component, Path, PathBuf},
 };
 
+use crate::{app::App, error::*};
+use amplitude_common::config;
 mod article;
 mod quiz;
 
@@ -20,7 +20,7 @@ impl ArticlePath {
     pub fn file_path(&self) -> PathBuf {
         config::RENDERED.join(self.path.with_extension("html"))
     }
-    
+
     pub fn path(&self) -> &Path {
         &self.path
     }
@@ -48,7 +48,7 @@ impl<'de> Deserialize<'de> for ArticlePath {
     }
 }
 
-pub fn attach(server: &mut Server<State>) {
+pub fn attach(server: &mut Server<App>) {
     article::attach(server);
     quiz::attach(server);
 
