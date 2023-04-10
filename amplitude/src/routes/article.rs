@@ -1,4 +1,3 @@
-
 use amplitude_common::state::config::{parse_frontmatter, ArticleConfig};
 
 use super::*;
@@ -21,7 +20,7 @@ pub fn attach(server: &mut Server<State>) {
         )?;
 
         let response = ArticleResponse {
-            config: parse_frontmatter(&**req)?,
+            config: parse_frontmatter(&req)?,
             body,
         };
 
