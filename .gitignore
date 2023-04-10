@@ -1,4 +1,4 @@
 /target
 /rendered
 /.*
-.db*
+*.db*

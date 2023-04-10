@@ -33,7 +33,7 @@ impl App {
         );
         let config = toml::from_str::<Config>(&fs::read_to_string(config_file).unwrap()).unwrap();
 
-        let db = Connection::open(&config.db_path).unwrap();
+        let mut db = Connection::open(&config.db_path).unwrap();
         db.init();
         info!("Loaded database at `{}`", config.db_path);
 

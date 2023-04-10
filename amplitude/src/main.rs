@@ -5,10 +5,11 @@ use afire::{
     Server,
 };
 use amplitude_markdown::parse::parse_dir_watch;
+use tracing::info;
 
-use std::path::PathBuf;
+use std::{path::PathBuf, process};
 
-use crate::logger::AfireLogger;
+use crate::{db::Database, logger::AfireLogger};
 use app::App;
 mod app;
 mod db;
@@ -28,10 +29,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let mut server = Server::<App>::new(&app.config.host, app.config.port).state(app);
+    routes::attach(&mut server);
+
     let docs = server.app().documents.clone();
     std::thread::spawn(|| parse_dir_watch(docs));
 
-    routes::attach(&mut server);
+    let app = server.app();
+    ctrlc::set_handler(move || {
+        info!("Exiting");
+        app.db().cleanup();
+        process::exit(0);
+    })
+    .unwrap();
 
     server.start_threaded(16).unwrap();
     Ok(())
