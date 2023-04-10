@@ -6,7 +6,7 @@ use comrak::RefMap;
 pub(crate) fn link_concat_callback(link: &str, links: &RefMap) -> Option<(String, String)> {
     let ch;
     let (left, right);
-    if let Some((index, c)) = link.chars().enumerate().find(|(i, c)| "+/".contains(*c)) {
+    if let Some((index, c)) = link.chars().enumerate().find(|x| "+/".contains(x.1)) {
         (left, right) = link.split_at(index);
         ch = c;
     } else {
@@ -27,8 +27,8 @@ pub(crate) fn link_concat_callback(link: &str, links: &RefMap) -> Option<(String
 
     let s = r.replace("//", "/");
     r = &s;
-    r = r.strip_prefix("/").unwrap_or(r);
-    l = l.strip_suffix("/").unwrap_or(l);
+    r = r.strip_prefix('/').unwrap_or(r);
+    l = l.strip_suffix('/').unwrap_or(l);
     let out = format!("{}/{}", l, r);
     match ch {
         '+' | '/' => Some((out, title.to_string())),

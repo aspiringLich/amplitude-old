@@ -1,7 +1,6 @@
 use anyhow::Context;
 use std::{
     collections::HashMap,
-    ops::{Deref, DerefMut},
     path::{Path, PathBuf},
     sync::Mutex,
 };
@@ -18,17 +17,18 @@ pub struct ParseState {
 }
 
 impl ParseState {
-    pub fn get_quiz(&self, article: &PathBuf, id: String) -> Option<&quiz::Quiz> {
-        self.questions.get(&(article.clone(), id))
+    pub fn get_quiz(&self, article: &Path, id: String) -> Option<&quiz::Quiz> {
+        self.questions.get(&(article.to_path_buf(), id))
     }
 
     pub fn insert_quiz(
         &mut self,
-        article: &PathBuf,
-        id: &String,
+        article: &Path,
+        id: &str,
         quiz: quiz::Quiz,
     ) -> Option<quiz::Quiz> {
-        self.questions.insert((article.clone(), id.clone()), quiz)
+        self.questions
+            .insert((article.to_path_buf(), id.to_owned()), quiz)
     }
 }
 

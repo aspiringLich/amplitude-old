@@ -1,5 +1,3 @@
-use std::cell::RefCell;
-
 use super::*;
 use crate::parse::parse;
 use amplitude_common::state::{quiz::Quiz, ParseState};
