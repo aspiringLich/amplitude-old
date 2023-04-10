@@ -1,7 +1,7 @@
 use super::*;
 
 pub fn inject_admonition<'a>(
-    _: &PathBuf,
+    _: &Path,
     args: &HashMap<String, String>,
     node: &'a AstNode<'a>,
     state: &mut ParseState,

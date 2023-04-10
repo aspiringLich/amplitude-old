@@ -19,7 +19,7 @@ use anyhow::Context;
 /// ```
 /// ````
 pub(super) fn inject_quiz<'a>(
-    article: &PathBuf,
+    article: &Path,
     args: &HashMap<String, String>,
     node: &AstNode<'a>,
     state: &mut ParseState,

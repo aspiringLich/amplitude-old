@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     default::default,
     fs,
     path::{Path, PathBuf},
@@ -9,7 +8,10 @@ use std::{
 
 use amplitude_common::{
     config,
-    state::{ParseState, State},
+    state::{
+        config::{parse_article_config, TracksRaw},
+        ParseState, State,
+    },
 };
 use anyhow::Context;
 use notify::{Config, RecommendedWatcher, Watcher};
@@ -29,8 +31,8 @@ use comrak::{
 /// ## Behavior
 ///
 /// - Link concatenation is supported
-pub(crate) fn parse_and_refs(
-    article: &PathBuf,
+pub(crate) fn parse_and_refs<P: AsRef<Path>>(
+    article: P,
     input: &str,
     refs: &RefMap,
     state: &mut ParseState,
@@ -50,13 +52,13 @@ pub(crate) fn parse_and_refs(
         Some(&mut |link| {
             let out = link_concat_callback(link, &this_refs);
             if out.is_none() {
-                warn!("Broken link `{}` in {:?}", link, article);
+                warn!("Broken link `{}` in {:?}", link, article.as_ref());
             }
             out
         }),
     );
     // do things
-    inject::inject(article, out, &this_refs, state)?;
+    inject::inject(article.as_ref(), out, &this_refs, state)?;
 
     let mut cm = vec![];
     comrak::format_html(out, options, &mut cm).context("While parsing AST to html")?;
@@ -64,8 +66,8 @@ pub(crate) fn parse_and_refs(
     Ok((String::from_utf8(cm).unwrap(), this_refs))
 }
 
-pub(crate) fn parse(
-    article: &PathBuf,
+pub(crate) fn parse<P: AsRef<Path>>(
+    article: P,
     input: &str,
     refs: &RefMap,
     state: &mut ParseState,
@@ -128,10 +130,8 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseSta
         fs::create_dir_all(output.as_ref())?;
     }
 
-    let mut state = ParseState {
-        questions: HashMap::new(),
-        options,
-    };
+    let mut state = ParseState::default();
+    state.options = options;
 
     if let Ok(s) = fs::read_to_string(input.as_ref().join("header.md")) {
         let refs = comrak::parse_document_refs(&Arena::new(), &s);
@@ -142,6 +142,13 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseSta
     .context("While parsing markdown files")?;
 
     Ok(state)
+}
+
+fn register_tracks(cfg: &str, _path: &PathBuf, _state: &mut ParseState) -> anyhow::Result<()> {
+    let tracks: TracksRaw = toml::from_str(cfg)?;
+    let _tracks = tracks.tracks;
+
+    Ok(())
 }
 
 fn parse_dir_internal<P: AsRef<Path>>(
@@ -227,8 +234,13 @@ fn parse_dir_internal<P: AsRef<Path>>(
                     depth >= 1,
                     "File: {name:?} must be in the article directory"
                 );
-                let output = parse(&i, &s, refs, state)
+                let config = parse_article_config(&s)
+                    .context(format!("While parsing config header for {}", i.display()))?;
+
+                let path = i.strip_prefix(config::INPUT.clone()).unwrap();
+                let output = parse(path, &s, refs, state)
                     .context(format!("While parsing file {}", i.display()))?;
+                state.insert_article_config(&path, config);
 
                 fs::write(o.with_extension("html"), output)?;
             }

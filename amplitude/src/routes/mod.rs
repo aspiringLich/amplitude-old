@@ -5,7 +5,7 @@ use derive_more::{Deref, DerefMut};
 use serde::{de, Deserialize, Serialize};
 use std::{
     fs::{self, File},
-    path::{Component, PathBuf},
+    path::{Component, PathBuf, Path},
 };
 
 mod article;
@@ -17,8 +17,12 @@ pub struct ArticleReq {
 }
 
 impl ArticlePath {
-    pub fn path(&self) -> PathBuf {
+    pub fn file_path(&self) -> PathBuf {
         config::RENDERED.join(self.path.with_extension("html"))
+    }
+    
+    pub fn path(&self) -> &Path {
+        &self.path
     }
 }
 

@@ -1,4 +1,6 @@
-# B
+---
+title = "BBBBB"
+---
 
 Bb bbbbb, Bbbbbb bbbb. Bbbb bbbb bb b bbbbbb? 
 

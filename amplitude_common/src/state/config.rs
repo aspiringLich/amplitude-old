@@ -1,4 +1,4 @@
-use crate::config::INPUT;
+
 
 use super::*;
 
@@ -7,12 +7,10 @@ pub struct ArticleConfig {
     pub title: String,
 }
 
-pub fn parse_frontmatter(article: &Path) -> anyhow::Result<ArticleConfig> {
-    let path = INPUT.join(article);
-    let input = fs::read_to_string(path).context("While reading article")?;
+pub fn parse_article_config(input: &str) -> anyhow::Result<ArticleConfig> {
     ensure!(
         input.starts_with("---"),
-        "Article frontmatter header must start with `---`"
+        "Did not find Frontmatter header on article (Headers start with `---`)"
     );
     let header = input
         .split('\n')
@@ -23,14 +21,14 @@ pub fn parse_frontmatter(article: &Path) -> anyhow::Result<ArticleConfig> {
     toml::from_str(&header).context("While parsing frontmatter")
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Track {
+#[derive(Debug, Deserialize)]
+pub struct TrackRaw {
     pub name: String,
     pub path: String,
     pub description: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Tracks {
-    pub tracks: Vec<Track>,
+#[derive(Debug, Deserialize)]
+pub struct TracksRaw {
+    pub tracks: Vec<TrackRaw>,
 }

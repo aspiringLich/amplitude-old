@@ -1,7 +1,7 @@
 use super::*;
 
 pub fn inject_code<'a>(
-    _: &PathBuf,
+    _: &Path,
     args: &HashMap<String, String>,
     node: &AstNode<'a>,
     _: &mut ParseState,

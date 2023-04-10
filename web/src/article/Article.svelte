@@ -5,7 +5,6 @@
     import { fly } from "svelte/transition";
     import Outline from "./Outline.svelte";
     import { smoothAnchor } from "./article";
-    import Explorer from "./Explorer.svelte";
 
     async function fetchArticle() {
         const a = await fetch("/api/article", {
@@ -54,7 +53,7 @@
     let children: NodeListOf<ChildNode>;
 
     function transfer() {
-        console.log(children);
+        // console.log(children);
         body_element.replaceChildren(...children);
 
         document.querySelectorAll('a[href^="#"]').forEach(smoothAnchor);
