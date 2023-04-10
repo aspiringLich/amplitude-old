@@ -37,12 +37,7 @@ impl<'de> Deserialize<'de> for ArticlePath {
             match c {
                 Component::CurDir => {}
                 Component::Normal(_) => {}
-                _ => {
-                    return Err(de::Error::custom(format!(
-                        "Invalid path component: {:?}",
-                        c
-                    )))
-                }
+                _ => return Err(de::Error::custom(format!("Invalid path component: {c:?}",))),
             }
         }
         Ok(ArticlePath { path })

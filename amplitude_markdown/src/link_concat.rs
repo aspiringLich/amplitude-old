@@ -29,7 +29,7 @@ pub(crate) fn link_concat_callback(link: &str, links: &RefMap) -> Option<(String
     r = &s;
     r = r.strip_prefix('/').unwrap_or(r);
     l = l.strip_suffix('/').unwrap_or(l);
-    let out = format!("{}/{}", l, r);
+    let out = format!("{l}/{r}");
     match ch {
         '+' | '/' => Some((out, title.to_string())),
         _ => unreachable!(),
