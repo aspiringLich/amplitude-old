@@ -1,41 +1,32 @@
 <script lang="ts">
     export let id: string;
-    export let course: string;
-    export let track: string;
-    export let article: string = undefined;
 
     import Button from "../widgets/Button.svelte";
     import Icon from "../widgets/Icon.svelte";
-    import { renderComponents } from "./article";
+    import { articlePath, renderComponents } from "./article";
 
     async function fetchQuiz() {
-        let article_map = {
-            course,
-            track,
-        };
-        if (article) {
-            article_map["article"] = article;
-        }
-        let map = {
-            id,
-            article: article_map,
-        };
-
         const a = await fetch("/api/quiz", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(map),
+            body: JSON.stringify({
+                article: articlePath(),
+                id,
+            }),
         });
+        
         if (!a.ok) {
             throw new Error("failed to fetch quiz");
         }
 
-        return a.json();
+        return a;
     }
-
-    let questions = fetchQuiz().then((q) => q.questions);
+    
+    let quiz = fetchQuiz();
+    let questions = quiz.then((a) => a.json());
+    
     let container_element: HTMLElement;
 
     // render the quiz markdown whenever you change the question
@@ -79,17 +70,15 @@
 
 <svelte:window on:resize={() => (width = window.innerWidth)} />
 
-{#await questions}
-    <div id="quiz">
+<div id="quiz">
+    {#await questions}
         <div id="start">
             <Button {...button(inc, false)}>Start Quiz</Button>
             <h2>Quiz</h2>
             <h4>Loading...</h4>
         </div>
-    </div>
-{:then questions}
-    {@const len = questions.length}
-    <div id="quiz">
+    {:then questions}
+        {@const len = questions.length}
         {#if n == -1}
             <div id="start">
                 <Button {...button(inc)}>Start Quiz</Button>
@@ -179,8 +168,16 @@
                 </div>
             </div>
         {/if}
-    </div>
-{/await}
+    {:catch error}
+        {console.error(error)}
+        <div id="start">
+            <Button {...button(inc, false)}>Start Quiz</Button>
+            <h2>Quiz</h2>
+            <h4 style:color=red>Something went wrong! D;</h4>
+            {error}
+        </div>
+    {/await}
+</div>
 
 <style lang="scss">
     #quiz {

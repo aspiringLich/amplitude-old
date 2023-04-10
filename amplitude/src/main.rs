@@ -5,7 +5,7 @@ use afire::{
     Server,
 };
 
-use std::{path::PathBuf, sync::Mutex};
+use std::{path::PathBuf, sync::RwLock};
 
 use amplitude_common::{config, state::State};
 use amplitude_markdown::parse::{parse_dir, parse_dir_watch};
@@ -21,7 +21,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     dbg!(&parse_state);
     // dbg!(&parse_state);
     let state = State {
-        parse: Mutex::new(parse_state),
+        parse: RwLock::new(parse_state),
     };
 
     if !PathBuf::from("web/dist").exists() {

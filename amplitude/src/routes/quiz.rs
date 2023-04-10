@@ -12,7 +12,7 @@ pub fn attach(server: &mut Server<State>) {
         let s = String::from_utf8(req.body.clone())?;
         let req: QuizReq = serde_json::from_str(&s)?;
 
-        let parse_state = state.parse.lock().unwrap();
+        let parse_state = state.parse.read().unwrap();
         let quiz = parse_state
             .get_quiz(&*req.article, req.id)
             .status(Status::NotFound, format!("Quiz not found: {:?}", s))?;

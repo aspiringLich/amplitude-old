@@ -1,4 +1,8 @@
-use std::{fmt::Display, panic, sync::Arc};
+use std::{
+    fmt::{self, Display},
+    marker, panic,
+    sync::Arc,
+};
 
 use afire::{Method, Request, Response, Server, Status};
 
@@ -60,11 +64,9 @@ pub(super) struct StatusError {
     body: Option<String>,
 }
 
-impl<E: std::error::Error + std::marker::Sync + std::marker::Send + 'static> From<E>
-    for StatusError
-{
+impl<D: fmt::Display + marker::Sync + marker::Send + 'static> From<D> for StatusError {
     #[track_caller]
-    fn from(err: E) -> Self {
+    fn from(err: D) -> Self {
         Self {
             status: Status::InternalServerError,
             body: Some(format!("[{}]: {}", std::panic::Location::caller(), err)),

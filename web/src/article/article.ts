@@ -80,11 +80,15 @@ export function renderComponent(
             props["$$scope"] = {};
         }
 
-        new type({
-            target: target.parentElement,
-            anchor: target,
-            props,
-        });
+        try {
+            new type({
+                target: target.parentElement,
+                anchor: target,
+                props,
+            });
+        } catch (e) {
+            console.error(e);
+        }
 
         target.remove();
     });
@@ -108,7 +112,7 @@ export function smoothAnchor(anchor: Element) {
 
 export function articlePath() {
     let path = window.location.href.split("/").slice(3);
-    console.log(path);
+    // console.log(path);
     if (path[0] != "article") return undefined;
     let joined = path.slice(1).join("/");
 

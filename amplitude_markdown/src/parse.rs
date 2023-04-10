@@ -1,9 +1,11 @@
 use std::{
+    borrow::Borrow,
     collections::HashMap,
     default::default,
     fs,
     path::{Path, PathBuf},
-    sync::Arc,
+    sync::{self, Arc},
+    thread, time,
 };
 
 use amplitude_common::{
@@ -193,7 +195,6 @@ fn parse_dir_internal<P: AsRef<Path>>(
             if !o.exists() {
                 fs::create_dir(&o)?;
             }
-            let name = i.file_name().unwrap().to_str().unwrap();
             // top level -> course
 
             // parse header.md
@@ -252,7 +253,7 @@ fn parse_dir_internal<P: AsRef<Path>>(
 ///
 /// See [`parse_dir`] for more description on how this function behaves
 pub fn parse_dir_watch(state: Arc<State>) -> notify::Result<()> {
-    let (tx, rx) = std::sync::mpsc::channel();
+    let (tx, rx) = sync::mpsc::channel();
 
     let mut watcher = RecommendedWatcher::new(tx, Config::default())?;
     watcher.watch(config::INPUT.as_path(), notify::RecursiveMode::Recursive)?;
@@ -263,7 +264,7 @@ pub fn parse_dir_watch(state: Arc<State>) -> notify::Result<()> {
         use notify::EventKind::*;
 
         // wait 50ms to avoid duplicate events
-        std::thread::sleep(std::time::Duration::from_millis(50));
+        thread::sleep(time::Duration::from_millis(50));
 
         // drain the channel
         while let Ok(e) = rx.try_recv() {
@@ -279,7 +280,7 @@ pub fn parse_dir_watch(state: Arc<State>) -> notify::Result<()> {
                 info!("Change detected, reparsing...");
                 match parse_dir(&config::INPUT, &config::RENDERED) {
                     Err(e) => error!("Error parsing directory: '{:?}'", e),
-                    Ok(s) => *state.parse.lock().unwrap() = s,
+                    Ok(s) => *state.parse.write().unwrap() = s,
                 }
             }
             Err(e) => error!("Error watching directory: {:?}", e),

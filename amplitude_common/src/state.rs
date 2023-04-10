@@ -1,9 +1,11 @@
 use anyhow::Context;
+use anyhow::ensure;
 use std::{
     collections::HashMap,
     ops::{Deref, DerefMut},
     path::{Path, PathBuf},
-    sync::Mutex,
+    sync::{Mutex, RwLock},
+    fs,
 };
 
 pub mod config;
@@ -33,5 +35,5 @@ impl ParseState {
 }
 
 pub struct State {
-    pub parse: Mutex<ParseState>,
+    pub parse: RwLock<ParseState>,
 }

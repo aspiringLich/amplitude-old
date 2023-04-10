@@ -7,8 +7,7 @@
     import { smoothAnchor } from "./article";
     import Explorer from "./Explorer.svelte";
 
-    // create a Document from the html str
-    async function fetchDocument() {
+    async function fetchArticle() {
         const a = await fetch("/api/article", {
             method: "POST",
             headers: {
@@ -20,45 +19,42 @@
             throw new Error("failed to fetch article");
         }
 
-        let parser = new DOMParser();
-        return parser.parseFromString(await a.text(), "text/html");
+        return a.json();
     }
 
-    let heading = "";
-    let init = false;
-    let sidebars = false;
+    let title = "";
+    let doc;
+    let mount = false;
 
-    let body_element: Element;
-    let outline_element: Element;
-
-    let children: NodeListOf<ChildNode>;
-
-    onMount(() => {
-        fetchDocument().then((doc) => {
-            let title = doc.body.firstElementChild;
-            console.assert(
-                title.tagName == "H1",
-                "loaded article does not have <h1> as its first element",
-                title
-            );
-            heading = title.textContent;
-            doc.body.removeChild(title);
-
-            renderComponent(doc.body, "Quiz", Quiz);
-            renderComponents(doc.body);
-
-            children = doc.body.childNodes;
-
-            init = true;
-        });
+    fetchArticle().then((a) => {
+        title = a.config.title;
+        doc = new DOMParser().parseFromString(a.body, "text/html");
     });
+    onMount(() => (mount = true));
 
+    // after mounting & fetching the article, render it!
+    let init = false;
+    $: if (mount && doc) {
+        renderComponent(doc.body, "Quiz", Quiz);
+        renderComponents(doc.body);
+
+        children = doc.body.childNodes;
+
+        init = true;
+    }
+
+    // smoooth
     $: if (outline_element) {
         outline_element.querySelectorAll("a").forEach(smoothAnchor);
     }
 
-    // transfers a single element from the document to `article_element`
+    let sidebars = false;
+    let body_element: Element;
+    let outline_element: Element;
+    let children: NodeListOf<ChildNode>;
+
     function transfer() {
+        console.log(children);
         body_element.replaceChildren(...children);
 
         document.querySelectorAll('a[href^="#"]').forEach(smoothAnchor);
@@ -88,7 +84,7 @@
             on:introstart|once={transfer}
             on:introend|once={() => (sidebars = true)}
         >
-            <h1>{heading}</h1>
+            <h1>{title}</h1>
             <div id="body" bind:this={body_element} />
         </div>
         {#if outline && sidebars}
