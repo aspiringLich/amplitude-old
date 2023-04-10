@@ -1,10 +1,10 @@
-use anyhow::Context;
 use anyhow::ensure;
+use anyhow::Context;
 use std::{
     collections::HashMap,
-    path::{Path, PathBuf},
-    sync::{Mutex, RwLock},
     fs,
+    path::{Path, PathBuf},
+    sync::RwLock,
 };
 
 pub mod config;

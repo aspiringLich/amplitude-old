@@ -19,15 +19,11 @@
 
 <main>
     <Route path="/"><Home /></Route>
-    <Route path="/article/:course/:track" let:meta>
-        <Article course={meta.params.course} track={meta.params.track} />
+    <Route path="/article/:/:">
+        <Article />
     </Route>
-    <Route path="/article/:course/:track/:article" let:meta>
-        <Article
-            course={meta.params.course}
-            track={meta.params.track}
-            article={meta.params.article}
-        />
+    <Route path="/article/:/:/:">
+        <Article />
     </Route>
     <!-- <Route path="/about"><About /></Route>
   <Route path="/p/:id" let:meta><Problem id={meta.params.username} pid={meta.params.id} /></Route>

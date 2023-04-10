@@ -96,7 +96,6 @@
 
 <style lang="scss">
     @use "variables.scss" as *;
-    // $article-width: calc(100vw - #{$outline-width} - #{$article-list-width});
 
     #article {
         display: flex;

@@ -2,6 +2,7 @@ mod admonition;
 mod code;
 mod quiz;
 
+use amplitude_common::config;
 use amplitude_common::state::ParseState;
 use anyhow::Context;
 
@@ -208,7 +209,10 @@ pub(crate) fn inject<'a>(
                 to_detach.push(node);
                 let expected = &info.expected;
                 if expected.matches(n) {
-                    let mut ret = (info.callback)(article, &args, n, state, refs)
+                    let a = article
+                        .strip_prefix(config::INPUT.clone())
+                        .unwrap_or(article);
+                    let mut ret = (info.callback)(&a.to_path_buf(), &args, n, state, refs)
                         .context(format!("While calling callback for tag `{text}`"))?;
                     to_detach.append(&mut ret);
                 } else {

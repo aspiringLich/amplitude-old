@@ -22,6 +22,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let args = Args::parse();
 
     let parse_state = parse_dir(&config::INPUT, &config::RENDERED)?;
+    dbg!(&parse_state);
     let state = State {
         parse: RwLock::new(parse_state),
     };

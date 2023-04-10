@@ -24,8 +24,10 @@
         return a;
     }
 
-    let quiz = fetchQuiz();
-    let questions = quiz.then((a) => a.json());
+    let questions = fetchQuiz().then(async (q) => {
+        let quiz = await q.json();
+        return quiz.questions;
+    })
 
     let container_element: HTMLElement;
 

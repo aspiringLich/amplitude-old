@@ -20,13 +20,17 @@ pub mod config {
         path::{Path, PathBuf},
     };
 
+    macro def_static($name:ident, $str:literal) {
+        pub static $name: StaticPath = StaticPath($str);
+    }
+
     def_static!(INPUT, "courses");
     def_static!(RENDERED, "rendered");
     def_static!(TEMPLATE, "web/templates");
     def_static!(STATIC, "web/static");
 
     /// A struct that represents a path, which can be initialized statically.
-    #[derive(Clone)]
+    #[derive(Clone, Default)]
     pub struct StaticPath(&'static str);
 
     impl Display for StaticPath {
@@ -63,9 +67,5 @@ pub mod config {
         pub fn join<P: AsRef<Path>>(&self, other: P) -> PathBuf {
             self.as_path().join(other)
         }
-    }
-
-    macro def_static($name:ident, $str:literal) {
-        pub static $name: StaticPath = StaticPath($str);
     }
 }

@@ -1,5 +1,4 @@
 use std::{
-    borrow::Borrow,
     collections::HashMap,
     default::default,
     fs,
@@ -142,7 +141,6 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseSta
     }
     .context("While parsing markdown files")?;
 
-    // dbg!(state);
     Ok(state)
 }
 
