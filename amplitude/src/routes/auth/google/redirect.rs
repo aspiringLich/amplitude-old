@@ -5,10 +5,6 @@ use rand::Rng;
 use crate::{database::Database, misc::LoginProvider, state::State};
 
 pub fn attach(server: &mut Server<State>) {
-    if server.app().config.google_oauth.is_none() {
-        return;
-    }
-
     server.stateful_route(Method::GET, "/auth/google/redirect", move |app, _| {
         let state = rand::thread_rng()
             .sample_iter(&rand::distributions::Alphanumeric)

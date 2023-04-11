@@ -18,6 +18,7 @@ pub trait Database {
     // == Session ==
     fn add_session(&self, session: &Session) -> anyhow::Result<()>;
     fn get_session(&self, token: &str) -> anyhow::Result<Session>;
+    fn delete_session(&self, token: &str) -> anyhow::Result<()>;
 }
 
 impl Database for Connection {
@@ -136,5 +137,10 @@ impl Database for Connection {
 
     fn get_session(&self, _token: &str) -> anyhow::Result<Session> {
         todo!()
+    }
+
+    fn delete_session(&self, token: &str) -> anyhow::Result<()> {
+        self.execute("DELETE FROM sessions WHERE token = ?1", [token])?;
+        Ok(())
     }
 }

@@ -5,6 +5,7 @@ use crate::state::State;
 
 mod github;
 mod google;
+mod logout;
 
 // dw breon i got this
 
@@ -32,4 +33,5 @@ pub fn attach(server: &mut Server<State>) {
 
     google::attach(server);
     github::attach(server);
+    logout::attach(server);
 }

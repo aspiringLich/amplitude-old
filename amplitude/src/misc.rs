@@ -1,6 +1,9 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use afire::Response;
 use rand::Rng;
+
+use crate::error::StatusError;
 
 pub enum LoginProvider {
     Google,
@@ -20,4 +23,14 @@ pub fn rand_str(len: usize) -> String {
         .take(len)
         .map(|x| x as char)
         .collect::<String>()
+}
+
+pub(crate) trait OkResponse {
+    fn ok(self) -> Result<Response, StatusError>;
+}
+
+impl OkResponse for Response {
+    fn ok(self) -> Result<Response, StatusError> {
+        Ok(self)
+    }
 }

@@ -7,10 +7,6 @@ use crate::{
 };
 
 pub fn attach(server: &mut Server<State>) {
-    if server.app().config.github_oauth.is_none() {
-        return;
-    }
-
     server.stateful_route(Method::GET, "/auth/github/redirect", move |app, _| {
         let state = rand_str(10);
 
