@@ -24,14 +24,25 @@
         return a;
     }
 
-    let questions = fetchQuiz().then(async (q) => {
-        let quiz = await q.json();
-        return quiz.questions;
-    })
+    $: scroll = undefined;
+    function updateScroll() {
+        if (quiz_element == undefined) return;
+        scroll = quiz_element.getBoundingClientRect().top - window.innerHeight;
+    }
 
-    let container_element: HTMLElement;
+    let init = false;
+    let questions: any = [];
+    let quiz_element: HTMLElement;
+    $: if (quiz_element != undefined && scroll < 0 && !init) {
+        init = true;
+        questions = fetchQuiz().then(async (q) => {
+            let quiz = await q.json();
+            return quiz.questions;
+        });
+    }
 
     // render the quiz markdown whenever you change the question
+    let container_element: HTMLElement;
     $: if (container_element != undefined && n >= 0) {
         renderComponents(container_element);
     }
@@ -70,9 +81,15 @@
     $: selected = answers[n];
 </script>
 
-<svelte:window on:resize={() => (width = window.innerWidth)} />
+<svelte:window
+    on:resize={() => {
+        updateScroll();
+        width = window.innerWidth;
+    }}
+    on:scroll={updateScroll}
+/>
 
-<div id="quiz">
+<div id="quiz" bind:this={quiz_element}>
     {#await questions}
         <div id="start">
             <Button {...button(inc, false)}>Start Quiz</Button>
