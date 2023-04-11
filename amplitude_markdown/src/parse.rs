@@ -7,7 +7,6 @@ use std::{
 };
 
 use amplitude_common::config;
-
 use anyhow::Context;
 use parking_lot::RwLock;
 use tracing::{error, info, warn};
