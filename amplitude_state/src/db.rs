@@ -1,9 +1,15 @@
 use rusqlite::Connection;
 
+use crate::misc::LoginProvider;
+
 pub trait Database {
     // == Base ==
     fn init(&mut self);
     fn cleanup(&self);
+
+    // == Auth ==
+    fn add_oauth(&self, service: LoginProvider, state: &str) -> anyhow::Result<()>;
+    fn get_oauth(&self, service: LoginProvider, state: &str) -> anyhow::Result<u64>;
 }
 
 impl Database for Connection {
@@ -24,5 +30,46 @@ impl Database for Connection {
     fn cleanup(&self) {
         self.pragma_update(None, "wal_checkpoint", "TRUNCATE")
             .unwrap();
+    }
+
+    fn add_oauth(&self, service: LoginProvider, state: &str) -> anyhow::Result<()> {
+        match service {
+            LoginProvider::Github => self.execute(
+                "INSERT INTO github_oauth_state (state, created) VALUES (?1, strftime('%s','now'))",
+                [state],
+            ),
+            LoginProvider::Google => self.execute(
+                "INSERT INTO google_oauth_state (state, created) VALUES (?1, strftime('%s','now'))",
+                [state],
+            ),
+        }?;
+
+        Ok(())
+    }
+
+    /// Gets and removes the oauth state
+    fn get_oauth(&self, service: LoginProvider, state: &str) -> anyhow::Result<u64> {
+        let res = match service {
+            LoginProvider::Github => {
+                let date = self.query_row(
+                    "SELECT created FROM github_oauth_state WHERE state = ?1",
+                    [state],
+                    |x| x.get::<_, u64>(0),
+                )?;
+                self.execute("DELETE FROM github_oauth_state WHERE state = ?1", [state])?;
+                date
+            }
+            LoginProvider::Google => {
+                let date = self.query_row(
+                    "SELECT created FROM google_oauth_state WHERE state = ?1",
+                    [state],
+                    |x| x.get::<_, u64>(0),
+                )?;
+                self.execute("DELETE FROM google_oauth_state WHERE state = ?1", [state])?;
+                date
+            }
+        };
+
+        Ok(res)
     }
 }

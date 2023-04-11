@@ -1,12 +1,8 @@
 use amplitude_common::config;
 use amplitude_markdown::parse::parse_dir;
 
-use parking_lot::RwLock;
-use std::env;
-use std::fs;
-use std::path::PathBuf;
-use std::sync::Mutex;
-use std::sync::MutexGuard;
+use parking_lot::{Mutex, MutexGuard, RwLock};
+use std::{env, fs, path::PathBuf};
 
 use amplitude_markdown::state::ParseState;
 use rusqlite::Connection;
@@ -17,16 +13,9 @@ use crate::db::Database;
 
 pub struct State {
     db: Mutex<Connection>,
+    // breon this is not a nice name
     pub parse_state: RwLock<ParseState>,
     pub config: Config,
-}
-
-#[derive(Deserialize)]
-pub struct Config {
-    pub host: String,
-    pub port: u16,
-
-    pub db_path: String,
 }
 
 impl State {
@@ -52,6 +41,30 @@ impl State {
     }
 
     pub fn db(&self) -> MutexGuard<Connection> {
-        self.db.lock().unwrap()
+        self.db.lock()
     }
+}
+
+#[derive(Deserialize)]
+pub struct Config {
+    pub host: String,
+    pub port: u16,
+    pub db_path: String,
+
+    pub google_oauth: Option<GoogleOauth>,
+    pub github_oauth: Option<GithubOauth>,
+}
+
+#[derive(Deserialize)]
+pub struct GoogleOauth {
+    pub client_id: String,
+    pub client_secret: String,
+    pub external_url: String,
+}
+
+#[derive(Deserialize)]
+pub struct GithubOauth {
+    pub github_app_id: String,
+    pub github_app_secret: String,
+    pub ext_url: String,
 }

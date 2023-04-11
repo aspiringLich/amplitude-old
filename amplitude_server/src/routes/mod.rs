@@ -11,6 +11,7 @@ use std::{
 };
 
 mod article;
+mod auth;
 mod quiz;
 
 #[derive(Debug, Deref, DerefMut, Deserialize)]
@@ -52,6 +53,7 @@ impl<'de> Deserialize<'de> for ArticlePath {
 
 pub fn attach(server: &mut Server<State>) {
     article::attach(server);
+    auth::attach(server);
     quiz::attach(server);
 
     ServeStatic::new("web/dist")

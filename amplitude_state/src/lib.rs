@@ -2,5 +2,6 @@
 
 pub mod db;
 pub mod state;
+pub mod misc;
 
 pub use state::*;

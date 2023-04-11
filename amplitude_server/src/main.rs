@@ -29,10 +29,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let mut server = Server::<State>::new(&state.config.host, state.config.port).state(state);
-    let state = server.state.clone().unwrap();
-
     routes::attach(&mut server);
 
+    let state = server.state.clone().unwrap();
     std::thread::spawn(|| parse_dir_watch(state));
 
     let app = server.app();
