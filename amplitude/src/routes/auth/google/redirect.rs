@@ -1,7 +1,8 @@
 use afire::{internal::encoding::url, Method, Response, Server};
 
-use amplitude_state::{db::Database, misc::LoginProvider, State};
 use rand::Rng;
+
+use crate::{db::Database, misc::LoginProvider, state::State};
 
 pub fn attach(server: &mut Server<State>) {
     if server.app().config.google_oauth.is_none() {
@@ -29,6 +30,6 @@ pub fn attach(server: &mut Server<State>) {
             .status(307)
             .header("Location", &redirect)
             .header("Cache-Control", "no-store")
-            .text(format!("Redirecting to {}", redirect))
+            .text(format!("Redirecting to {redirect}"))
     });
 }

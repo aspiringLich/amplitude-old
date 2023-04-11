@@ -68,7 +68,6 @@ dependencies = [
  "afire",
  "amplitude_common",
  "amplitude_markdown",
- "amplitude_state",
  "anyhow",
  "ctrlc",
  "derive_more",
@@ -83,21 +82,6 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "urlencoding",
-]
-
-[[package]]
-name = "amplitude_state"
-version = "0.1.0"
-dependencies = [
- "amplitude_common",
- "amplitude_markdown",
- "anyhow",
- "comrak",
- "parking_lot",
- "rusqlite",
- "serde",
- "toml",
- "tracing",
 ]
 
 [[package]]

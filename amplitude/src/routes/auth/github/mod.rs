@@ -1,5 +1,6 @@
 use afire::Server;
-use amplitude_state::State;
+
+use crate::state::State;
 
 mod redirect;
 

@@ -5,17 +5,21 @@ use afire::{
     Middleware, Server,
 };
 use logger::RequestLogger;
-use tracing::info;
+use state::State;
+use tracing::{info, warn};
 use watch::parse_dir_watch;
 
 use std::{path::PathBuf, process};
 
-use crate::logger::AfireLogger;
-use amplitude_state::{db::Database, State};
+use crate::{db::Database, logger::AfireLogger};
 
+mod db;
 mod error;
 mod logger;
+mod misc;
 mod routes;
+mod session;
+mod state;
 mod watch;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -28,7 +32,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let state = State::new()?;
 
     if !PathBuf::from("web/dist").exists() {
-        panic!("web/dist not built! please go into web/ and run `npm run build`");
+        warn!("web/dist not built!");
+        warn!("^ please go into web/ and run `npm run build`");
     }
 
     let mut server = Server::<State>::new(&state.config.host, state.config.port).state(state);

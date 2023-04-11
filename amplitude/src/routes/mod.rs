@@ -1,7 +1,9 @@
-use crate::error::{HandledRoute, StatusContext};
+use crate::{
+    error::{HandledRoute, StatusContext},
+    state::State,
+};
 use afire::{extension::ServeStatic, prelude::*};
 use amplitude_common::config;
-use amplitude_state::State;
 use derive_more::{Deref, DerefMut};
 use serde::{de, Deserialize, Serialize};
 use std::{

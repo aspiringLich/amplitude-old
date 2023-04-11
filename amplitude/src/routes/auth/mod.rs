@@ -1,6 +1,7 @@
 use afire::Server;
-use amplitude_state::State;
 use tracing::{error, info};
+
+use crate::state::State;
 
 mod github;
 mod google;
