@@ -38,7 +38,7 @@ Pharetra et ultrices neque ornare aenean euismod elementum nisi. Mi sit amet mau
 > this is an info box
 
 @! warning
-> this is an info box
+> this is a warning box
 
 @! success
 > something went right!

@@ -5,10 +5,4 @@ CREATE TABLE IF NOT EXISTS google_users (
    avatar_url TEXT NOT NULL, -- Image (from google)
    access_token TEXT,        -- Google user access token
    created INTEGER NOT NULL  -- Epoch created
-);
-
--- Table to hold oauth states (used during login)
-CREATE TABLE IF NOT EXISTS google_oauth_state (
-   state TEXT NOT NULL UNIQUE, -- OAuth state
-   created INTEGER NOT NULL    -- Epoch created
-);
+)

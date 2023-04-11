@@ -64,7 +64,6 @@ pub struct GoogleOauth {
 
 #[derive(Deserialize)]
 pub struct GithubOauth {
-    pub github_app_id: String,
-    pub github_app_secret: String,
-    pub ext_url: String,
+    pub app_id: String,
+    pub app_secret: String,
 }

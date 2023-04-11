@@ -99,17 +99,17 @@
     #container {
         display: flex;
         flex-direction: row;
-        overflow: scroll;
+        overflow: auto;
 
         pre {
             flex-shrink: 1;
             white-space: pre;
             line-height: 1.1em;
             display: table;
-            overflow: scroll;
+            overflow: auto;
 
             :global(code) {
-                overflow: scroll;
+                overflow: auto;
                 border-radius: 0.3em;
             }
         }

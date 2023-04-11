@@ -28,7 +28,7 @@ impl Middleware for RequestLogger {
             "{} {}{}",
             req.method,
             req.path,
-            t(req.query.is_empty(), "", &format!("?{}", req.query))
+            t(req.query.is_empty(), String::new(), req.query.to_string())
         );
         MiddleResult::Continue
     }

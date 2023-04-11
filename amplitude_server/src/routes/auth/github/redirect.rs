@@ -21,7 +21,7 @@ pub fn attach(server: &mut Server<State>) {
             "Location",
             format!(
                 "https://github.com/login/oauth/authorize?client_id={}&state={}",
-                cfg.github_app_id, state
+                cfg.app_id, state
             ),
         )
     });

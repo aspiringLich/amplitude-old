@@ -19,8 +19,10 @@ impl Database for Connection {
 
         let trans = self.transaction().unwrap();
         for i in [
-            include_str!("./sql/create_github_users.sql"),
-            include_str!("./sql/create_google_users.sql"),
+            include_str!("./sql/auth/github/create_users.sql"),
+            include_str!("./sql/auth/github/create_oauth_state.sql"),
+            include_str!("./sql/auth/google/create_users.sql"),
+            include_str!("./sql/auth/google/create_oauth_state.sql"),
         ] {
             trans.execute(i, []).unwrap();
         }
