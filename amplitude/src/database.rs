@@ -108,17 +108,33 @@ impl Database for Connection {
                         session.name,
                         p.login,
                         session.avatar,
-                        session.token
+                        p.token
                     ],
                 )?;
             }
-            SessionPlatform::Google(_) => todo!(),
+            SessionPlatform::Google(p) => {
+                self.execute(
+                    include_str!("./sql/auth/google/upsert_login.sql"),
+                    params![
+                        session.id,
+                        p.google_id,
+                        session.name,
+                        session.avatar,
+                        p.access_token,
+                    ],
+                )?;
+            }
         }
+
+        self.execute(
+            include_str!("./sql/insert_sessions.sql"),
+            params![session.id, session.token],
+        )?;
 
         Ok(())
     }
 
-    fn get_session(&self, token: &str) -> anyhow::Result<Session> {
+    fn get_session(&self, _token: &str) -> anyhow::Result<Session> {
         todo!()
     }
 }
