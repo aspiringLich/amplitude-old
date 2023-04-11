@@ -1,8 +1,4 @@
-use std::{
-    default::default,
-    fs,
-    path::{Path, PathBuf},
-};
+use std::{default::default, fs, path::Path};
 
 use amplitude_common::config;
 use anyhow::Context;
@@ -12,10 +8,7 @@ use tracing::warn;
 use crate::{
     inject::{self},
     link_concat::link_concat_callback,
-    state::{
-        config::{parse_article_config, TracksRaw},
-        ParseState,
-    },
+    state::{config::parse_article_config, ParseState},
 };
 use comrak::{
     parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
