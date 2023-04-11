@@ -8,7 +8,7 @@ pub fn attach(server: &mut Server<State>) {
         return;
     }
 
-    server.stateful_route(Method::GET, "/auth/redirect", move |app, _| {
+    server.stateful_route(Method::GET, "/auth/google/redirect", move |app, _| {
         let state = rand::thread_rng()
             .sample_iter(&rand::distributions::Alphanumeric)
             .take(10)
@@ -19,7 +19,7 @@ pub fn attach(server: &mut Server<State>) {
 
         let cfg = app.config.google_oauth.as_ref().unwrap();
         let redirect = format!(
-            "https://accounts.google.com/o/oauth2/v2/auth?client_id={}&redirect_uri={}/auth/complete&response_type=code&scope=profile&state={}",
+            "https://accounts.google.com/o/oauth2/v2/auth?client_id={}&redirect_uri={}/auth/google/complete&response_type=code&scope=profile&state={}",
             cfg.client_id,
             url::encode(&cfg.external_url),
             state
