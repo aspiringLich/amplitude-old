@@ -1,17 +1,15 @@
+use self::config::ArticleConfig;
 use anyhow::ensure;
 use anyhow::Context;
+use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
-    sync::RwLock,
 };
 
 pub mod config;
+pub mod parse;
 pub mod quiz;
-
-use serde::{Deserialize, Serialize};
-
-use self::config::ArticleConfig;
 
 #[derive(Debug, Default)]
 pub struct FileEntry {
@@ -61,8 +59,4 @@ impl ParseState {
     ) -> Option<ArticleConfig> {
         self.articles.insert(article.to_path_buf(), config)
     }
-}
-
-pub struct State {
-    pub parse: RwLock<ParseState>,
 }

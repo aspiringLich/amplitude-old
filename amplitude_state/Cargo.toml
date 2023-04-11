@@ -1,0 +1,18 @@
+[package]
+name = "amplitude_state"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+amplitude_markdown = { path = "../amplitude_markdown" }
+amplitude_common = { path = "../amplitude_common" }
+
+anyhow = "1.0.70"
+tracing = "0.1.37"
+serde = "1.0.159"
+comrak = { git = "https://github.com/aspiringLich/comrak.git" }
+toml = "0.7.3"
+rusqlite = "0.29.0"
+parking_lot = "0.12.1"

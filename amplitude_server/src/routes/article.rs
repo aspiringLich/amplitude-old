@@ -1,4 +1,4 @@
-use amplitude_common::state::config::ArticleConfig;
+use amplitude_markdown::state::config::ArticleConfig;
 
 use super::*;
 
@@ -8,7 +8,7 @@ struct ArticleResponse<'a> {
     config: &'a ArticleConfig,
 }
 
-pub fn attach(server: &mut Server<App>) {
+pub fn attach(server: &mut Server<State>) {
     // Returns the html for a course
     server.handled_stateful_route(Method::POST, "/api/article", |state, req| {
         let s = String::from_utf8(req.body.clone())?;
@@ -19,7 +19,7 @@ pub fn attach(server: &mut Server<App>) {
             format!("Article not found: {:?}", req.display()),
         )?;
 
-        let parse_state = &state.documents.read();
+        let parse_state = &state.parse_state.read();
         let config = parse_state
             .get_article_config(&req.path())
             .context("Article config not found")?;

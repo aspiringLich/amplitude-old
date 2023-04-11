@@ -1,18 +1,27 @@
-use std::{env, fs, path::PathBuf, sync::Arc};
-
-use amplitude_common::{config, state::ParseState};
+use amplitude_common::config;
 use amplitude_markdown::parse::parse_dir;
-use anyhow::Result;
-use parking_lot::{Mutex, MutexGuard, RwLock};
+use anyhow::ensure;
+use anyhow::Context;
+use parking_lot::RwLock;
+use std::env;
+use std::fs;
+use std::sync::Mutex;
+use std::sync::MutexGuard;
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
+
+use amplitude_markdown::state::ParseState;
 use rusqlite::Connection;
 use serde::Deserialize;
 use tracing::info;
 
 use crate::db::Database;
 
-pub struct App {
+pub struct State {
     db: Mutex<Connection>,
-    pub documents: Arc<RwLock<ParseState>>,
+    pub parse_state: RwLock<ParseState>,
     pub config: Config,
 }
 
@@ -24,8 +33,8 @@ pub struct Config {
     pub db_path: String,
 }
 
-impl App {
-    pub fn new() -> Result<Self> {
+impl State {
+    pub fn new() -> anyhow::Result<Self> {
         let config_file = PathBuf::from(
             env::args()
                 .nth(1)
@@ -41,12 +50,12 @@ impl App {
 
         Ok(Self {
             db: Mutex::new(db),
-            documents: Arc::new(RwLock::new(parse_state)),
+            parse_state: RwLock::new(parse_state),
             config,
         })
     }
 
     pub fn db(&self) -> MutexGuard<Connection> {
-        self.db.lock()
+        self.db.lock().unwrap()
     }
 }

@@ -1,6 +1,5 @@
 use super::*;
-use crate::parse::parse;
-use amplitude_common::state::{quiz::Quiz, ParseState};
+use crate::{parse::parse, state::quiz::Quiz};
 use anyhow::Context;
 
 /// Turns a code block into a quiz
@@ -63,7 +62,8 @@ pub(super) fn inject_quiz<'a>(
 
 #[cfg(test)]
 mod tests {
-    use amplitude_common::state::quiz::{Answer, Question};
+    use crate::state::quiz::{Question, Answer};
+
 
     #[test]
     fn test_serde() {

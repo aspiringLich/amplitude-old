@@ -1,8 +1,8 @@
 [package]
-name = "amplitude"
+name = "amplitude_server"
 version = "0.1.0"
 edition = "2021"
-default-run = "amplitude"
+default-run = "amplitude_server"
 
 [dependencies]
 # afire = { version = "2.0.0", features = ["extensions", "tracing"] }
@@ -11,6 +11,8 @@ afire = { git = "https://github.com/Basicprogrammer10/afire", branch = "dev", de
     "tracing",
 ] }
 amplitude_markdown = { path = "../amplitude_markdown" }
+amplitude_state = { path = "../amplitude_state" }
+
 pulldown-cmark = "0.9.2"
 tracing = "0.1.37"
 tracing-subscriber = "0.3.16"
@@ -23,4 +25,5 @@ toml = "0.7.3"
 parking_lot = "0.12.1"
 anyhow = "1.0.70"
 ctrlc = "3.2.5"
+notify = "5.1.0"
 # anyhow = "1.0.70"

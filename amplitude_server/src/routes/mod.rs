@@ -1,4 +1,8 @@
+use crate::error::HandledRoute;
+use crate::error::StatusContext;
 use afire::{extension::ServeStatic, prelude::*};
+use amplitude_common::config;
+use amplitude_state::State;
 use derive_more::{Deref, DerefMut};
 use serde::{de, Deserialize, Serialize};
 use std::{
@@ -6,8 +10,6 @@ use std::{
     path::{Component, Path, PathBuf},
 };
 
-use crate::{app::App, error::*};
-use amplitude_common::config;
 mod article;
 mod quiz;
 
@@ -48,7 +50,7 @@ impl<'de> Deserialize<'de> for ArticlePath {
     }
 }
 
-pub fn attach(server: &mut Server<App>) {
+pub fn attach(server: &mut Server<State>) {
     article::attach(server);
     quiz::attach(server);
 

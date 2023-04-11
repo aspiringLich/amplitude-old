@@ -8,3 +8,4 @@ mod link_concat;
 /// This crate parses markdown and toml files to build rendered html course
 /// pages.
 pub mod parse;
+pub mod state;

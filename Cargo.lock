@@ -43,15 +43,36 @@ dependencies = [
 ]
 
 [[package]]
-name = "amplitude"
+name = "amplitude_common"
+version = "0.1.0"
+
+[[package]]
+name = "amplitude_markdown"
+version = "0.1.0"
+dependencies = [
+ "amplitude_common",
+ "anyhow",
+ "comrak",
+ "ctor",
+ "marksman_escape",
+ "parking_lot",
+ "serde",
+ "toml",
+ "tracing",
+]
+
+[[package]]
+name = "amplitude_server"
 version = "0.1.0"
 dependencies = [
  "afire",
  "amplitude_common",
  "amplitude_markdown",
+ "amplitude_state",
  "anyhow",
  "ctrlc",
  "derive_more",
+ "notify",
  "parking_lot",
  "pulldown-cmark",
  "rusqlite",
@@ -63,27 +84,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "amplitude_common"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "comrak",
- "serde",
- "toml",
- "tracing",
-]
-
-[[package]]
-name = "amplitude_markdown"
+name = "amplitude_state"
 version = "0.1.0"
 dependencies = [
  "amplitude_common",
+ "amplitude_markdown",
  "anyhow",
  "comrak",
- "ctor",
- "marksman_escape",
- "notify",
  "parking_lot",
+ "rusqlite",
  "serde",
  "toml",
  "tracing",

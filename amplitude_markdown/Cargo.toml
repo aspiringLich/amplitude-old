@@ -4,9 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-notify = "5.1.0"
-tracing = "0.1.37"
 amplitude_common = { path = "../amplitude_common" }
+tracing = "0.1.37"
 anyhow = { version = "1.0.70", features = ["backtrace"] }
 ctor = "0.2.0"
 toml = "0.7.3"
