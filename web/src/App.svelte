@@ -4,6 +4,7 @@
     import NotFound from "./NotFound.svelte";
     import Home from "./pages/Home.svelte";
     import Article from "./article/Article.svelte";
+    import LoginTest from "./pages/LoginTest.svelte";
 </script>
 
 <head>
@@ -19,6 +20,7 @@
 
 <main>
     <Route path="/"><Home /></Route>
+    <Route path="/login-test"><LoginTest /></Route>
     <Route path="/article/:/:">
         <Article />
     </Route>

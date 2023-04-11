@@ -5,9 +5,20 @@ use rand::Rng;
 
 use crate::error::StatusError;
 
+#[repr(u8)]
 pub enum LoginProvider {
-    Google,
     Github,
+    Google,
+}
+
+impl From<u8> for LoginProvider {
+    fn from(val: u8) -> Self {
+        match val {
+            0 => LoginProvider::Github,
+            1 => LoginProvider::Google,
+            _ => panic!("Invalid login provider"),
+        }
+    }
 }
 
 pub fn current_epoch() -> u64 {

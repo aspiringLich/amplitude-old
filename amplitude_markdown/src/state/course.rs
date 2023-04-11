@@ -27,6 +27,6 @@ pub struct CourseConfig {
 
 pub fn parse_course_config(cfg: &str) -> anyhow::Result<CourseConfig> {
     let config: CourseConfigRaw = toml::from_str(cfg)?;
-    
+
     todo!()
 }

@@ -13,7 +13,7 @@ use tracing::warn;
 use crate::{
     inject::{self},
     link_concat::link_concat_callback,
-    state::{article::parse_article_config, ParseState, course::parse_course_config},
+    state::{article::parse_article_config, course::parse_course_config, ParseState},
 };
 use comrak::{
     parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,

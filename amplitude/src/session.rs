@@ -2,11 +2,14 @@ use std::sync::Arc;
 
 use afire::Request;
 use anyhow::{anyhow, bail};
+use serde::Serialize;
 
-use crate::{database::Database, state::State};
+use crate::{database::Database, misc::LoginProvider, state::State};
 
+#[derive(Serialize)]
 pub struct Session {
     /// Platform specific things
+    #[serde(skip)]
     pub platform: SessionPlatform,
     /// Session token
     pub token: String,
@@ -50,4 +53,13 @@ pub fn get_session(app: Arc<State>, req: &Request) -> anyhow::Result<Session> {
         .ok_or(anyhow!("Invalid session"))?;
 
     Ok(session)
+}
+
+impl SessionPlatform {
+    pub fn as_provider(&self) -> LoginProvider {
+        match self {
+            SessionPlatform::Github(_) => LoginProvider::Github,
+            SessionPlatform::Google(_) => LoginProvider::Google,
+        }
+    }
 }

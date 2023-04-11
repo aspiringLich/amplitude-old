@@ -2,7 +2,7 @@ use rusqlite::{params, Connection};
 
 use crate::{
     misc::{current_epoch, LoginProvider},
-    session::{Session, SessionPlatform},
+    session::{GithubSession, Session, SessionPlatform},
 };
 
 pub trait Database {
@@ -129,18 +129,58 @@ impl Database for Connection {
 
         self.execute(
             include_str!("./sql/insert_sessions.sql"),
-            params![session.id, session.token],
+            params![
+                session.id,
+                session.token,
+                session.platform.as_provider() as u8
+            ],
         )?;
 
         Ok(())
     }
 
-    fn get_session(&self, _token: &str) -> anyhow::Result<Session> {
-        todo!()
+    fn get_session(&self, token: &str) -> anyhow::Result<Session> {
+        let (created, user_id, platform) = self.query_row(
+            "SELECT created, user_id, platform FROM sessions WHERE session_id = ?1",
+            [token],
+            |x| {
+                Ok((
+                    x.get::<_, u64>(0)?,
+                    x.get::<_, String>(1)?,
+                    x.get::<_, u8>(2)?,
+                ))
+            },
+        )?;
+
+        // Expire session after 30 days
+        if current_epoch() - created > 60 * 60 * 24 * 30 {
+            self.delete_session(token)?;
+            return Err(anyhow::anyhow!("Session expired"));
+        }
+
+        Ok(match platform.into() {
+            LoginProvider::Github => {
+                self.query_row("SELECT * FROM github_users WHERE id = ?1", [user_id], |x| {
+                    Ok(Session {
+                        id: x.get::<_, String>(0)?,
+                        name: x.get::<_, String>(2)?,
+                        avatar: x.get::<_, String>(4)?,
+                        signup: x.get::<_, u64>(6)?,
+                        token: token.to_string(),
+                        platform: SessionPlatform::Github(GithubSession {
+                            github_id: x.get::<_, String>(1)?,
+                            login: x.get::<_, String>(3)?,
+                            token: x.get::<_, String>(5)?,
+                        }),
+                    })
+                })?
+            }
+            LoginProvider::Google => todo!(),
+        })
     }
 
     fn delete_session(&self, token: &str) -> anyhow::Result<()> {
-        self.execute("DELETE FROM sessions WHERE token = ?1", [token])?;
+        self.execute("DELETE FROM sessions WHERE session_id = ?1", [token])?;
         Ok(())
     }
 }
