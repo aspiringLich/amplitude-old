@@ -1,6 +1,6 @@
 use rusqlite::Connection;
 
-use crate::misc::LoginProvider;
+use crate::{misc::LoginProvider, session::Session};
 
 pub trait Database {
     // == Base ==
@@ -10,6 +10,10 @@ pub trait Database {
     // == Auth ==
     fn add_oauth(&self, service: LoginProvider, state: &str) -> anyhow::Result<()>;
     fn get_oauth(&self, service: LoginProvider, state: &str) -> anyhow::Result<u64>;
+
+    // == Session ==
+    fn add_session(&self, session: &Session) -> anyhow::Result<()>;
+    fn get_session(&self, token: &str) -> anyhow::Result<Session>;
 }
 
 impl Database for Connection {
@@ -23,6 +27,7 @@ impl Database for Connection {
             include_str!("./sql/auth/github/create_oauth_state.sql"),
             include_str!("./sql/auth/google/create_users.sql"),
             include_str!("./sql/auth/google/create_oauth_state.sql"),
+            include_str!("./sql/create_sessions.sql"),
         ] {
             trans.execute(i, []).unwrap();
         }
@@ -73,5 +78,13 @@ impl Database for Connection {
         };
 
         Ok(res)
+    }
+
+    fn add_session(&self, session: &Session) -> anyhow::Result<()> {
+        todo!()
+    }
+
+    fn get_session(&self, token: &str) -> anyhow::Result<Session> {
+        todo!()
     }
 }
