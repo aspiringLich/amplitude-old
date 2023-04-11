@@ -2,7 +2,7 @@ use afire::{internal::encoding::url, Method, Response, Server};
 
 use rand::Rng;
 
-use crate::{db::Database, misc::LoginProvider, state::State};
+use crate::{database::Database, misc::LoginProvider, state::State};
 
 pub fn attach(server: &mut Server<State>) {
     if server.app().config.google_oauth.is_none() {

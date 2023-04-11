@@ -3,8 +3,9 @@ use afire::{
     trace::{Formatter, Level},
     Request,
 };
-use amplitude_common::misc::t;
 use tracing::event;
+
+use amplitude_common::misc::t;
 
 pub struct AfireLogger;
 

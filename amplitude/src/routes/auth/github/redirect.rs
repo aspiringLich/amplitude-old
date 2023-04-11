@@ -1,7 +1,7 @@
 use afire::{Method, Response, Server};
 use rand::Rng;
 
-use crate::{db::Database, misc::LoginProvider, state::State};
+use crate::{database::Database, misc::LoginProvider, state::State};
 
 pub fn attach(server: &mut Server<State>) {
     if server.app().config.github_oauth.is_none() {

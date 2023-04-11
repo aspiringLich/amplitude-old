@@ -1,5 +1,7 @@
 #![feature(try_trait_v2)]
 
+use std::{path::PathBuf, process};
+
 use afire::{
     trace::{self, Level},
     Middleware, Server,
@@ -9,11 +11,8 @@ use state::State;
 use tracing::{info, warn};
 use watch::parse_dir_watch;
 
-use std::{path::PathBuf, process};
-
-use crate::{db::Database, logger::AfireLogger};
-
-mod db;
+use crate::{database::Database, logger::AfireLogger};
+mod database;
 mod error;
 mod logger;
 mod misc;
@@ -29,13 +28,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_max_level(tracing::Level::TRACE)
         .init();
 
-    let state = State::new()?;
-
     if !PathBuf::from("web/dist").exists() {
         warn!("web/dist not built!");
         warn!("^ please go into web/ and run `npm run build`");
     }
 
+    let state = State::new()?;
     let mut server = Server::<State>::new(&state.config.host, state.config.port).state(state);
     RequestLogger.attach(&mut server);
     routes::attach(&mut server);
@@ -44,6 +42,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::thread::spawn(|| parse_dir_watch(state));
 
     let app = server.app();
+    let threads = app.config.threads;
     ctrlc::set_handler(move || {
         info!("Exiting");
         app.db().cleanup();
@@ -51,6 +50,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     })
     .unwrap();
 
-    server.start_threaded(16).unwrap();
+    server.start_threaded(threads).unwrap();
     Ok(())
 }

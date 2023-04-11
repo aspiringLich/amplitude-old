@@ -3,13 +3,12 @@ use std::{
     thread, time,
 };
 
-use amplitude_common::config;
-use amplitude_markdown::parse::parse_dir;
 use notify::{Config, RecommendedWatcher, Watcher};
-
 use tracing::{error, info};
 
 use crate::state::State;
+use amplitude_common::config;
+use amplitude_markdown::parse::parse_dir;
 
 /// This function will watch the input directory and write to the output
 /// directory when detecting file changes using the `notify` crate.
