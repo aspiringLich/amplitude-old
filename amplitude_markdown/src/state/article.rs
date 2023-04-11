@@ -18,15 +18,3 @@ pub fn parse_article_config(input: &str) -> anyhow::Result<ArticleConfig> {
 
     toml::from_str(&header).context("While parsing frontmatter")
 }
-
-#[derive(Debug, Deserialize)]
-pub struct TrackRaw {
-    pub name: String,
-    pub path: String,
-    pub description: String,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct TracksRaw {
-    pub tracks: Vec<TrackRaw>,
-}

@@ -1,4 +1,3 @@
-use self::config::ArticleConfig;
 use anyhow::ensure;
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
@@ -7,8 +6,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
-pub mod config;
-pub mod parse;
+pub mod article;
+pub mod course;
 pub mod quiz;
 
 #[derive(Debug, Default)]
@@ -19,18 +18,11 @@ pub struct FileEntry {
 }
 
 #[derive(Debug, Default)]
-pub struct Track {
-    pub name: String,
-    pub description: String,
-    pub files: Vec<FileEntry>,
-}
-
-#[derive(Debug, Default)]
 pub struct ParseState {
     pub options: comrak::ComrakOptions,
     quizzes: HashMap<(PathBuf, String), quiz::Quiz>,
-    articles: HashMap<PathBuf, ArticleConfig>,
-    // tracks: HashMap<PathBuf, Vec<Track>>,
+    articles: HashMap<PathBuf, article::ArticleConfig>,
+    course_config: HashMap<PathBuf, course::CourseConfig>,
 }
 
 impl ParseState {
@@ -48,15 +40,27 @@ impl ParseState {
             .insert((article.to_path_buf(), id.to_owned()), quiz)
     }
 
-    pub fn get_article_config(&self, article: &Path) -> Option<&ArticleConfig> {
+    pub fn get_article_config(&self, article: &Path) -> Option<&article::ArticleConfig> {
         self.articles.get(article)
     }
 
     pub fn insert_article_config(
         &mut self,
         article: &Path,
-        config: ArticleConfig,
-    ) -> Option<ArticleConfig> {
+        config: article::ArticleConfig,
+    ) -> Option<article::ArticleConfig> {
         self.articles.insert(article.to_path_buf(), config)
+    }
+
+    pub fn insert_course(
+        &mut self,
+        path: &Path,
+        config: course::CourseConfig,
+    ) -> Option<course::CourseConfig> {
+        self.course_config.insert(path.to_path_buf(), config)
+    }
+
+    pub fn get_track(&self, path: &Path) -> Option<&course::CourseConfig> {
+        self.course_config.get(path)
     }
 }

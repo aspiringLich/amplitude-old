@@ -1,14 +1,19 @@
-use std::{default::default, fs, path::Path};
+use std::{
+    default::default,
+    fs,
+    path::{Path, PathBuf},
+};
 
 use amplitude_common::config;
 use anyhow::Context;
 
+use serde::Deserialize;
 use tracing::warn;
 
 use crate::{
     inject::{self},
     link_concat::link_concat_callback,
-    state::{config::parse_article_config, ParseState},
+    state::{article::parse_article_config, ParseState, course::parse_course_config},
 };
 use comrak::{
     parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
@@ -133,13 +138,6 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseSta
     Ok(state)
 }
 
-// fn register_tracks(cfg: &str, _path: &PathBuf, _state: &mut ParseState) -> anyhow::Result<()> {
-//     let tracks: TracksRaw = toml::from_str(cfg)?;
-//     let _tracks = tracks.tracks;
-
-//     Ok(())
-// }
-
 fn parse_dir_internal<P: AsRef<Path>>(
     depth: u8,
     input: P,
@@ -233,10 +231,15 @@ fn parse_dir_internal<P: AsRef<Path>>(
 
                 fs::write(o.with_extension("html"), output)?;
             }
-            "toml" if name == "config.toml" => {
-                // parse the config file
-                // let config = parse_config(&i)?;
-            }
+            "toml" => match name.to_str().unwrap() {
+                "course.toml" => {
+                    let s = fs::read_to_string(&i).context("While reading file")?;
+                    // let track = parse_course_config(&s)
+                    //     .context(format!("While parsing track config for {}", i.display()))?;
+                    // state.insert_course(&i, track);
+                }
+                _ => {}
+            },
             _ => {
                 // copy over the file
                 fs::copy(i, o)?;

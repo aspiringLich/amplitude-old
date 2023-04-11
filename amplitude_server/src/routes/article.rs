@@ -1,4 +1,4 @@
-use amplitude_markdown::state::config::ArticleConfig;
+use amplitude_markdown::state::article::ArticleConfig;
 
 use super::*;
 
