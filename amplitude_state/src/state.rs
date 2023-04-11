@@ -1,16 +1,12 @@
 use amplitude_common::config;
 use amplitude_markdown::parse::parse_dir;
-use anyhow::ensure;
-use anyhow::Context;
+
 use parking_lot::RwLock;
 use std::env;
 use std::fs;
+use std::path::PathBuf;
 use std::sync::Mutex;
 use std::sync::MutexGuard;
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-};
 
 use amplitude_markdown::state::ParseState;
 use rusqlite::Connection;

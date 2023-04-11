@@ -8,7 +8,7 @@ use comrak::nodes::{AstNode, NodeValue};
 use comrak::RefMap;
 
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use comrak::html;
 

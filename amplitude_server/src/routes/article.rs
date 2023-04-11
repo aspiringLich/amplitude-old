@@ -21,7 +21,7 @@ pub fn attach(server: &mut Server<State>) {
 
         let parse_state = &state.parse_state.read();
         let config = parse_state
-            .get_article_config(&req.path())
+            .get_article_config(req.path())
             .context("Article config not found")?;
         let response = ArticleResponse { config, body };
 

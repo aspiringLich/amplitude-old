@@ -65,7 +65,7 @@ mod tests {
         let arena = Arena::new();
         let out = comrak::parse_document_with_broken_link_callback(
             &arena,
-            "[a+/search?q=b]",
+            "[a/search?q=b]",
             &comrak::ComrakOptions::default(),
             Some(&mut |link| link_concat_callback(link, &mut refs)),
         );
@@ -74,7 +74,7 @@ mod tests {
 
         assert_eq!(
             String::from_utf8(cm).unwrap(),
-            "[a+/search?q=b](https://a.com/search?q=b)\n"
+            "[a/search?q=b](https://a.com/search?q=b)\n"
         );
     }
 }

@@ -2,14 +2,12 @@ use std::{
     default::default,
     fs,
     path::{Path, PathBuf},
-    sync::{self, Arc},
-    thread, time,
 };
 
 use amplitude_common::config;
 use anyhow::Context;
-use parking_lot::RwLock;
-use tracing::{error, info, warn};
+
+use tracing::warn;
 
 use crate::{
     inject::{self},
@@ -142,12 +140,12 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseSta
     Ok(state)
 }
 
-fn register_tracks(cfg: &str, _path: &PathBuf, _state: &mut ParseState) -> anyhow::Result<()> {
-    let tracks: TracksRaw = toml::from_str(cfg)?;
-    let _tracks = tracks.tracks;
+// fn register_tracks(cfg: &str, _path: &PathBuf, _state: &mut ParseState) -> anyhow::Result<()> {
+//     let tracks: TracksRaw = toml::from_str(cfg)?;
+//     let _tracks = tracks.tracks;
 
-    Ok(())
-}
+//     Ok(())
+// }
 
 fn parse_dir_internal<P: AsRef<Path>>(
     depth: u8,
@@ -238,7 +236,7 @@ fn parse_dir_internal<P: AsRef<Path>>(
                 let path = i.strip_prefix(config::INPUT.clone()).unwrap();
                 let output = parse(path, &s, refs, state)
                     .context(format!("While parsing file {}", i.display()))?;
-                state.insert_article_config(&path, config);
+                state.insert_article_config(path, config);
 
                 fs::write(o.with_extension("html"), output)?;
             }

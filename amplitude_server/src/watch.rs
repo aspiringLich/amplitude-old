@@ -1,11 +1,14 @@
-use std::{sync::{self, Arc}, thread, time};
+use std::{
+    sync::{self, Arc},
+    thread, time,
+};
 
 use amplitude_common::config;
-use amplitude_markdown::{state::ParseState, parse::parse_dir};
+use amplitude_markdown::parse::parse_dir;
 use amplitude_state::State;
-use notify::{RecommendedWatcher, Config, Watcher};
-use parking_lot::RwLock;
-use tracing::{info, error};
+use notify::{Config, RecommendedWatcher, Watcher};
+
+use tracing::{error, info};
 
 /// This function will watch the input directory and write to the output
 /// directory when detecting file changes using the `notify` crate.

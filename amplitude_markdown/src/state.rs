@@ -30,7 +30,7 @@ pub struct ParseState {
     pub options: comrak::ComrakOptions,
     quizzes: HashMap<(PathBuf, String), quiz::Quiz>,
     articles: HashMap<PathBuf, ArticleConfig>,
-    tracks: HashMap<PathBuf, Vec<Track>>,
+    // tracks: HashMap<PathBuf, Vec<Track>>,
 }
 
 impl ParseState {

@@ -62,8 +62,7 @@ pub(super) fn inject_quiz<'a>(
 
 #[cfg(test)]
 mod tests {
-    use crate::state::quiz::{Question, Answer};
-
+    use crate::state::quiz::{Answer, Question};
 
     #[test]
     fn test_serde() {
