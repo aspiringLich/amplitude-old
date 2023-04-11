@@ -2,8 +2,9 @@
 
 use afire::{
     trace::{self, Level},
-    Server,
+    Middleware, Server,
 };
+use logger::RequestLogger;
 use tracing::info;
 use watch::parse_dir_watch;
 
@@ -20,7 +21,9 @@ mod watch;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     trace::set_log_formatter(AfireLogger);
     trace::set_log_level(Level::Trace);
-    tracing_subscriber::fmt().init();
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::TRACE)
+        .init();
 
     let state = State::new()?;
 
@@ -29,6 +32,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let mut server = Server::<State>::new(&state.config.host, state.config.port).state(state);
+    RequestLogger.attach(&mut server);
     routes::attach(&mut server);
 
     let state = server.state.clone().unwrap();

@@ -11,7 +11,7 @@ pub fn parse_article_config(input: &str) -> anyhow::Result<ArticleConfig> {
         "Did not find Frontmatter header on article (Headers start with `---`)"
     );
     let header = input
-        .split('\n')
+        .lines()
         .skip(1)
         .take_while(|line| line != &"---")
         .fold(String::new(), |str, line| str + "\n" + line);

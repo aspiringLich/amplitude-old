@@ -1,5 +1,4 @@
-use crate::error::HandledRoute;
-use crate::error::StatusContext;
+use crate::error::{HandledRoute, StatusContext};
 use afire::{extension::ServeStatic, prelude::*};
 use amplitude_common::config;
 use amplitude_state::State;
