@@ -1,15 +1,14 @@
-use amplitude_common::config;
-use amplitude_markdown::parse::parse_dir;
-
-use parking_lot::{Mutex, MutexGuard, RwLock};
 use std::{env, fs, path::PathBuf};
 
-use amplitude_markdown::state::ParseState;
+use parking_lot::{Mutex, MutexGuard, RwLock};
 use rusqlite::Connection;
 use serde::Deserialize;
 use tracing::info;
 
-use crate::db::Database;
+use crate::database::Database;
+use amplitude_common::config;
+use amplitude_markdown::parse::parse_dir;
+use amplitude_markdown::state::ParseState;
 
 pub struct State {
     db: Mutex<Connection>,
@@ -49,6 +48,7 @@ impl State {
 pub struct Config {
     pub host: String,
     pub port: u16,
+    pub threads: usize,
     pub db_path: String,
 
     pub google_oauth: Option<GoogleOauth>,
