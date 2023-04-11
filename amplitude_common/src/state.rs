@@ -62,7 +62,3 @@ impl ParseState {
         self.articles.insert(article.to_path_buf(), config)
     }
 }
-
-pub struct State {
-    pub parse: RwLock<ParseState>,
-}

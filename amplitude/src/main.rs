@@ -7,7 +7,7 @@ use afire::{
 use amplitude_markdown::parse::parse_dir_watch;
 use tracing::info;
 
-use std::{path::PathBuf, process};
+use std::{path::PathBuf, process, thread};
 
 use crate::{db::Database, logger::AfireLogger};
 use app::App;
@@ -32,7 +32,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     routes::attach(&mut server);
 
     let docs = server.app().documents.clone();
-    std::thread::spawn(|| parse_dir_watch(docs));
+    thread::spawn(|| parse_dir_watch(docs));
 
     let app = server.app();
     ctrlc::set_handler(move || {

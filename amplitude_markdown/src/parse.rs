@@ -10,7 +10,7 @@ use amplitude_common::{
     config,
     state::{
         config::{parse_article_config, TracksRaw},
-        ParseState, State,
+        ParseState,
     },
 };
 use anyhow::Context;
