@@ -1,11 +1,15 @@
-use rusqlite::Connection;
+use rusqlite::{params, Connection};
 
-use crate::{misc::LoginProvider, session::Session};
+use crate::{
+    misc::{current_epoch, LoginProvider},
+    session::{Session, SessionPlatform},
+};
 
 pub trait Database {
     // == Base ==
     fn init(&mut self);
-    fn cleanup(&self);
+    fn cleanup(&mut self);
+    fn garbage_collect(&mut self);
 
     // == Auth ==
     fn add_oauth(&self, service: LoginProvider, state: &str) -> anyhow::Result<()>;
@@ -34,9 +38,22 @@ impl Database for Connection {
         trans.commit().unwrap();
     }
 
-    fn cleanup(&self) {
+    fn cleanup(&mut self) {
         self.pragma_update(None, "wal_checkpoint", "TRUNCATE")
             .unwrap();
+    }
+
+    fn garbage_collect(&mut self) {
+        let cutoff = current_epoch() - 60 * 60; // (one hour)
+        let trans = self.transaction().unwrap();
+
+        for i in [
+            include_str!("./sql/auth/github/delete_oauth.sql"),
+            include_str!("./sql/auth/google/delete_oauth.sql"),
+        ] {
+            trans.execute(i, [cutoff]).unwrap();
+        }
+        trans.commit().unwrap();
     }
 
     fn add_oauth(&self, service: LoginProvider, state: &str) -> anyhow::Result<()> {
@@ -81,7 +98,24 @@ impl Database for Connection {
     }
 
     fn add_session(&self, session: &Session) -> anyhow::Result<()> {
-        todo!()
+        match &session.platform {
+            SessionPlatform::Github(p) => {
+                self.execute(
+                    include_str!("./sql/auth/github/upsert_login.sql"),
+                    params![
+                        session.id,
+                        p.github_id,
+                        session.name,
+                        p.login,
+                        session.avatar,
+                        session.token
+                    ],
+                )?;
+            }
+            SessionPlatform::Google(_) => todo!(),
+        }
+
+        Ok(())
     }
 
     fn get_session(&self, token: &str) -> anyhow::Result<Session> {

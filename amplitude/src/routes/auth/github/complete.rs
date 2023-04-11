@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use afire::{Method, Query, Response, Server, SetCookie};
 use serde_json::Value;
 
@@ -9,7 +11,7 @@ use crate::{
 };
 
 pub fn attach(server: &mut Server<State>) {
-    server.stateful_route(Method::GET, "/auth/complete", move |app, req| {
+    server.stateful_route(Method::GET, "/auth/github/complete", move |app, req| {
         // Get Code from URI
         let code = match req.query.get("code") {
             Some(i) => i,
@@ -36,7 +38,7 @@ pub fn attach(server: &mut Server<State>) {
             .query("client_secret", &cfg.app_secret)
             .query("client_id", &cfg.app_id)
             .query("code", code)
-            .timeout(app.config.req_duration)
+            .timeout(Duration::from_secs(app.config.req_duration))
             .call()
             .unwrap()
             .into_string()

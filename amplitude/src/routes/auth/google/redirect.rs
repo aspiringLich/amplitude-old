@@ -1,4 +1,4 @@
-use afire::{internal::encoding::url, Method, Response, Server};
+use afire::{internal::encoding::url, Method, Response, Server, Status};
 
 use rand::Rng;
 
@@ -27,7 +27,7 @@ pub fn attach(server: &mut Server<State>) {
         );
 
         Response::new()
-            .status(307)
+            .status(Status::TemporaryRedirect)
             .header("Location", &redirect)
             .header("Cache-Control", "no-store")
             .text(format!("Redirecting to {redirect}"))
