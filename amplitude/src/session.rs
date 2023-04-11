@@ -1,24 +1,30 @@
 pub struct Session {
-    platform: SessionPlatform,
-    token: String,
-    id: String,
-    name: String,
-    avatar: String,
-    signup: u64,
+    /// Platform specific things
+    pub platform: SessionPlatform,
+    /// Session token
+    pub token: String,
+    /// Amplify user id
+    pub id: String,
+    /// User's name
+    pub name: String,
+    /// URL to their avatar
+    pub avatar: String,
+    /// The time they signed up (epoch secs)
+    pub signup: u64,
 }
 
-enum SessionPlatform {
+pub enum SessionPlatform {
     Github(GithubSession),
     Google(GoogleSession),
 }
 
-struct GoogleSession {
-    google_id: String,
-    access_token: String,
+pub struct GoogleSession {
+    pub google_id: String,
+    pub access_token: String,
 }
 
-struct GithubSession {
-    github_id: String,
-    login: String,
-    token: String,
+pub struct GithubSession {
+    pub github_id: String,
+    pub login: String,
+    pub token: String,
 }

@@ -1,3 +1,4 @@
+use std::time::Duration;
 use std::{env, fs, path::PathBuf};
 
 use parking_lot::{Mutex, MutexGuard, RwLock};
@@ -50,6 +51,7 @@ pub struct Config {
     pub port: u16,
     pub threads: usize,
     pub db_path: String,
+    pub req_duration: Duration,
 
     pub google_oauth: Option<GoogleOauth>,
     pub github_oauth: Option<GithubOauth>,

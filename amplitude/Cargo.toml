@@ -1,8 +1,8 @@
 [package]
-name = "amplitude_server"
+name = "amplitude"
 version = "0.1.0"
 edition = "2021"
-default-run = "amplitude_server"
+default-run = "amplitude"
 
 [dependencies]
 amplitude_markdown = { path = "../amplitude_markdown" }
@@ -27,4 +27,5 @@ ctrlc = "3.2.5"
 notify = "5.1.0"
 rand = "0.8.5"
 urlencoding = "2.1.2"
+ureq = "2.6.2"
 # anyhow = "1.0.70"
