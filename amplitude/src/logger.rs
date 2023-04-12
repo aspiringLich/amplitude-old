@@ -5,8 +5,6 @@ use afire::{
 };
 use tracing::event;
 
-use amplitude_common::misc::t;
-
 pub struct AfireLogger;
 
 impl Formatter for AfireLogger {
@@ -24,12 +22,16 @@ pub struct RequestLogger;
 
 impl Middleware for RequestLogger {
     fn pre(&self, req: &mut Request) -> MiddleResult {
+        let query = match req.query.is_empty() {
+            true => String::new(),
+            false => req.query.to_string(),
+        };
         event!(
             tracing::Level::TRACE,
             "{} {}{}",
             req.method,
             req.path,
-            t(req.query.is_empty(), String::new(), req.query.to_string())
+            query
         );
         MiddleResult::Continue
     }
