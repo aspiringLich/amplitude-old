@@ -1,8 +1,21 @@
+use std::io::{self, BufRead};
+
 use super::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ArticleConfig {
     pub title: String,
+}
+
+pub fn parse_frontmatter(path: &Path) -> anyhow::Result<String> {
+    let file = fs::File::open(path).unwrap();
+    let mut reader = io::BufReader::new(file);
+
+
+    anyhow::bail!(
+        "Did not find end of Frontmatter header on path {}",
+        path.display()
+    )
 }
 
 pub fn parse_article_config(input: &str) -> anyhow::Result<ArticleConfig> {

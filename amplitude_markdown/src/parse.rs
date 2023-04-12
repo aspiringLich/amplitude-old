@@ -1,19 +1,14 @@
-use std::{
-    default::default,
-    fs,
-    path::{Path, PathBuf},
-};
+use std::{default::default, fs, path::Path};
 
 use amplitude_common::config;
 use anyhow::Context;
 
-use serde::Deserialize;
 use tracing::warn;
 
 use crate::{
     inject::{self},
     link_concat::link_concat_callback,
-    state::{article::parse_article_config, ParseState, course::parse_course_config},
+    state::{article::parse_article_config, ParseState},
 };
 use comrak::{
     parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
@@ -231,15 +226,7 @@ fn parse_dir_internal<P: AsRef<Path>>(
 
                 fs::write(o.with_extension("html"), output)?;
             }
-            "toml" => match name.to_str().unwrap() {
-                "course.toml" => {
-                    let s = fs::read_to_string(&i).context("While reading file")?;
-                    // let track = parse_course_config(&s)
-                    //     .context(format!("While parsing track config for {}", i.display()))?;
-                    // state.insert_course(&i, track);
-                }
-                _ => {}
-            },
+            "toml" => {}
             _ => {
                 // copy over the file
                 fs::copy(i, o)?;

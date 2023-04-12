@@ -1,6 +1,7 @@
 use anyhow::ensure;
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
+use std::fs;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
@@ -11,13 +12,6 @@ pub mod course;
 pub mod quiz;
 
 #[derive(Debug, Default)]
-pub struct FileEntry {
-    pub name: String,
-    pub children: Vec<FileEntry>,
-    pub readable: bool,
-}
-
-#[derive(Debug, Default)]
 pub struct ParseState {
     pub options: comrak::ComrakOptions,
     quizzes: HashMap<(PathBuf, String), quiz::Quiz>,
@@ -26,6 +20,27 @@ pub struct ParseState {
 }
 
 impl ParseState {
+    pub fn finalize(&mut self, path: &Path) -> anyhow::Result<()> {
+        // traverse directory
+        let mut to_visit = vec![path.to_path_buf()];
+        while let Some(dir) = to_visit.pop() {
+            for entry in fs::read_dir(&dir)? {
+                let path = entry?.path();
+                if path.is_dir() {
+                    to_visit.push(path);
+                } else if path.is_file() {
+                    let name = path.file_name().unwrap().to_str().unwrap();
+                    match name {
+                        "index.md" => {}
+                        _ => {}
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
+
     pub fn get_quiz(&self, article: &Path, id: String) -> Option<&quiz::Quiz> {
         self.quizzes.get(&(article.to_path_buf(), id))
     }
@@ -52,7 +67,7 @@ impl ParseState {
         self.articles.insert(article.to_path_buf(), config)
     }
 
-    pub fn insert_course(
+    pub fn insert_course_config(
         &mut self,
         path: &Path,
         config: course::CourseConfig,
@@ -60,7 +75,7 @@ impl ParseState {
         self.course_config.insert(path.to_path_buf(), config)
     }
 
-    pub fn get_track(&self, path: &Path) -> Option<&course::CourseConfig> {
+    pub fn get_course_config(&self, path: &Path) -> Option<&course::CourseConfig> {
         self.course_config.get(path)
     }
 }
