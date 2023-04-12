@@ -1,3 +1,6 @@
+//! Returns the supported authentication methods.
+//! (Google and/or GitHub)
+
 use afire::{Content, Method, Response, Server};
 use serde::Serialize;
 

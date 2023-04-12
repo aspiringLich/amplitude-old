@@ -1,3 +1,6 @@
+//! Views other sessions for the current user.
+//! Contains creation date as epoch (secs), user agent, and session id.
+
 use afire::{Content, Method, Response, Server};
 use serde::Serialize;
 use serde_json::json;

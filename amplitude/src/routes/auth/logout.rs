@@ -1,3 +1,5 @@
+//! Delete the user's current session (on db and cookie) and redirect to the home page.
+
 use afire::{Method, Response, Server, SetCookie, Status};
 
 use crate::{
