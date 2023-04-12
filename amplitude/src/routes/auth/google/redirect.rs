@@ -1,14 +1,10 @@
-use afire::{internal::encoding::url, Method, Response, Server};
+use afire::{internal::encoding::url, Method, Response, Server, Status};
 
 use rand::Rng;
 
 use crate::{database::Database, misc::LoginProvider, state::State};
 
 pub fn attach(server: &mut Server<State>) {
-    if server.app().config.google_oauth.is_none() {
-        return;
-    }
-
     server.stateful_route(Method::GET, "/auth/google/redirect", move |app, _| {
         let state = rand::thread_rng()
             .sample_iter(&rand::distributions::Alphanumeric)
@@ -27,7 +23,7 @@ pub fn attach(server: &mut Server<State>) {
         );
 
         Response::new()
-            .status(307)
+            .status(Status::TemporaryRedirect)
             .header("Location", &redirect)
             .header("Cache-Control", "no-store")
             .text(format!("Redirecting to {redirect}"))

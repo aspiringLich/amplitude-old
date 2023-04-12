@@ -8,7 +8,10 @@ use afire::{
 };
 use logger::RequestLogger;
 use state::State;
-use tracing::{info, warn};
+use tracing::{info, metadata::LevelFilter, warn};
+use tracing_subscriber::{
+    filter, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt,
+};
 use watch::parse_dir_watch;
 
 use crate::{database::Database, logger::AfireLogger};
@@ -24,8 +27,13 @@ mod watch;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     trace::set_log_formatter(AfireLogger);
     trace::set_log_level(Level::Trace);
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::TRACE)
+    let filter = filter::Targets::new()
+        .with_default(LevelFilter::INFO)
+        .with_target("afire", LevelFilter::TRACE)
+        .with_target("amplitude", LevelFilter::TRACE);
+    tracing_subscriber::registry()
+        .with(filter)
+        .with(tracing_subscriber::fmt::layer())
         .init();
 
     if !PathBuf::from("web/dist").exists() {

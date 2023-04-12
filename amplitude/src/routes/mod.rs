@@ -15,6 +15,20 @@ mod article;
 mod auth;
 mod quiz;
 
+pub fn attach(server: &mut Server<State>) {
+    article::attach(server);
+    auth::attach(server);
+    quiz::attach(server);
+
+    ServeStatic::new("web/dist")
+        .not_found(|_req, _dis| {
+            Response::new()
+                .stream(File::open("web/dist/index.html").expect("Webpage not built"))
+                .content(Content::HTML)
+        })
+        .attach(server);
+}
+
 #[derive(Debug, Deref, DerefMut, Deserialize)]
 pub struct ArticleReq {
     pub article: ArticlePath,
@@ -50,18 +64,4 @@ impl<'de> Deserialize<'de> for ArticlePath {
         }
         Ok(ArticlePath { path })
     }
-}
-
-pub fn attach(server: &mut Server<State>) {
-    article::attach(server);
-    auth::attach(server);
-    quiz::attach(server);
-
-    ServeStatic::new("web/dist")
-        .not_found(|_req, _dis| {
-            Response::new()
-                .stream(File::open("web/dist/index.html").expect("Webpage not built"))
-                .content(Content::HTML)
-        })
-        .attach(server);
 }

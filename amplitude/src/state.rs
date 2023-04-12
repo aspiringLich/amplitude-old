@@ -50,6 +50,7 @@ pub struct Config {
     pub port: u16,
     pub threads: usize,
     pub db_path: String,
+    pub req_duration: u64,
 
     pub google_oauth: Option<GoogleOauth>,
     pub github_oauth: Option<GithubOauth>,
