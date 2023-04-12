@@ -123,7 +123,7 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseSta
     .context("while parsing markdown files")?;
 
     state.finalize().context("while finalizing state")?;
-    dbg!(&state);
+    // dbg!(&state);
 
     Ok(state)
 }
