@@ -5,6 +5,7 @@
 
 mod inject;
 mod link_concat;
+pub(crate) mod util;
 /// This crate parses markdown and toml files to build rendered html course
 /// pages.
 pub mod parse;

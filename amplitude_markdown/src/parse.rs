@@ -10,9 +10,10 @@ use crate::{
     link_concat::link_concat_callback,
     state::{
         article::{parse_frontmatter, ArticleConfig},
-        index::{ChildEntry, RawCourseConfig, RawDirConfig},
+        index::{ChildEntry, Children, CourseConfig, RawCourseConfig, TrackConfig},
         ParseState,
     },
+    util::get_path_components,
 };
 use comrak::{
     parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
@@ -107,26 +108,34 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseSta
     let mut state = ParseState::default();
     state.options = options;
 
-    let children = if let Ok(s) = fs::read_to_string(input.as_ref().join("header.md")) {
+    state.children = if let Ok(s) = fs::read_to_string(input.as_ref().join("header.md")) {
         let refs = comrak::parse_document_refs(&Arena::new(), &s);
-        parse_dir_internal(0, input, output, &refs, &mut state)
+        parse_dir_internal(0, input.as_ref(), output.as_ref(), &refs, &mut state)
     } else {
-        parse_dir_internal(0, input, output, &RefMap::new(), &mut state)
+        parse_dir_internal(
+            0,
+            input.as_ref(),
+            output.as_ref(),
+            &RefMap::new(),
+            &mut state,
+        )
     }
     .context("while parsing markdown files")?;
-    dbg!(children);
+
+    state.finalize().context("while finalizing state")?;
+    dbg!(&state);
 
     Ok(state)
 }
 
-/// Returns the new refs and whether or not the index is readable
-fn parse_index(
+/// returns markdown directly
+fn parse_md(
     depth: u8,
     i: &Path,
     o: &Path,
     refs: &RefMap,
     state: &mut ParseState,
-) -> anyhow::Result<(RefMap, bool)> {
+) -> anyhow::Result<(RefMap, ChildEntry)> {
     // parse index.md
     let mut get = |s: &str| -> anyhow::Result<(String, RefMap)> {
         let other_refs = comrak::parse_document_refs(&Arena::new(), s);
@@ -138,53 +147,80 @@ fn parse_index(
     };
 
     let new_refs;
-    let mut readable = false;
-    match depth {
-        // global index, dont parse the header dont write out
-        // dont pass go dont collect $200
-        0 => {
-            let (_, refs) = get(&fs::read_to_string(&i)?)?;
-            new_refs = refs;
-        }
+    let child = match depth {
         // course index, parse header and write out
-        1 => {
+        0 => {
             let (cfg, s): (RawCourseConfig, String) =
                 parse_frontmatter(&i).context("while parsing frontmatter")?;
             let (s, refs) = get(&s)?;
+            // dbg!((&i, &cfg));
 
             if cfg.readable {
-                readable = true;
                 fs::write(o, s)?;
             }
             new_refs = refs;
+
+            let course = get_path_components(i).nth(1).context("path too short")?;
+            state.insert_course_config(course, CourseConfig::from_raw(cfg.clone()));
+
+            ChildEntry {
+                title: cfg.title,
+                readable: cfg.readable,
+                children: default(),
+            }
         }
-        // else, get dir cfg and write out
-        _ => {
-            let (cfg, s): (RawDirConfig, String) =
+        // track, parse header and write out
+        1 => {
+            let (cfg, s): (TrackConfig, String) =
                 parse_frontmatter(&i).context("while parsing frontmatter")?;
             let (s, refs) = get(&s)?;
 
             if cfg.readable {
-                readable = true;
-                fs::write(o.join("index.html"), s)?;
+                fs::write(o, s)?;
             }
-            new_refs = refs;
-        }
-    }
 
-    Ok((new_refs, readable))
+            new_refs = refs;
+            let path = i.strip_prefix(&config::INPUT).unwrap();
+            state
+                .insert_track_config(path, cfg.clone())
+                .context("While parsing track config")?;
+
+            ChildEntry {
+                title: cfg.title,
+                readable: cfg.readable,
+                children: default(),
+            }
+        }
+        // else, get dir cfg and write out
+        _ => {
+            let (cfg, s): (ArticleConfig, String) =
+                parse_frontmatter(&i).context("while parsing frontmatter")?;
+            // dbg!((&i, &cfg));
+            let (s, refs) = get(&s)?;
+
+            new_refs = refs;
+            let path = i.strip_prefix(&config::INPUT).unwrap();
+            state.insert_article_config(path, cfg.clone());
+            fs::write(o, s)?;
+
+            ChildEntry {
+                title: cfg.title,
+                readable: true,
+                children: default(),
+            }
+        }
+    };
+
+    Ok((new_refs, child))
 }
 
-fn parse_dir_internal<P: AsRef<Path>>(
+fn parse_dir_internal(
     depth: u8,
-    input: P,
-    output: P,
+    input: &Path,
+    output: &Path,
     refs: &RefMap,
     state: &mut ParseState,
-) -> anyhow::Result<Vec<ChildEntry>> {
-    let input = input.as_ref();
-    let output = output.as_ref();
-
+) -> anyhow::Result<Children> {
     // check for files in output that are not in input, and delete them
     for entry in fs::read_dir(output)? {
         let o = entry?.path();
@@ -214,12 +250,12 @@ fn parse_dir_internal<P: AsRef<Path>>(
         }
     }
 
-    let mut children = vec![];
+    let mut children: Children = default();
 
     // go through all the files, copying them over and parsing them
     for entry in fs::read_dir(input)? {
         let i = entry?.path();
-        let mut child = ChildEntry::new(i.to_path_buf());
+        let mut child: ChildEntry;
 
         let o = output.join(i.clone().strip_prefix(input).unwrap());
 
@@ -231,15 +267,16 @@ fn parse_dir_internal<P: AsRef<Path>>(
             // top level -> course
 
             // parse index.md
-            let index = input.join("index.md");
+            let index = i.join("index.md");
             let c = if index.exists() {
-                let (new_refs, readable) =
-                    parse_index(depth, &index, &o.join("index.html"), refs, state)
+                let (new_refs, child_) =
+                    parse_md(depth, &index, &o.join("index.html"), refs, state)
                         .with_context(|| format!("while parsing index file {}", index.display()))?;
-                child.readable = readable;
+                child = child_;
                 parse_dir_internal(depth + 1, &i, &o, &new_refs, state)
                     .with_context(|| format!("parsing dir {}", i.display()))?
             } else {
+                child = default();
                 parse_dir_internal(depth + 1, &i, &o, refs, state)
                     .with_context(|| format!("parsing dir {}", i.display()))?
             };
@@ -263,18 +300,9 @@ fn parse_dir_internal<P: AsRef<Path>>(
                         depth >= 1,
                         "File: {name:?} must be in the article directory"
                     );
-                    let (cfg, s): (ArticleConfig, String) =
-                        parse_frontmatter(&i).with_context(|| {
-                            format!("while parsing frontmatter for {}", i.display())
-                        })?;
-
-                    child.readable = true;
-                    let path = i.strip_prefix(config::INPUT.clone()).unwrap();
-                    let output = parse(path, &s, refs, state)
-                        .with_context(|| format!("while parsing file {}", i.display()))?;
-                    state.insert_article_config(path, cfg);
-
-                    fs::write(o.with_extension("html"), output)?;
+                    let (_, child_) = parse_md(depth, &i, &o, refs, state)
+                        .with_context(|| format!("While parsing file {}", i.display()))?;
+                    child = child_
                 }
                 _ => {
                     // copy over the file
@@ -283,7 +311,11 @@ fn parse_dir_internal<P: AsRef<Path>>(
                 }
             }
         }
-        children.push(child);
+
+        children.insert(
+            i.file_name().and_then(|s| s.to_str()).unwrap().to_string(),
+            child,
+        );
     }
 
     Ok(children)
