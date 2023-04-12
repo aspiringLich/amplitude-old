@@ -2,6 +2,7 @@ use afire::Server;
 
 use crate::state::State;
 
+mod complete;
 mod redirect;
 
 pub fn attach(server: &mut Server<State>) {
@@ -9,5 +10,6 @@ pub fn attach(server: &mut Server<State>) {
         return;
     }
 
+    complete::attach(server);
     redirect::attach(server);
 }

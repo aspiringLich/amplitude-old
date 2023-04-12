@@ -1,8 +1,8 @@
 use rusqlite::{params, Connection};
 
 use crate::{
-    misc::{current_epoch, LoginProvider},
-    session::{GithubSession, Session, SessionPlatform},
+    misc::{current_epoch, LoginProvider, SESSION_LENGTH},
+    session::{GithubSession, GoogleSession, Session, SessionPlatform},
 };
 
 pub trait Database {
@@ -153,7 +153,7 @@ impl Database for Connection {
         )?;
 
         // Expire session after 30 days
-        if current_epoch() - created > 60 * 60 * 24 * 30 {
+        if current_epoch() - created > SESSION_LENGTH {
             self.delete_session(token)?;
             return Err(anyhow::anyhow!("Session expired"));
         }
@@ -175,7 +175,21 @@ impl Database for Connection {
                     })
                 })?
             }
-            LoginProvider::Google => todo!(),
+            LoginProvider::Google => {
+                self.query_row("SELECT * FROM google_users WHERE id = ?1", [user_id], |x| {
+                    Ok(Session {
+                        id: x.get::<_, String>(0)?,
+                        name: x.get::<_, String>(2)?,
+                        avatar: x.get::<_, String>(3)?,
+                        signup: x.get::<_, u64>(5)?,
+                        token: token.to_string(),
+                        platform: SessionPlatform::Google(GoogleSession {
+                            google_id: x.get::<_, String>(1)?,
+                            access_token: x.get::<_, String>(4)?,
+                        }),
+                    })
+                })?
+            }
         })
     }
 

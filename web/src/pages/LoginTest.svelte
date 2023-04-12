@@ -18,6 +18,7 @@
     >
   {/if}
   {#if supported.google}
+    <br />
     <a href="/auth/google/redirect" on:click={() => login("google")}
       >Login with Google</a
     >

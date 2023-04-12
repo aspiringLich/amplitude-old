@@ -1,11 +1,11 @@
 use std::time::Duration;
 
-use afire::{Method, Query, Response, Server, SetCookie};
+use afire::{Method, Query, Response, Server, SetCookie, Status};
 use serde_json::Value;
 
 use crate::{
     database::Database,
-    misc::{current_epoch, rand_str, LoginProvider},
+    misc::{current_epoch, rand_str, LoginProvider, SESSION_LENGTH},
     session::{GithubSession, Session, SessionPlatform},
     state::State,
 };
@@ -81,10 +81,11 @@ pub fn attach(server: &mut Server<State>) {
 
         let cookie = SetCookie::new("session", token)
             .path("/")
-            .max_age(30 * 24 * 60 * 60);
+            .max_age(SESSION_LENGTH);
 
         Response::new()
-            .status(308)
+            .status(Status::TemporaryRedirect)
+            .header("Cache-Control", "no-store")
             .header("Location", "/")
             .cookie(cookie)
     });

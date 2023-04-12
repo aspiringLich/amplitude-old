@@ -5,6 +5,8 @@ use rand::Rng;
 
 use crate::error::StatusError;
 
+pub const SESSION_LENGTH: u64 = 30 * 24 * 60 * 60;
+
 #[repr(u8)]
 pub enum LoginProvider {
     Github,
