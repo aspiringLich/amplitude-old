@@ -11,9 +11,9 @@ const DATABASE_VERSION: u64 = 1;
 
 pub trait Database {
     // == Base ==
-    fn init(&mut self);
-    fn cleanup(&mut self);
-    fn garbage_collect(&mut self);
+    fn init(&mut self) -> anyhow::Result<()>;
+    fn cleanup(&mut self) -> anyhow::Result<()>;
+    fn garbage_collect(&mut self) -> anyhow::Result<()>;
 
     // == Auth ==
     fn add_oauth(&self, service: LoginProvider, state: &str) -> anyhow::Result<()>;
@@ -26,21 +26,19 @@ pub trait Database {
 }
 
 impl Database for Connection {
-    fn init(&mut self) {
-        self.pragma_update(None, "journal_mode", "WAL").unwrap();
-        self.pragma_update(None, "synchronous", "NORMAL").unwrap();
+    fn init(&mut self) -> anyhow::Result<()> {
+        self.pragma_update(None, "journal_mode", "WAL")?;
+        self.pragma_update(None, "synchronous", "NORMAL")?;
 
-        let db_version = self
-            .pragma_query_value(None, "user_version", |row| row.get::<_, u64>(0))
-            .unwrap();
+        let db_version =
+            self.pragma_query_value(None, "user_version", |row| row.get::<_, u64>(0))?;
 
         match db_version {
+            DATABASE_VERSION => info!("Loaded database at `{}`", self.path().unwrap()),
             0 => {
-                info!("Creating Database");
-                self.pragma_update(None, "user_version", DATABASE_VERSION)
-                    .unwrap();
+                info!("Creating database at `{}`", self.path().unwrap());
+                self.pragma_update(None, "user_version", DATABASE_VERSION)?;
             }
-            DATABASE_VERSION => {}
             i => {
                 error!(
                     "Database version mismatch. Expected {}, got {}",
@@ -49,7 +47,7 @@ impl Database for Connection {
             }
         }
 
-        let trans = self.transaction().unwrap();
+        let trans = self.transaction()?;
         for i in [
             include_str!("./sql/auth/github/create_users.sql"),
             include_str!("./sql/auth/github/create_oauth_state.sql"),
@@ -57,29 +55,33 @@ impl Database for Connection {
             include_str!("./sql/auth/google/create_oauth_state.sql"),
             include_str!("./sql/create_sessions.sql"),
         ] {
-            trans.execute(i, []).unwrap();
+            trans.execute(i, [])?;
         }
-        trans.commit().unwrap();
+        trans.commit()?;
+
+        Ok(())
     }
 
-    fn cleanup(&mut self) {
-        self.garbage_collect();
-        self.pragma_update(None, "optimize", "").unwrap();
-        self.pragma_update(None, "wal_checkpoint", "TRUNCATE")
-            .unwrap();
+    fn cleanup(&mut self) -> anyhow::Result<()> {
+        self.garbage_collect()?;
+        self.pragma_update(None, "optimize", "")?;
+        self.pragma_update(None, "wal_checkpoint", "TRUNCATE")?;
+        Ok(())
     }
 
-    fn garbage_collect(&mut self) {
+    fn garbage_collect(&mut self) -> anyhow::Result<()> {
         let cutoff = current_epoch() - 60 * 60; // (one hour)
-        let trans = self.transaction().unwrap();
+        let trans = self.transaction()?;
 
         for i in [
             include_str!("./sql/auth/github/delete_oauth.sql"),
             include_str!("./sql/auth/google/delete_oauth.sql"),
         ] {
-            trans.execute(i, [cutoff]).unwrap();
+            trans.execute(i, [cutoff])?;
         }
-        trans.commit().unwrap();
+        trans.commit()?;
+
+        Ok(())
     }
 
     fn add_oauth(&self, service: LoginProvider, state: &str) -> anyhow::Result<()> {

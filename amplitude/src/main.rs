@@ -53,7 +53,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let threads = app.config.threads;
     ctrlc::set_handler(move || {
         info!("Exiting");
-        app.db().cleanup();
+        app.db().cleanup().unwrap();
         process::exit(0);
     })
     .unwrap();

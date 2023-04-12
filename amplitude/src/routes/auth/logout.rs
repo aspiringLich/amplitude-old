@@ -6,8 +6,9 @@ use crate::{
 
 pub fn attach(server: &mut Server<State>) {
     server.handled_stateful_route(Method::GET, "/auth/logout", move |app, req| {
-        let session = get_session(app.clone(), req)?;
-        app.db().delete_session(&session.token)?;
+        if let Ok(i) = get_session(app.clone(), req) {
+            app.db().delete_session(&i.token)?;
+        }
 
         // Remove Session Cookie
         Response::new()

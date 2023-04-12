@@ -27,8 +27,7 @@ impl State {
         let config = toml::from_str::<Config>(&fs::read_to_string(config_file).unwrap()).unwrap();
 
         let mut db = Connection::open(&config.db_path).unwrap();
-        db.init();
-        info!("Loaded database at `{}`", config.db_path);
+        db.init()?;
 
         let parse_state = parse_dir(&config::INPUT, &config::RENDERED)?;
 
