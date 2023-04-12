@@ -1,6 +1,4 @@
-use std::{
-    io::{self, BufRead, Read},
-};
+use std::io::{self, BufRead, Read};
 
 use serde::de::DeserializeOwned;
 

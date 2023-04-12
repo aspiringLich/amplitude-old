@@ -205,12 +205,12 @@ pub(crate) fn inject<'a>(
 
                 let n = node
                     .next_sibling()
-                    .context(format!("Unexpected end of AST after tag `{text}`"))?;
+                    .with_context(|| format!("Unexpected end of AST after tag `{text}`"))?;
                 to_detach.push(node);
                 let expected = &info.expected;
                 if expected.matches(n) {
                     let mut ret = (info.callback)(article, &args, n, state, refs)
-                        .context(format!("while calling callback for tag `{text}`"))?;
+                        .with_context(|| format!("while calling callback for tag `{text}`"))?;
                     to_detach.append(&mut ret);
                 } else {
                     anyhow::bail!(
