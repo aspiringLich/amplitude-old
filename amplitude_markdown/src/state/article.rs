@@ -1,5 +1,4 @@
 use std::{
-    default::default,
     io::{self, BufRead, Read},
 };
 

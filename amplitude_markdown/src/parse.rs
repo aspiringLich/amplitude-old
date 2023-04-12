@@ -176,12 +176,12 @@ fn parse_dir_internal<P: AsRef<Path>>(
                 let mut recurse = || -> anyhow::Result<()> {
                     // parse index.md
                     let mut get = |s: &str| -> anyhow::Result<(String, RefMap)> {
-                        let other_refs = comrak::parse_document_refs(&Arena::new(), &s);
+                        let other_refs = comrak::parse_document_refs(&Arena::new(), s);
                         let mut refs = refs.clone();
                         refs.extend(other_refs);
                         // also parse index.md to add any of the things it has
-                        Ok(parse_and_refs(&i, &s, &refs, state)
-                            .context(format!("while parsing {}", i.display()))?)
+                        parse_and_refs(&i, s, &refs, state)
+                            .context(format!("while parsing {}", i.display()))
                     };
 
                     let new_refs;
@@ -194,20 +194,20 @@ fn parse_dir_internal<P: AsRef<Path>>(
                         }
                         // course index, parse header and write out
                         1 => {
-                            let (cfg, s): (RawCourseConfig, String) =
+                            let (_cfg, s): (RawCourseConfig, String) =
                                 parse_frontmatter(&index).context("while parsing frontmatter")?;
                             let (s, refs) = get(&s)?;
 
-                            fs::write(&o.join("index.md"), s)?;
+                            fs::write(o.join("index.md"), s)?;
                             new_refs = refs;
                         }
                         // else, get dir cfg and write out
                         _ => {
-                            let (cfg, s): (RawDirConfig, String) = parse_frontmatter(&index)
+                            let (_cfg, s): (RawDirConfig, String) = parse_frontmatter(&index)
                                 .context("while parsing frontmatter for {}")?;
                             let (s, refs) = get(&s)?;
 
-                            fs::write(&o.join("index.md"), s)?;
+                            fs::write(o.join("index.md"), s)?;
                             new_refs = refs;
                         }
                     }

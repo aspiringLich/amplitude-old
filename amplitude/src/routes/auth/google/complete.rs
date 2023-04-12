@@ -58,7 +58,7 @@ pub fn attach(server: &mut Server<State>) {
 
         // Get User Info
         let user_raw = ureq::get("https://www.googleapis.com/oauth2/v1/userinfo")
-            .set("Authorization", &format!("Bearer {}", access_token))
+            .set("Authorization", &format!("Bearer {access_token}"))
             .timeout(Duration::from_secs(app.config.req_duration))
             .call()
             .unwrap()

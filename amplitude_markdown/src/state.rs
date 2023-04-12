@@ -1,4 +1,4 @@
-use anyhow::ensure;
+
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -8,8 +8,8 @@ use std::{
 };
 
 pub mod article;
-pub mod quiz;
 pub mod index;
+pub mod quiz;
 
 #[derive(Debug, Default)]
 pub struct ParseState {
