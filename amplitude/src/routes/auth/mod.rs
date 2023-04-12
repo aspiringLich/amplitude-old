@@ -6,7 +6,9 @@ use crate::state::State;
 mod github;
 mod google;
 mod logout;
+mod logout_all;
 mod session;
+mod sessions;
 mod supported;
 
 // dw breon i got this
@@ -36,6 +38,8 @@ pub fn attach(server: &mut Server<State>) {
     google::attach(server);
     github::attach(server);
     logout::attach(server);
+    logout_all::attach(server);
     session::attach(server);
+    sessions::attach(server);
     supported::attach(server);
 }

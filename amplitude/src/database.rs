@@ -6,6 +6,8 @@ use crate::{
     session::{GithubSession, GoogleSession, Session, SessionPlatform},
 };
 
+type SessionMeta = (String, u64, Option<String>);
+
 // Increment every time schema changes, even in dev
 const DATABASE_VERSION: u64 = 1;
 
@@ -23,6 +25,8 @@ pub trait Database {
     fn add_session(&self, session: &Session, agent: Option<&str>) -> anyhow::Result<()>;
     fn get_session(&self, token: &str) -> anyhow::Result<Session>;
     fn delete_session(&self, token: &str) -> anyhow::Result<()>;
+    fn delete_sessions(&self, session: &Session) -> anyhow::Result<()>;
+    fn get_sessions(&self, session: &Session) -> anyhow::Result<Vec<SessionMeta>>;
 }
 
 impl Database for Connection {
@@ -223,5 +227,28 @@ impl Database for Connection {
     fn delete_session(&self, token: &str) -> anyhow::Result<()> {
         self.execute("DELETE FROM sessions WHERE session_id = ?1", [token])?;
         Ok(())
+    }
+
+    fn delete_sessions(&self, session: &Session) -> anyhow::Result<()> {
+        self.execute("DELETE FROM sessions WHERE user_id = ?1", [&session.id])?;
+        Ok(())
+    }
+
+    fn get_sessions(&self, session: &Session) -> anyhow::Result<Vec<SessionMeta>> {
+        let mut stmt = self
+            .prepare("SELECT session_id, created, user_agent FROM sessions WHERE user_id = ?1")?;
+
+        let sessions = stmt
+            .query_map([&session.id], |x| {
+                Ok((
+                    x.get::<_, String>(0)?,
+                    x.get::<_, u64>(1)?,
+                    x.get::<_, Option<String>>(2)?,
+                ))
+            })?
+            .map(Result::unwrap)
+            .collect::<Vec<_>>();
+
+        Ok(sessions)
     }
 }
