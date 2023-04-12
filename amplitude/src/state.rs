@@ -3,7 +3,6 @@ use std::{env, fs, path::PathBuf};
 use parking_lot::{Mutex, MutexGuard, RwLock};
 use rusqlite::Connection;
 use serde::Deserialize;
-use tracing::info;
 
 use crate::database::Database;
 use amplitude_common::config;

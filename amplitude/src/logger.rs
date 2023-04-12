@@ -5,8 +5,6 @@ use afire::{
 };
 use tracing::event;
 
-use amplitude_common::misc::t;
-
 pub struct AfireLogger;
 
 impl Formatter for AfireLogger {
@@ -29,7 +27,7 @@ impl Middleware for RequestLogger {
             "{} {}{}",
             req.method,
             req.path,
-            t(req.query.is_empty(), String::new(), req.query.to_string())
+            req.query
         );
         MiddleResult::Continue
     }
