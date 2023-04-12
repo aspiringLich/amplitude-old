@@ -210,7 +210,7 @@ pub(crate) fn inject<'a>(
                 let expected = &info.expected;
                 if expected.matches(n) {
                     let mut ret = (info.callback)(article, &args, n, state, refs)
-                        .context(format!("While calling callback for tag `{text}`"))?;
+                        .context(format!("while calling callback for tag `{text}`"))?;
                     to_detach.append(&mut ret);
                 } else {
                     anyhow::bail!(

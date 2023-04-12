@@ -8,7 +8,11 @@ use tracing::warn;
 use crate::{
     inject::{self},
     link_concat::link_concat_callback,
-    state::{article::parse_article_config, ParseState},
+    state::{
+        article::{parse_frontmatter, ArticleConfig},
+        index::{RawCourseConfig, RawDirConfig},
+        ParseState,
+    },
 };
 use comrak::{
     parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
@@ -50,7 +54,7 @@ pub(crate) fn parse_and_refs<P: AsRef<Path>>(
     inject::inject(article.as_ref(), out, &this_refs, state)?;
 
     let mut cm = vec![];
-    comrak::format_html(out, options, &mut cm).context("While parsing AST to html")?;
+    comrak::format_html(out, options, &mut cm).context("while parsing AST to html")?;
 
     Ok((String::from_utf8(cm).unwrap(), this_refs))
 }
@@ -69,25 +73,6 @@ pub(crate) fn parse<P: AsRef<Path>>(
 /// the output to the output directory. Any files included in the input will
 /// also be copied over to the output directory. It will delete any files in the
 /// output directory that have no counterpart in the input directory.
-///
-/// When encountering a file called `header.md`, it will parse it as a link
-/// definition file and it will not be included in the output.
-///
-/// `header.md` files will add on to each other, and apply to all the files in
-/// their directory and below it.
-///
-/// ## Notes on Behavior
-///
-///  - `.md` files will be parsed and converted to `.html` files
-///  - `.md` files in the output directory will be removed
-///  - `.toml` files in the output directory will be removed
-///
-/// ## Special Files
-///
-///  - `header.md` files will be parsed as link definition files and will not be
-///    included in the output
-///  - `config.toml` files will be parsed to register the course
-///
 pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseState> {
     let options = ComrakOptions {
         extension: ComrakExtensionOptions {
@@ -128,7 +113,7 @@ pub fn parse_dir<P: AsRef<Path>>(input: P, output: P) -> anyhow::Result<ParseSta
     } else {
         parse_dir_internal(0, input, output, &RefMap::new(), &mut state)
     }
-    .context("While parsing markdown files")?;
+    .context("while parsing markdown files")?;
 
     Ok(state)
 }
@@ -184,18 +169,57 @@ fn parse_dir_internal<P: AsRef<Path>>(
             }
             // top level -> course
 
-            // parse header.md
-            if let Ok(s) = fs::read_to_string(input.join("header.md")) {
-                let other_refs = comrak::parse_document_refs(&Arena::new(), &s);
-                let mut refs = refs.clone();
-                refs.extend(other_refs);
+            // parse index.md
+            let index = input.join("index.md");
+            if index.exists() {
+                // go down another level
+                let mut recurse = || -> anyhow::Result<()> {
+                    // parse index.md
+                    let mut get = |s: &str| -> anyhow::Result<(String, RefMap)> {
+                        let other_refs = comrak::parse_document_refs(&Arena::new(), &s);
+                        let mut refs = refs.clone();
+                        refs.extend(other_refs);
+                        // also parse index.md to add any of the things it has
+                        Ok(parse_and_refs(&i, &s, &refs, state)
+                            .context(format!("while parsing {}", i.display()))?)
+                    };
 
-                // also parse header.md to add any of the things it has
-                let (_, new_refs) = parse_and_refs(&i, &s, &refs, state)
-                    .context(format!("While parsing {}", i.display()))?;
-                parse_dir_internal(depth + 1, &i, &o, &new_refs, state)?;
+                    let new_refs;
+                    match depth {
+                        // global index, dont parse the header dont write out
+                        // dont pass go dont collect $200
+                        0 => {
+                            let (_, refs) = get(&fs::read_to_string(&index)?)?;
+                            new_refs = refs;
+                        }
+                        // course index, parse header and write out
+                        1 => {
+                            let (cfg, s): (RawCourseConfig, String) =
+                                parse_frontmatter(&index).context("while parsing frontmatter")?;
+                            let (s, refs) = get(&s)?;
+
+                            fs::write(&o.join("index.md"), s)?;
+                            new_refs = refs;
+                        }
+                        // else, get dir cfg and write out
+                        _ => {
+                            let (cfg, s): (RawDirConfig, String) = parse_frontmatter(&index)
+                                .context("while parsing frontmatter for {}")?;
+                            let (s, refs) = get(&s)?;
+
+                            fs::write(&o.join("index.md"), s)?;
+                            new_refs = refs;
+                        }
+                    }
+                    parse_dir_internal(depth + 1, &i, &o, &new_refs, state)
+                        .context(format!("while parsing {}", i.display()))?;
+                    Ok(())
+                };
+
+                recurse().context(format!("while parsing {}", index.display()))?;
             } else {
-                parse_dir_internal(depth + 1, &i, &o, refs, state)?;
+                parse_dir_internal(depth + 1, &i, &o, refs, state)
+                    .context(format!("while parsing {}", i.display()))?;
             }
             continue;
         }
@@ -205,24 +229,23 @@ fn parse_dir_internal<P: AsRef<Path>>(
 
         match ext.to_str().unwrap_or_default() {
             "md" => {
-                // ignore header.md
-                if name == "header.md" {
+                // ignore index.md
+                if name == "index.md" {
                     continue;
                 }
 
                 // otherwise, parse
-                let s = fs::read_to_string(&i).context("While reading file")?;
                 anyhow::ensure!(
                     depth >= 1,
                     "File: {name:?} must be in the article directory"
                 );
-                let config = parse_article_config(&s)
-                    .context(format!("While parsing config header for {}", i.display()))?;
+                let (c, s): (ArticleConfig, String) = parse_frontmatter(&i)
+                    .context(format!("while parsing frontmatter for {}", i.display()))?;
 
                 let path = i.strip_prefix(config::INPUT.clone()).unwrap();
                 let output = parse(path, &s, refs, state)
-                    .context(format!("While parsing file {}", i.display()))?;
-                state.insert_article_config(path, config);
+                    .context(format!("while parsing file {}", i.display()))?;
+                state.insert_article_config(path, c);
 
                 fs::write(o.with_extension("html"), output)?;
             }

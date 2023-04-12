@@ -8,15 +8,15 @@ use std::{
 };
 
 pub mod article;
-pub mod course;
 pub mod quiz;
+pub mod index;
 
 #[derive(Debug, Default)]
 pub struct ParseState {
     pub options: comrak::ComrakOptions,
     quizzes: HashMap<(PathBuf, String), quiz::Quiz>,
     articles: HashMap<PathBuf, article::ArticleConfig>,
-    course_config: HashMap<PathBuf, course::CourseConfig>,
+    // course_config: HashMap<PathBuf, course::CourseConfig>,
 }
 
 impl ParseState {
@@ -67,15 +67,15 @@ impl ParseState {
         self.articles.insert(article.to_path_buf(), config)
     }
 
-    pub fn insert_course_config(
-        &mut self,
-        path: &Path,
-        config: course::CourseConfig,
-    ) -> Option<course::CourseConfig> {
-        self.course_config.insert(path.to_path_buf(), config)
-    }
+    // pub fn insert_course_config(
+    //     &mut self,
+    //     path: &Path,
+    //     config: course::CourseConfig,
+    // ) -> Option<course::CourseConfig> {
+    //     self.course_config.insert(path.to_path_buf(), config)
+    // }
 
-    pub fn get_course_config(&self, path: &Path) -> Option<&course::CourseConfig> {
-        self.course_config.get(path)
-    }
+    // pub fn get_course_config(&self, path: &Path) -> Option<&course::CourseConfig> {
+    //     self.course_config.get(path)
+    // }
 }
