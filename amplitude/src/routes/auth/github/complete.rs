@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use afire::{Method, Query, Response, Server, SetCookie, Status};
+use afire::{HeaderType, Method, Query, Response, Server, SetCookie, Status};
 use serde_json::Value;
 
 use crate::{
@@ -77,7 +77,9 @@ pub fn attach(server: &mut Server<State>) {
             signup: current_epoch(),
         };
 
-        app.db().add_session(&session).unwrap();
+        app.db()
+            .add_session(&session, req.headers.get(HeaderType::UserAgent))
+            .unwrap();
 
         let cookie = SetCookie::new("session", token)
             .path("/")

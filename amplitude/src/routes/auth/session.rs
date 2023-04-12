@@ -1,7 +1,6 @@
 use afire::{Content, Method, Response, Server};
 use serde::Serialize;
 use serde_json::json;
-use tracing::error;
 
 use crate::{error::HandledRoute, misc::OkResponse, session::get_session, state::State};
 
@@ -15,8 +14,7 @@ pub fn attach(server: &mut Server<State>) {
     server.handled_stateful_route(Method::GET, "/auth/session", move |app, req| {
         let session = match get_session(app, req) {
             Ok(session) => session,
-            Err(e) => {
-                error!("Failed to get session: {}", e);
+            Err(_) => {
                 return Response::new()
                     .status(401)
                     .text(json!({ "error": "Unauthorized" }))

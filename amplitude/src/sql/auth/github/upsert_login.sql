@@ -12,4 +12,5 @@ UPDATE
 SET token = ?6,
     name = ?3,
     login = ?4,
-    avatar_url = ?5;
+    avatar_url = ?5
+RETURNING id;

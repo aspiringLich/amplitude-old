@@ -9,4 +9,5 @@ INSERT INTO google_users (
 VALUES (?1, ?2, ?3, ?4, ?5, strftime('%s', 'now')) ON CONFLICT DO
 UPDATE
 SET name = ?3,
-    avatar_url = ?4;
+    avatar_url = ?4
+RETURNING id;

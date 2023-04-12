@@ -16,7 +16,7 @@ pub trait Database {
     fn get_oauth(&self, service: LoginProvider, state: &str) -> anyhow::Result<u64>;
 
     // == Session ==
-    fn add_session(&self, session: &Session) -> anyhow::Result<()>;
+    fn add_session(&self, session: &Session, agent: Option<&str>) -> anyhow::Result<()>;
     fn get_session(&self, token: &str) -> anyhow::Result<Session>;
     fn delete_session(&self, token: &str) -> anyhow::Result<()>;
 }
@@ -98,41 +98,41 @@ impl Database for Connection {
         Ok(res)
     }
 
-    fn add_session(&self, session: &Session) -> anyhow::Result<()> {
-        match &session.platform {
-            SessionPlatform::Github(p) => {
-                self.execute(
-                    include_str!("./sql/auth/github/upsert_login.sql"),
-                    params![
-                        session.id,
-                        p.github_id,
-                        session.name,
-                        p.login,
-                        session.avatar,
-                        p.token
-                    ],
-                )?;
-            }
-            SessionPlatform::Google(p) => {
-                self.execute(
-                    include_str!("./sql/auth/google/upsert_login.sql"),
-                    params![
-                        session.id,
-                        p.google_id,
-                        session.name,
-                        session.avatar,
-                        p.access_token,
-                    ],
-                )?;
-            }
+    fn add_session(&self, session: &Session, agent: Option<&str>) -> anyhow::Result<()> {
+        let id = match &session.platform {
+            SessionPlatform::Github(p) => self.query_row(
+                include_str!("./sql/auth/github/upsert_login.sql"),
+                params![
+                    session.id,
+                    p.github_id,
+                    session.name,
+                    p.login,
+                    session.avatar,
+                    p.token
+                ],
+                |x| x.get::<_, String>(0),
+            ),
+            SessionPlatform::Google(p) => self.query_row(
+                include_str!("./sql/auth/google/upsert_login.sql"),
+                params![
+                    session.id,
+                    p.google_id,
+                    session.name,
+                    session.avatar,
+                    p.access_token,
+                ],
+                |x| x.get::<_, String>(0),
+            ),
         }
+        .unwrap_or_else(|_| session.id.to_owned());
 
         self.execute(
             include_str!("./sql/insert_sessions.sql"),
             params![
-                session.id,
+                id,
                 session.token,
-                session.platform.as_provider() as u8
+                session.platform.as_provider() as u8,
+                agent
             ],
         )?;
 
@@ -141,7 +141,7 @@ impl Database for Connection {
 
     fn get_session(&self, token: &str) -> anyhow::Result<Session> {
         let (created, user_id, platform) = self.query_row(
-            "SELECT created, user_id, platform FROM sessions WHERE session_id = ?1",
+            "SELECT created, user_id, platform FROM sessions WHERE session_id = ?",
             [token],
             |x| {
                 Ok((
