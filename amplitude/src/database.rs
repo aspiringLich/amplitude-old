@@ -1,9 +1,13 @@
 use rusqlite::{params, Connection};
+use tracing::{error, info};
 
 use crate::{
     misc::{current_epoch, LoginProvider, SESSION_LENGTH},
     session::{GithubSession, GoogleSession, Session, SessionPlatform},
 };
+
+// Increment every time schema changes, even in dev
+const DATABASE_VERSION: u64 = 1;
 
 pub trait Database {
     // == Base ==
@@ -26,6 +30,25 @@ impl Database for Connection {
         self.pragma_update(None, "journal_mode", "WAL").unwrap();
         self.pragma_update(None, "synchronous", "NORMAL").unwrap();
 
+        let db_version = self
+            .pragma_query_value(None, "user_version", |row| row.get::<_, u64>(0))
+            .unwrap();
+
+        match db_version {
+            0 => {
+                info!("Creating Database");
+                self.pragma_update(None, "user_version", DATABASE_VERSION)
+                    .unwrap();
+            }
+            DATABASE_VERSION => {}
+            i => {
+                error!(
+                    "Database version mismatch. Expected {}, got {}",
+                    DATABASE_VERSION, i
+                );
+            }
+        }
+
         let trans = self.transaction().unwrap();
         for i in [
             include_str!("./sql/auth/github/create_users.sql"),
@@ -40,6 +63,8 @@ impl Database for Connection {
     }
 
     fn cleanup(&mut self) {
+        self.garbage_collect();
+        self.pragma_update(None, "optimize", "").unwrap();
         self.pragma_update(None, "wal_checkpoint", "TRUNCATE")
             .unwrap();
     }
