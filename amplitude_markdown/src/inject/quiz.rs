@@ -48,6 +48,7 @@ pub(super) fn inject_quiz<'a>(
                         .to_string();
                 }
             }
+            let article = article.strip_prefix(&config::INPUT).unwrap_or(article);
             anyhow::ensure!(
                 state.insert_quiz(article, id, quiz).is_none(),
                 "Quiz id `{id}` already exists in this file"

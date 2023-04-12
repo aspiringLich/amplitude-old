@@ -24,21 +24,20 @@
         return a;
     }
 
-    $: scroll = undefined;
-    function updateScroll() {
-        if (quiz_element == undefined) return;
-        scroll = quiz_element.getBoundingClientRect().top - window.innerHeight;
-    }
-
     let init = false;
     let questions: any = [];
     let quiz_element: HTMLElement;
-    $: if (quiz_element != undefined && scroll < 0 && !init) {
-        init = true;
+    function initQuiz() {
+        if (init) {
+            n = 0;
+            return;
+        }
         questions = fetchQuiz().then(async (q) => {
             let quiz = await q.json();
             return quiz.questions;
         });
+        n = 0;
+        init = true;
     }
 
     // render the quiz markdown whenever you change the question
@@ -83,119 +82,118 @@
 
 <svelte:window
     on:resize={() => {
-        updateScroll();
         width = window.innerWidth;
     }}
-    on:scroll={updateScroll}
 />
 
 <div id="quiz" bind:this={quiz_element}>
-    {#await questions}
+    {#if n == -1}
         <div id="start">
-            <Button {...button(inc, false)}>Start Quiz</Button>
+            <Button {...button(initQuiz)}>Start Quiz</Button>
             <h2>Quiz</h2>
-            <h4>Loading...</h4>
         </div>
-    {:then questions}
-        {@const len = questions.length}
-        {#if n == -1}
+    {:else}
+        {#await questions}
             <div id="start">
-                <Button {...button(inc)}>Start Quiz</Button>
+                <Button {...button(inc, false)}>Start Quiz</Button>
                 <h2>Quiz</h2>
-                <h4>
-                    {len} question{len == 1 ? "" : "s"}
-                </h4>
+                <h4>Loading...</h4>
             </div>
-        {:else if n < len}
-            <div id="buttons">
-                <div style:justify-content="left">
-                    <Button {...button(dec, n > 0)}>
-                        <Icon icon="arrow_back">Back</Icon>
-                    </Button>
-                </div>
-                <div style:justify-content="center">
-                    <Button {...button(reset)}>Reset</Button>
-                </div>
-                <div style:justify-content="right">
-                    {#if answers[n] == undefined}
-                        {@const submit_enabled = selected != undefined}
-                        <Button {...button(submit, submit_enabled)}>
-                            Submit
+        {:then questions}
+            {@const len = questions.length}
+            {#if n < len}
+                <div id="buttons">
+                    <div style:justify-content="left">
+                        <Button {...button(dec, n > 0)}>
+                            <Icon icon="arrow_back">Back</Icon>
                         </Button>
-                    {:else}
-                        {@const last = n + 1 < questions.length}
-                        <Button {...button(inc, last)}>
-                            <Icon icon="arrow_forward" reverse={true}>
-                                Next
-                            </Icon>
-                        </Button>
-                    {/if}
-                </div>
-            </div>
-            <h3 style:margin-left="16px">Question {n + 1} / {len}</h3>
-            <div
-                id="container"
-                data-layout={layout}
-                bind:this={container_element}
-            >
-                <div id="left">
-                    {@html questions[n].question}
-                </div>
-                <div id="right">
-                    {#each questions[n].answers as answer, i}
-                        {@const exists = answers[n] != undefined}
-                        {@const correct = exists && answer.correct}
-                        {@const this_selected = exists && answers[n] == i}
-                        <div
-                            class="input"
-                            role="radio"
-                            tabindex="-1"
-                            aria-checked={this_selected}
-                            on:keypress
-                            on:click={() => !exists && select(i)}
-                        >
-                            <Button
-                                color={answer_color(exists, correct)}
-                                stretch={true}
-                                enabled={!exists}
-                                grayout={false}
-                            >
-                                <div class="answer">
-                                    <input
-                                        type="radio"
-                                        bind:group={selected}
-                                        name={n.toString()}
-                                        value={i}
-                                        disabled={exists}
-                                    />
-                                    <label for={n.toString()}>
-                                        {@html answer.text}
-                                    </label>
-                                </div>
-                                {#if exists}
-                                    <div style:margin="0.5em 0 0 2em">
-                                        {(answer.correct === true
-                                            ? "✔ Correct"
-                                            : "✘ Incorrect") +
-                                            (answer.response == "" ? "!" : ":")}
-                                        {@html answer.response}
-                                    </div>
-                                {/if}
+                    </div>
+                    <div style:justify-content="center">
+                        <Button {...button(reset)}>Reset</Button>
+                    </div>
+                    <div style:justify-content="right">
+                        {#if answers[n] == undefined}
+                            {@const submit_enabled = selected != undefined}
+                            <Button {...button(submit, submit_enabled)}>
+                                Submit
                             </Button>
-                        </div>
-                    {/each}
+                        {:else}
+                            {@const last = n + 1 < questions.length}
+                            <Button {...button(inc, last)}>
+                                <Icon icon="arrow_forward" reverse={true}>
+                                    Next
+                                </Icon>
+                            </Button>
+                        {/if}
+                    </div>
                 </div>
+                <h3 style:margin-left="16px">Question {n + 1} / {len}</h3>
+                <div
+                    id="container"
+                    data-layout={layout}
+                    bind:this={container_element}
+                >
+                    <div id="left">
+                        {@html questions[n].question}
+                    </div>
+                    <div id="right">
+                        {#each questions[n].answers as answer, i}
+                            {@const exists = answers[n] != undefined}
+                            {@const correct = exists && answer.correct}
+                            {@const this_selected = exists && answers[n] == i}
+                            <div
+                                class="input"
+                                role="radio"
+                                tabindex="-1"
+                                aria-checked={this_selected}
+                                on:keypress
+                                on:click={() => !exists && select(i)}
+                            >
+                                <Button
+                                    color={answer_color(exists, correct)}
+                                    stretch={true}
+                                    enabled={!exists}
+                                    grayout={false}
+                                >
+                                    <div class="answer">
+                                        <input
+                                            type="radio"
+                                            bind:group={selected}
+                                            name={n.toString()}
+                                            value={i}
+                                            disabled={exists}
+                                        />
+                                        <label for={n.toString()}>
+                                            {@html answer.text}
+                                        </label>
+                                    </div>
+                                    {#if exists}
+                                        <div style:margin="0.5em 0 0 2em">
+                                            {(answer.correct === true
+                                                ? "✔ Correct"
+                                                : "✘ Incorrect") +
+                                                (answer.response == ""
+                                                    ? "!"
+                                                    : ":")}
+                                            {@html answer.response}
+                                        </div>
+                                    {/if}
+                                </Button>
+                            </div>
+                        {/each}
+                    </div>
+                </div>
+            {/if}
+        {:catch error}
+            {console.error(error)}
+            <div id="start">
+                <Button {...button(inc, false)}>Start Quiz</Button>
+                <h2>Quiz</h2>
+                <h4 style:color="red">Something went wrong! D;</h4>
+                {error}
             </div>
-        {/if}
-    {:catch error}
-        {console.error(error)}
-        <div id="start">
-            <Button {...button(inc, false)}>Start Quiz</Button>
-            <h2>Quiz</h2>
-            <h4 style:color="red">Something went wrong! D;</h4>
-            {error}
-        </div>
-    {/await}
+        {/await}
+    {/if}
 </div>
 
 <style lang="scss">
@@ -225,6 +223,11 @@
             flex: 1;
         }
     }
+    
+    p {
+        margin: 0.5em 0;
+    }
+    
     .input {
         margin: 0.5em 0;
 
