@@ -83,7 +83,7 @@ fn display_node(node: &AstNode) -> String {
         Emph => "Emph ",
         Strong => "Strong ",
         Strikethrough => "Strikethrough",
-        Superscript => todo!(),
+        Superscript => "Superscript",
         Link(_) => "Link(_)",
         Image(_) => "Image(_)",
         FootnoteReference(_) => "FootnoteReference(_)",

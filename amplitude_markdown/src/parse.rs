@@ -194,20 +194,25 @@ fn parse_dir_internal<P: AsRef<Path>>(
                         }
                         // course index, parse header and write out
                         1 => {
-                            let (_cfg, s): (RawCourseConfig, String) =
+                            let (cfg, s): (RawCourseConfig, String) =
                                 parse_frontmatter(&index).context("while parsing frontmatter")?;
                             let (s, refs) = get(&s)?;
 
-                            fs::write(o.join("index.md"), s)?;
+                            if cfg.readable {
+                                dbg!(o.join("index.html"), &s);
+                                fs::write(o.join("index.html"), s)?;
+                            }
                             new_refs = refs;
                         }
                         // else, get dir cfg and write out
                         _ => {
-                            let (_cfg, s): (RawDirConfig, String) = parse_frontmatter(&index)
+                            let (cfg, s): (RawDirConfig, String) = parse_frontmatter(&index)
                                 .context("while parsing frontmatter for {}")?;
                             let (s, refs) = get(&s)?;
 
-                            fs::write(o.join("index.md"), s)?;
+                            if cfg.readable {
+                                fs::write(o.join("index.html"), s)?;
+                            }
                             new_refs = refs;
                         }
                     }
