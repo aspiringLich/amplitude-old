@@ -2,3 +2,4 @@
 /rendered
 .vite
 *.db*
+.tmp

@@ -13,11 +13,13 @@ use std::{
 
 mod article;
 mod auth;
+mod evaluate;
 mod quiz;
 
 pub fn attach(server: &mut Server<State>) {
     article::attach(server);
     auth::attach(server);
+    evaluate::attach(server);
     quiz::attach(server);
 
     ServeStatic::new("web/dist")
