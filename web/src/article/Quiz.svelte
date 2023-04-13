@@ -224,10 +224,6 @@
         }
     }
     
-    p {
-        margin: 0.5em 0;
-    }
-    
     .input {
         margin: 0.5em 0;
 

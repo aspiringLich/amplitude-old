@@ -1,9 +1,43 @@
 <script lang="ts">
-    export let course: string;
-    export let track: string;
-    export let article: string = undefined;
-    
+    import { urlPath } from "./article";
+
     // create a Document from the html str
-    async function fetchList(path) {
+    async function fetchList() {
+        let path = urlPath();
+        const a = await fetch("/api/article_list", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                course: path[1],
+                track: path[2],
+            }),
+        });
+
+        if (!a.ok) {
+            throw new Error("failed to fetch article list!");
+        }
+
+        return a;
     }
+
+    let articles = fetchList().then((a) => a.json());
 </script>
+
+<div id=container>
+    {#await articles then articles}
+        <!-- promise was fulfilled -->
+    {:catch error}
+        <span style:color=red>Could not fetch article list :(</span>
+        {error}
+    {/await}
+</div>
+
+<style>
+    #container {
+        position: fixed;
+        left: 0;
+        top: 0;
+    }
+</style>

@@ -14,11 +14,15 @@ use std::{
 mod article;
 mod auth;
 mod quiz;
+mod course;
+mod track;
 
 pub fn attach(server: &mut Server<State>) {
     article::attach(server);
     auth::attach(server);
     quiz::attach(server);
+    course::attach(server);
+    track::attach(server);
 
     ServeStatic::new("web/dist")
         .not_found(|_req, _dis| {

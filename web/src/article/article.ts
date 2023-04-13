@@ -110,8 +110,13 @@ export function smoothAnchor(anchor: Element) {
     });
 }
 
+export function urlPath() {
+    return window.location.href.split("/").slice(3);
+}
+
 export function articlePath() {
-    let path = window.location.href.split("/").slice(3);
+    let path = urlPath();
+    
     // console.log(path);
     if (path[0] != "article") return undefined;
     let joined = path.slice(1).join("/");

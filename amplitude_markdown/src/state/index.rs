@@ -1,5 +1,7 @@
 use std::default::default;
 
+use serde::Serializer;
+
 use crate::util::get_path_components;
 
 use super::*;
@@ -30,6 +32,7 @@ pub struct CourseConfig {
     pub title: String,
     pub description: String,
     pub readable: bool,
+    #[serde(skip)]
     pub children: HashMap<String, TrackConfig>,
 }
 
@@ -56,12 +59,16 @@ pub struct RawDirConfig {
     pub readable: bool,
 }
 
+fn serialize_children<S: Serializer>(children: &Children, s: S) -> Result<S::Ok, S::Error> {
+    children.keys().collect::<Vec<_>>().serialize(s)
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TrackConfig {
     pub title: String,
     pub description: String,
     pub readable: bool,
-    #[serde(skip)]
+    #[serde(serialize_with = "serialize_children", skip_deserializing)]
     pub children: Children,
 }
 

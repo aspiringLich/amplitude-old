@@ -1,9 +1,10 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import Quiz from "./Quiz.svelte";
+    import Explorer from "./Explorer.svelte";
+    import Outline from "./Outline.svelte";
     import { renderComponents, renderComponent, articlePath } from "./article";
     import { fly } from "svelte/transition";
-    import Outline from "./Outline.svelte";
     import { smoothAnchor } from "./article";
 
     async function fetchArticle() {
@@ -75,7 +76,7 @@
 {#if init}
     <div id="article" data-right={outline} data-left={explorer}>
         {#if explorer && sidebars}
-            <!-- <Explorer {...{ course, track, article }} /> -->
+            <Explorer />
         {/if}
         <div
             id="container"
