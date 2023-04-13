@@ -1,8 +1,10 @@
 <script>
+  import { Divider, Menu, Text } from "@svelteuidev/core";
   import Admonition from "../article/Admonition.svelte";
   import Icon from "../widgets/Icon.svelte";
 
   const session = fetch("/auth/session").then((r) => r.json());
+  const supported = fetch("/auth/supported").then((r) => r.json());
 </script>
 
 <div class="container">
@@ -15,9 +17,32 @@
     <div class="user">
       {#await session then session}
         {#if !session.error}
-          <img src={session.avatar} alt="User avatar" />
+          <Menu>
+            <div slot="control" style="height: 36px;">
+              <img src={session.avatar} alt="avatar" />
+            </div>
+            <Menu.Item on:click={() => alert("todo")}>Account</Menu.Item>
+            <Menu.Item
+              color="red"
+              on:click={() => (window.location.href = "/auth/logout")}
+            >
+              Log out
+            </Menu.Item>
+          </Menu>
         {:else}
-          <Icon icon="login" size="1.5em" />
+          <Menu>
+            <Icon slot="control" icon="login" size="1.5em" />
+            <Menu.Label>Log in with</Menu.Label>
+            {#await supported}
+              <Menu.Label>Loading auth options...</Menu.Label>
+            {:then supported}
+              {#each supported as provider}
+                <Menu.Item on:click={() => (window.location = provider.path)}>
+                  {provider.name}
+                </Menu.Item>
+              {/each}
+            {/await}
+          </Menu>
         {/if}
       {/await}
     </div>
@@ -53,6 +78,8 @@
     justify-content: start;
     align-items: center;
     margin-bottom: 1.5rem;
+    height: 36px;
+    z-index: 1;
 
     border: 3px solid #eeeeee;
     padding: 10px 20px 10px 20px;
@@ -90,6 +117,7 @@
     & .user {
       margin-left: auto;
       display: flex;
+      z-index: 1000;
 
       &:hover {
         border-radius: 0.25rem;
