@@ -3,24 +3,36 @@
 
 use afire::{Content, Method, Response, Server};
 use serde::Serialize;
+use serde_json::json;
 
 use crate::state::State;
 
 #[derive(Serialize)]
-struct SupportedResponse {
-    github: bool,
-    google: bool,
+struct SupportedOauth {
+    name: String,
+    path: String,
 }
 
 pub fn attach(server: &mut Server<State>) {
     server.stateful_route(Method::GET, "/auth/supported", move |app, _req| {
-        let supported = SupportedResponse {
-            github: app.config.github_oauth.is_some(),
-            google: app.config.google_oauth.is_some(),
-        };
+        let mut supported = Vec::new();
+
+        if app.config.github_oauth.is_some() {
+            supported.push(SupportedOauth {
+                name: "GitHub".to_string(),
+                path: "/auth/github/redirect".to_string(),
+            });
+        }
+
+        if app.config.google_oauth.is_some() {
+            supported.push(SupportedOauth {
+                name: "Google".to_string(),
+                path: "/auth/google/redirect".to_string(),
+            });
+        }
 
         Response::new()
-            .text(serde_json::to_string(&supported).unwrap())
+            .text(json!(supported))
             .content(Content::JSON)
     });
 }
