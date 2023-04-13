@@ -17,6 +17,7 @@ pub enum Language {
     JavaScript,
     Python,
     Rust,
+    Java,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -88,6 +89,7 @@ impl Language {
             Language::JavaScript => "javascript",
             Language::Python => "python",
             Language::Rust => "rust",
+            Language::Java => "java",
         }
     }
 
@@ -98,6 +100,7 @@ impl Language {
             "javascript" => Language::JavaScript,
             "python" => Language::Python,
             "rust" => Language::Rust,
+            "java" => Language::Java,
             _ => return None,
         })
     }
