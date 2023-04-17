@@ -1,4 +1,7 @@
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    fmt::{self, Display},
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use afire::Response;
 use rand::Rng;
@@ -19,6 +22,15 @@ impl From<u8> for LoginProvider {
             0 => LoginProvider::Github,
             1 => LoginProvider::Google,
             _ => panic!("Invalid login provider"),
+        }
+    }
+}
+
+impl Display for LoginProvider {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            LoginProvider::Github => write!(f, "Github"),
+            LoginProvider::Google => write!(f, "Google"),
         }
     }
 }

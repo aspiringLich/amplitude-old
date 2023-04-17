@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use afire::{HeaderType, Method, Response, Server, SetCookie, Status};
+use afire::{internal::encoding::url, HeaderType, Method, Response, Server, SetCookie, Status};
 use serde_json::Value;
 
 use crate::{
@@ -40,7 +40,7 @@ pub fn attach(server: &mut Server<State>) {
                 ("grant_type", "authorization_code"),
                 ("client_secret", &cfg.client_secret),
                 ("client_id", &cfg.client_id),
-                ("code", &urlencoding::decode(code).unwrap()),
+                ("code", &url::decode(code).unwrap()),
                 (
                     "redirect_uri",
                     &format!("{}/auth/google/complete", cfg.external_url),

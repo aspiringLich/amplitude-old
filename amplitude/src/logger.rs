@@ -22,16 +22,12 @@ pub struct RequestLogger;
 
 impl Middleware for RequestLogger {
     fn pre(&self, req: &mut Request) -> MiddleResult {
-        let query = match req.query.is_empty() {
-            true => String::new(),
-            false => req.query.to_string(),
-        };
         event!(
             tracing::Level::TRACE,
             "{} {}{}",
             req.method,
             req.path,
-            query
+            req.query
         );
         MiddleResult::Continue
     }

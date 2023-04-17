@@ -1,14 +1,10 @@
+//! Gets user information for the current session.
+//! Includes user id, name, avatar, and signup date.
+
 use afire::{Content, Method, Response, Server};
-use serde::Serialize;
 use serde_json::json;
 
 use crate::{error::HandledRoute, misc::OkResponse, session::get_session, state::State};
-
-#[derive(Serialize)]
-struct SessionResponse {
-    github: bool,
-    google: bool,
-}
 
 pub fn attach(server: &mut Server<State>) {
     server.handled_stateful_route(Method::GET, "/auth/session", move |app, req| {

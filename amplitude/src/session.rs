@@ -9,7 +9,6 @@ use crate::{database::Database, misc::LoginProvider, state::State};
 #[derive(Serialize)]
 pub struct Session {
     /// Platform specific things
-    #[serde(skip)]
     pub platform: SessionPlatform,
     /// Session token
     pub token: String,
@@ -26,6 +25,15 @@ pub struct Session {
 pub enum SessionPlatform {
     Github(GithubSession),
     Google(GoogleSession),
+}
+
+impl Serialize for SessionPlatform {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.as_provider().to_string())
+    }
 }
 
 pub struct GoogleSession {

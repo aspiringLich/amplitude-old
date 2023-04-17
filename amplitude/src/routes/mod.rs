@@ -13,6 +13,7 @@ use std::{
 
 mod article;
 mod auth;
+mod evaluate;
 mod quiz;
 mod course;
 mod track;
@@ -20,6 +21,7 @@ mod track;
 pub fn attach(server: &mut Server<State>) {
     article::attach(server);
     auth::attach(server);
+    evaluate::attach(server);
     quiz::attach(server);
     course::attach(server);
     track::attach(server);

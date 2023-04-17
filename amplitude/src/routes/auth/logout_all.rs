@@ -1,4 +1,4 @@
-//! Delete the user's current session (on db and cookie) and redirect to the home page.
+//! Delete all sessions for the current user (+ cookie) and redirect to the home page.
 
 use afire::{Method, Response, Server, SetCookie, Status};
 
@@ -7,9 +7,9 @@ use crate::{
 };
 
 pub fn attach(server: &mut Server<State>) {
-    server.handled_stateful_route(Method::GET, "/auth/logout", move |app, req| {
+    server.handled_stateful_route(Method::GET, "/auth/logout-all", move |app, req| {
         if let Ok(i) = get_session(app.clone(), req) {
-            app.db().delete_session(&i.token)?;
+            app.db().delete_sessions(&i)?;
         }
 
         // Remove Session Cookie
