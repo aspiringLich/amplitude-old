@@ -2,7 +2,7 @@ mod admonition;
 mod code;
 mod quiz;
 
-use amplitude_common::config;
+use amplitude_common::path;
 use anyhow::Context;
 
 use comrak::nodes::{AstNode, NodeValue};

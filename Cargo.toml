@@ -1,2 +1,7 @@
 [workspace]
-members = ["amplitude", "amplitude_markdown", "amplitude_common"]
+members = [
+    "amplitude",
+    "amplitude_markdown",
+    "amplitude_common",
+    "amplitude_git",
+]

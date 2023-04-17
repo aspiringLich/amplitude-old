@@ -7,7 +7,7 @@ use notify::{Config, RecommendedWatcher, Watcher};
 use tracing::{error, info};
 
 use crate::state::State;
-use amplitude_common::config;
+use amplitude_common::path;
 use amplitude_markdown::parse::parse_dir;
 
 /// This function will watch the input directory and write to the output
@@ -18,9 +18,9 @@ pub fn parse_dir_watch(state: Arc<State>) -> notify::Result<()> {
     let (tx, rx) = sync::mpsc::channel();
 
     let mut watcher = RecommendedWatcher::new(tx, Config::default())?;
-    watcher.watch(config::INPUT.as_path(), notify::RecursiveMode::Recursive)?;
+    watcher.watch(path::INPUT.as_path(), notify::RecursiveMode::Recursive)?;
 
-    info!("Watching for changes in '{}'", config::INPUT);
+    info!("Watching for changes in '{}'", path::INPUT);
 
     while let Ok(mut event) = rx.recv() {
         use notify::EventKind::*;
@@ -40,7 +40,7 @@ pub fn parse_dir_watch(state: Arc<State>) -> notify::Result<()> {
         match event {
             Ok(event) if matches!(event.kind, Create(_) | Modify(_) | Remove(_)) => {
                 info!("Change detected, reparsing...");
-                match parse_dir(&config::INPUT, &config::RENDERED) {
+                match parse_dir(&path::INPUT, &path::RENDERED) {
                     Err(e) => error!("Error parsing directory: '{:?}'", e),
                     Ok(s) => *state.parse_state.write() = s,
                 }

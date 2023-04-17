@@ -1,6 +1,6 @@
-use amplitude_common::config;
+use amplitude_common::path;
 use amplitude_markdown::parse::parse_dir;
 
 fn main() {
-    parse_dir(&config::INPUT, &config::RENDERED).unwrap();
+    parse_dir(&path::INPUT, &path::RENDERED).unwrap();
 }

@@ -3,7 +3,7 @@ use crate::{
     state::State,
 };
 use afire::{extension::ServeStatic, prelude::*};
-use amplitude_common::config;
+use amplitude_common::path;
 use derive_more::{Deref, DerefMut};
 use serde::{de, Deserialize, Serialize};
 use std::{
@@ -40,7 +40,7 @@ pub struct ArticleReq {
 
 impl ArticlePath {
     pub fn file_path(&self) -> PathBuf {
-        config::RENDERED.join(self.path.with_extension("html"))
+        path::RENDERED.join(self.path.with_extension("html"))
     }
 
     pub fn path(&self) -> &Path {

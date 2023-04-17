@@ -1,6 +1,6 @@
 use std::{default::default, fs, path::Path};
 
-use amplitude_common::config;
+use amplitude_common::path;
 use anyhow::Context;
 
 use tracing::warn;
@@ -180,7 +180,7 @@ fn parse_md(
             }
 
             new_refs = refs;
-            let path = i.strip_prefix(&config::INPUT).unwrap();
+            let path = i.strip_prefix(&path::INPUT).unwrap();
             state
                 .insert_track_config(path, cfg.clone())
                 .context("While parsing track config")?;
@@ -199,7 +199,7 @@ fn parse_md(
             let (s, refs) = get(&s)?;
 
             new_refs = refs;
-            let path = i.strip_prefix(&config::INPUT).unwrap();
+            let path = i.strip_prefix(&path::INPUT).unwrap();
             state.insert_article_config(path, cfg.clone());
             fs::write(o, s)?;
 

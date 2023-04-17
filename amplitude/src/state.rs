@@ -1,12 +1,12 @@
 use std::{env, fs, path::PathBuf};
 
+use amplitude_common::config::Config;
 use parking_lot::{Mutex, MutexGuard, RwLock};
 use rusqlite::Connection;
-use serde::Deserialize;
 use tracing::info;
 
 use crate::database::Database;
-use amplitude_common::config;
+use amplitude_common::path;
 use amplitude_markdown::parse::parse_dir;
 use amplitude_markdown::state::ParseState;
 
@@ -30,7 +30,7 @@ impl State {
         db.init();
         info!("Loaded database at `{}`", config.db_path);
 
-        let parse_state = parse_dir(&config::INPUT, &config::RENDERED)?;
+        let parse_state = parse_dir(&path::INPUT, &path::RENDERED)?;
 
         Ok(Self {
             db: Mutex::new(db),
@@ -42,29 +42,4 @@ impl State {
     pub fn db(&self) -> MutexGuard<Connection> {
         self.db.lock()
     }
-}
-
-#[derive(Deserialize)]
-pub struct Config {
-    pub host: String,
-    pub port: u16,
-    pub threads: usize,
-    pub db_path: String,
-    pub req_duration: u64,
-
-    pub google_oauth: Option<GoogleOauth>,
-    pub github_oauth: Option<GithubOauth>,
-}
-
-#[derive(Deserialize)]
-pub struct GoogleOauth {
-    pub client_id: String,
-    pub client_secret: String,
-    pub external_url: String,
-}
-
-#[derive(Deserialize)]
-pub struct GithubOauth {
-    pub app_id: String,
-    pub app_secret: String,
 }
