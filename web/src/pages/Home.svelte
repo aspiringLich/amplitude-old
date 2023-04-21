@@ -12,7 +12,7 @@
     <div class="logo">⚡ amplitude</div>
     <div class="sep" />
     <div class="page active">Home</div>
-    <div class="page">Corses</div>
+    <div class="page">Courses</div>
     <div class="page">About</div>
     <div class="user">
       {#await session then session}

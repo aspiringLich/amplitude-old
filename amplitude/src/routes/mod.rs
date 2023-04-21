@@ -13,9 +13,9 @@ use std::{
 
 mod article;
 mod auth;
+mod course;
 mod evaluate;
 mod quiz;
-mod course;
 mod track;
 
 pub fn attach(server: &mut Server<State>) {
