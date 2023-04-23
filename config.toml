@@ -3,3 +3,8 @@ port = 8080
 threads = 16
 req_duration = 5      # secs
 db_path = "./data.db"
+
+[docker]
+tmp_folder = ""
+command = ""
+timeout = 0

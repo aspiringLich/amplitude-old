@@ -300,7 +300,7 @@ fn parse_dir_internal(
                         depth >= 1,
                         "File: {name:?} must be in the article directory"
                     );
-                    let (_, child_) = parse_md(depth, &i, &o, refs, state)
+                    let (_, child_) = parse_md(depth, &i, &o.with_extension("html"), refs, state)
                         .with_context(|| format!("While parsing file {}", i.display()))?;
                     child = child_
                 }
