@@ -7,8 +7,7 @@ default-run = "amplitude"
 [dependencies]
 amplitude_markdown = { path = "../amplitude_markdown" }
 
-# afire = { version = "2.0.0", features = ["extensions", "tracing"] }
-afire = { git = "https://github.com/Basicprogrammer10/afire", branch = "dev", default-features = false, features = [
+afire = { version = "2.0.0", default-features = false, features = [
     "extensions",
     "tracing",
 ] }
