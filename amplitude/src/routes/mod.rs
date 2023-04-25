@@ -16,7 +16,7 @@ mod auth;
 mod course;
 mod evaluate;
 mod quiz;
-mod track;
+mod article_list;
 
 pub fn attach(server: &mut Server<State>) {
     article::attach(server);
@@ -24,7 +24,7 @@ pub fn attach(server: &mut Server<State>) {
     evaluate::attach(server);
     quiz::attach(server);
     course::attach(server);
-    track::attach(server);
+    article_list::attach(server);
 
     ServeStatic::new("web/dist")
         .not_found(|_req, _dis| {

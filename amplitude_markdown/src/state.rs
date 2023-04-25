@@ -24,8 +24,10 @@ pub struct ParseState {
 
 impl ParseState {
     pub fn finalize(&mut self) -> anyhow::Result<()> {
-        for (course, children) in &self.children {
-            for (track, children) in &children.children {
+        for child in &self.children {
+            let course = &child.id;
+            for child in &child.children {
+                let track = &child.id;
                 let mut config = self
                     .course_config
                     .get_mut(course)
@@ -34,7 +36,7 @@ impl ParseState {
                     .get_mut(track)
                     .context("track config not found")?;
 
-                config.children = children.children.clone();
+                config.children = child.children.clone();
             }
         }
 
