@@ -21,7 +21,7 @@ pub fn attach(server: &mut Server<State>) {
             .context("Track not found!")?;
 
         Ok(Response::new()
-            .text(serde_json::to_string(&track.children)?)
+            .text(serde_json::to_string(&track)?)
             .content(Content::JSON))
     });
 }

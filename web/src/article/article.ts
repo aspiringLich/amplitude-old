@@ -134,3 +134,17 @@ export function articlePath() {
             return `${joined}.md`;
     }
 }
+
+export class ChildEntry {
+    id: string;
+    title: string;
+    readable: boolean;
+    children: ChildEntry[];
+}
+
+export class TrackConfig {
+    title: string;
+    description: string;
+    readable: boolean;
+    children: ChildEntry[];
+}

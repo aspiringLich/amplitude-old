@@ -1,4 +1,5 @@
 <script lang="ts">
+    import ExplorerList from "./ExplorerList.svelte";
     import { urlPath } from "./article";
 
     // create a Document from the html str
@@ -27,7 +28,7 @@
 
 <div id=container>
     {#await articles then articles}
-        <!-- promise was fulfilled -->
+        <ExplorerList {articles}></ExplorerList>
     {:catch error}
         <span style:color=red>Could not fetch article list :(</span>
         {error}

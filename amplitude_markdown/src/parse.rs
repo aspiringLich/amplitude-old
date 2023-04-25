@@ -164,6 +164,7 @@ fn parse_md(
             state.insert_course_config(course, CourseConfig::from_raw(cfg.clone()));
 
             ChildEntry {
+                id: default(),
                 title: cfg.title,
                 readable: cfg.readable,
                 children: default(),
@@ -186,6 +187,7 @@ fn parse_md(
                 .context("While parsing track config")?;
 
             ChildEntry {
+                id: default(),
                 title: cfg.title,
                 readable: cfg.readable,
                 children: default(),
@@ -204,6 +206,7 @@ fn parse_md(
             fs::write(o, s)?;
 
             ChildEntry {
+                id: default(),
                 title: cfg.title,
                 readable: true,
                 children: default(),
@@ -300,8 +303,9 @@ fn parse_dir_internal(
                         depth >= 1,
                         "File: {name:?} must be in the article directory"
                     );
-                    let (_, child_) = parse_md(depth, &i, &o, refs, state)
-                        .with_context(|| format!("While parsing file {}", i.display()))?;
+                    let (_, child_) =
+                        parse_md(depth, &i, &o.with_extension("html"), refs, state)
+                            .with_context(|| format!("While parsing file {}", i.display()))?;
                     child = child_
                 }
                 _ => {
@@ -312,10 +316,8 @@ fn parse_dir_internal(
             }
         }
 
-        children.insert(
-            i.file_name().and_then(|s| s.to_str()).unwrap().to_string(),
-            child,
-        );
+        child.id = i.file_stem().and_then(|s| s.to_str()).unwrap().to_string();
+        children.push(child);
     }
 
     Ok(children)

@@ -1,6 +1,6 @@
 use std::default::default;
 
-use serde::Serializer;
+use serde::{ser::SerializeSeq, Serializer};
 
 use crate::util::get_path_components;
 
@@ -10,10 +10,11 @@ const fn true_fn() -> bool {
     true
 }
 
-pub type Children = HashMap<String, ChildEntry>;
+pub type Children = Vec<ChildEntry>;
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct ChildEntry {
+    pub id: String,
     pub title: String,
     pub readable: bool,
     pub children: Children,
@@ -59,16 +60,12 @@ pub struct RawDirConfig {
     pub readable: bool,
 }
 
-fn serialize_children<S: Serializer>(children: &Children, s: S) -> Result<S::Ok, S::Error> {
-    children.keys().collect::<Vec<_>>().serialize(s)
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TrackConfig {
     pub title: String,
     pub description: String,
     pub readable: bool,
-    #[serde(serialize_with = "serialize_children", skip_deserializing)]
+    #[serde(skip_deserializing)]
     pub children: Children,
 }
 
