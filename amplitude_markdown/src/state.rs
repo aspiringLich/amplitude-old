@@ -36,7 +36,7 @@ impl ParseState {
                     .children
                     .get_mut(track)
                     .context("track config not found")?;
-                
+
                 // order children by ord
                 fn order(children: &mut Children) {
                     children.sort_by_key(|a| a.ord);

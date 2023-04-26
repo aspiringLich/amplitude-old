@@ -12,11 +12,11 @@ use std::{
 };
 
 mod article;
+mod article_list;
 mod auth;
 mod course;
 mod evaluate;
 mod quiz;
-mod article_list;
 
 pub fn attach(server: &mut Server<State>) {
     article::attach(server);

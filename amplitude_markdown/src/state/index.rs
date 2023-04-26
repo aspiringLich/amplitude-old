@@ -29,7 +29,7 @@ impl From<RawCourseConfig> for ChildEntry {
             title: value.title,
             readable: value.readable,
             children: default(),
-            ord: default()
+            ord: default(),
         }
     }
 }
@@ -41,7 +41,7 @@ impl From<TrackConfig> for ChildEntry {
             title: value.title,
             readable: value.readable,
             children: value.children,
-            ord: value.ord
+            ord: value.ord,
         }
     }
 }
