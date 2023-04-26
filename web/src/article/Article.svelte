@@ -74,18 +74,19 @@
 <svelte:window on:resize={onResize} />
 
 {#if init}
-    <div id="article" data-right={outline} data-left={explorer}>
+    <div class="article" data-right={outline} data-left={explorer}>
         {#if explorer && sidebars}
             <Explorer />
         {/if}
         <div
-            id="container"
             in:fly={flyOptions}
             on:introstart|once={transfer}
             on:introend|once={() => (sidebars = true)}
         >
-            <h1>{title}</h1>
-            <div id="body" bind:this={body_element} />
+            <div class="container heading">
+                <h1>{title}</h1>
+            </div>
+            <div class="container body" bind:this={body_element} />
         </div>
         {#if outline && sidebars}
             <Outline article_body={body_element} />
@@ -95,31 +96,30 @@
 <div style:height="50vh" />
 
 <style lang="scss">
-    @use "variables.scss" as *;
+    @use "variables";
+    @use "../styles/mixins";
 
-    #article {
+    .article {
         display: flex;
         flex-direction: row;
         padding: 0 2em;
 
         &[data-right="true"] {
-            margin-right: $outline-width !important;
+            margin-right: variables.$outline-width !important;
         }
 
         &[data-left="true"] {
-            margin-left: $explorer-width !important;
+            margin-left: variables.$explorer-width !important;
         }
     }
 
-    #container {
+    .container {
+        @include mixins.box;
+
         margin: 0 auto;
-        box-shadow: 0 0 16px rgba(0, 0, 0, 0.2);
-        border: 1px solid hsl(0, 0%, 90%);
-        border-radius: 10px;
-        padding: 16px;
         margin-top: 16px;
 
-        h1 {
+        &.heading h1 {
             font-size: 3.5em;
             line-height: 100%;
 
@@ -131,7 +131,7 @@
         }
     }
 
-    #body {
+    .body {
         > :global(h2) {
             font-size: 1.75em;
             margin: 0.75em 0 0.75em 0;

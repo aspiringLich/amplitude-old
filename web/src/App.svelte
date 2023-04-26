@@ -34,6 +34,6 @@
 </main>
 
 <style global lang="scss">
-    @import "./styles.scss";
-    @import "./colors.scss";
+    @use "styles/styles" as *;
+    @use "styles/colors" as *;
 </style>

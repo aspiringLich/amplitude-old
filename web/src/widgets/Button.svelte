@@ -33,7 +33,7 @@
 </div>
 
 <style lang="scss">
-    @use "../utils.scss" as *;
+    @use "../styles/utils" as *;
 
     div {
         position: inherit;

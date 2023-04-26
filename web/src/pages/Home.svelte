@@ -55,7 +55,7 @@
         </div>
     </nav>
 
-    <div class="content shadow">
+    <div class="content">
         <h1>Home</h1>
         <p>Welcome to amplitude, The learning platform for the 23rd century.</p>
 
@@ -70,16 +70,16 @@
 </div>
 
 <style lang="scss">
+    @use "../styles/mixins";
+
     :global(body) {
         margin: 0;
         padding: 0;
     }
 
-    .shadow {
-        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
-    }
-
     nav {
+        @include mixins.box;
+
         color: #334155;
         display: flex;
         justify-content: start;
@@ -148,17 +148,15 @@
         background: #fbfbfb;
         padding-top: 1.5rem;
         min-height: calc(100vh - 1.5rem);
+    }
 
-        & .content {
-            border: 3px solid #eeeeee;
-            padding: 0.75 rem;
-            padding: 10px 20px 10px 20px;
+    .content {
+        @include mixins.box;
 
-            max-width: 1280px;
-            width: 50%;
-            left: 50%;
-            transform: translateX(-50%);
-            position: relative;
-        }
+        max-width: 1280px;
+        width: 50%;
+        left: 50%;
+        transform: translateX(-50%);
+        position: relative;
     }
 </style>

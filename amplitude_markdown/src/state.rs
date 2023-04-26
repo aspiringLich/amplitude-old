@@ -39,10 +39,15 @@ impl ParseState {
                 
                 // order children by ord
                 fn order(children: &mut Children) {
-                    children.sort_by_key(|a| a.ord)
+                    children.sort_by_key(|a| a.ord);
+                    for child in children {
+                        order(&mut child.children);
+                    }
                 }
+                let mut children = child.children.clone();
+                order(&mut children);
 
-                config.children = child.children.clone();
+                config.children = children;
             }
         }
 
