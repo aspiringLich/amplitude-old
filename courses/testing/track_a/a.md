@@ -1,6 +1,7 @@
 ---
 title = "ABCDEFG"
 author = "Brandon Li"
+ord = 1
 ---
 ## Lorem Ipsum
 

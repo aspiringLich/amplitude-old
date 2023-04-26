@@ -1,6 +1,6 @@
 <script lang="ts">
     import ExplorerList from "./ExplorerList.svelte";
-    import { urlPath } from "./article";
+    import { TrackConfig, urlPath } from "./article";
 
     // create a Document from the html str
     async function fetchList() {
@@ -23,12 +23,12 @@
         return a;
     }
 
-    let articles = fetchList().then((a) => a.json());
+    let track: Promise<TrackConfig> = fetchList().then((a) => a.json());
 </script>
 
 <div id=container>
-    {#await articles then articles}
-        <ExplorerList {articles}></ExplorerList>
+    {#await track then track}
+        <ExplorerList entries={track.children}></ExplorerList>
     {:catch error}
         <span style:color=red>Could not fetch article list :(</span>
         {error}

@@ -10,7 +10,7 @@ use crate::{
     link_concat::link_concat_callback,
     state::{
         article::{parse_frontmatter, ArticleConfig},
-        index::{ChildEntry, Children, CourseConfig, RawCourseConfig, TrackConfig},
+        index::{ChildEntry, Children, RawCourseConfig, TrackConfig},
         ParseState,
     },
     util::get_path_components,
@@ -161,14 +161,9 @@ fn parse_md(
             new_refs = refs;
 
             let course = get_path_components(i).nth(1).context("path too short")?;
-            state.insert_course_config(course, CourseConfig::from_raw(cfg.clone()));
+            state.insert_course_config(course, cfg.clone().into());
 
-            ChildEntry {
-                id: default(),
-                title: cfg.title,
-                readable: cfg.readable,
-                children: default(),
-            }
+            cfg.into()
         }
         // track, parse header and write out
         1 => {
@@ -186,12 +181,7 @@ fn parse_md(
                 .insert_track_config(path, cfg.clone())
                 .context("While parsing track config")?;
 
-            ChildEntry {
-                id: default(),
-                title: cfg.title,
-                readable: cfg.readable,
-                children: default(),
-            }
+            cfg.into()
         }
         // else, get dir cfg and write out
         _ => {
@@ -205,12 +195,7 @@ fn parse_md(
             state.insert_article_config(path, cfg.clone());
             fs::write(o, s)?;
 
-            ChildEntry {
-                id: default(),
-                title: cfg.title,
-                readable: true,
-                children: default(),
-            }
+            cfg.into()
         }
     };
 

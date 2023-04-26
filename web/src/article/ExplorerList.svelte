@@ -1,20 +1,20 @@
 <script lang="ts">
-    export let articles: ChildEntry[];
+    export let entries: ChildEntry[];
 
     import type { ChildEntry } from "./article";
 </script>
 
 <ul>
-    {#each articles as article}
+    {#each entries as entry}
         <li>
-            {article.title}
+            {entry.title}
         </li>
     {/each}
 </ul>
 
 <style lang="scss">
     ul {
-        left: 5px;
+        padding-left: 10px;
 
         li {
             &[data-readable="true"] {

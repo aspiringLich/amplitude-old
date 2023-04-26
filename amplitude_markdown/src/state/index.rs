@@ -1,10 +1,8 @@
 use std::default::default;
 
-use serde::{ser::SerializeSeq, Serializer};
-
 use crate::util::get_path_components;
 
-use super::*;
+use super::{article::ArticleConfig, *};
 
 const fn true_fn() -> bool {
     true
@@ -14,10 +12,62 @@ pub type Children = Vec<ChildEntry>;
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct ChildEntry {
+    #[serde(skip_deserializing)]
+    pub children: Children,
+    #[serde(skip_deserializing)]
     pub id: String,
     pub title: String,
     pub readable: bool,
-    pub children: Children,
+    #[serde(skip_serializing)]
+    pub ord: usize,
+}
+
+impl From<RawCourseConfig> for ChildEntry {
+    fn from(value: RawCourseConfig) -> Self {
+        Self {
+            id: default(),
+            title: value.title,
+            readable: value.readable,
+            children: default(),
+            ord: default()
+        }
+    }
+}
+
+impl From<TrackConfig> for ChildEntry {
+    fn from(value: TrackConfig) -> Self {
+        Self {
+            id: default(),
+            title: value.title,
+            readable: value.readable,
+            children: value.children,
+            ord: value.ord
+        }
+    }
+}
+
+impl From<ArticleConfig> for ChildEntry {
+    fn from(value: ArticleConfig) -> Self {
+        Self {
+            id: default(),
+            title: value.title,
+            readable: true,
+            children: default(),
+            ord: value.ord,
+        }
+    }
+}
+
+impl ChildEntry {
+    pub fn new(title: String, readable: bool) -> Self {
+        Self {
+            id: default(),
+            title,
+            readable,
+            children: default(),
+            ord: default(),
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -37,17 +87,12 @@ pub struct CourseConfig {
     pub children: HashMap<String, TrackConfig>,
 }
 
-impl CourseConfig {
-    pub fn from_raw(raw: RawCourseConfig) -> Self {
-        let RawCourseConfig {
-            title,
-            description,
-            readable,
-        } = raw;
+impl From<RawCourseConfig> for CourseConfig {
+    fn from(value: RawCourseConfig) -> Self {
         Self {
-            title,
-            description,
-            readable,
+            title: value.title,
+            description: value.description,
+            readable: value.readable,
             children: default(),
         }
     }
@@ -67,6 +112,8 @@ pub struct TrackConfig {
     pub readable: bool,
     #[serde(skip_deserializing)]
     pub children: Children,
+    #[serde(skip_serializing)]
+    pub ord: usize,
 }
 
 impl ParseState {

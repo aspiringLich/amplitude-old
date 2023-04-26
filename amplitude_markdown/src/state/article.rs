@@ -7,6 +7,7 @@ use super::*;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ArticleConfig {
     pub title: String,
+    pub ord: usize,
 }
 
 pub fn parse_frontmatter<T: DeserializeOwned>(path: &Path) -> anyhow::Result<(T, String)> {
