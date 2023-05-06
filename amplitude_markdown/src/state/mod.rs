@@ -18,7 +18,7 @@ pub mod quiz;
 pub struct ParseState {
     pub options: comrak::ComrakOptions,
     quizzes: HashMap<(String, String), quiz::Quiz>,
-    pub article_ids: HashSet<String>,
+    pub article_ids: HashMap<String, PathBuf>,
 }
 
 impl ParseState {

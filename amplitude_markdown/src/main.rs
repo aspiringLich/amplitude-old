@@ -1,6 +1,6 @@
-use std::{fs, env};
+use std::{env, fs};
 
-use amplitude_common::{config::Config, path};
+use amplitude_common::config::Config;
 use amplitude_markdown::parse::{clone_repo, parse_dir};
 
 fn main() -> anyhow::Result<()> {
@@ -10,6 +10,6 @@ fn main() -> anyhow::Result<()> {
     }
     clone_repo(&config.parse_config)?;
     parse_dir(&config.parse_config)?;
-    
+
     Ok(())
 }

@@ -25,4 +25,4 @@ git_url = "https://github.com/aspiringLich/amplitude_articles.git"
 # Where to clone the aforementioned git repository to
 clone_path = "./articles"
 # The path to output the rendered articles
-output_path = "./output"
+output_path = "./rendered"

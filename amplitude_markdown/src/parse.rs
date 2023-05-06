@@ -80,16 +80,30 @@ pub fn parse_dir(config: &ParseConfig) -> anyhow::Result<()> {
     let input = Path::new(&config.clone_path);
     let output = Path::new(&config.output_path);
 
+    fs::create_dir_all(output)?;
+    // delete everything in output
+    for item in fs::read_dir(output)? {
+        let item = item?;
+        let path = item.path();
+        if path.is_dir() {
+            fs::remove_dir_all(path)?;
+        } else {
+            fs::remove_file(path)?;
+        }
+    }
+
     // recursively parse input directory
     for item in fs::read_dir(input)? {
         let item = item?;
         let path = item.path();
 
         if path.is_dir() {
-            if path.file_name().and_then(OsStr::to_str).unwrap().starts_with(".") {
+            let name = path.file_name().unwrap();
+            if name.to_str().unwrap().starts_with(".") {
                 continue;
             }
             
+            fs::create_dir(&output.join(name))?;
             let suffix = path.strip_prefix(input).unwrap();
 
             if path.join("header.md").exists() {
@@ -146,11 +160,11 @@ fn internal_parse_dir<P: AsRef<Path>>(
                 .with_context(|| format!("While parsing file {:?}", path))?;
 
             ensure!(
-                !state.article_ids.contains(&article_config.id),
+                !state.article_ids.contains_key(&article_config.id),
                 "Duplicate article id: {}",
                 article_config.id
             );
-            fs::write(output.join(&article_config.id).with_extension("html"), html)?;
+            fs::write(output.join(name), html)?;
         } else if path.is_dir() {
             let name = path.file_name().unwrap();
 
@@ -158,7 +172,8 @@ fn internal_parse_dir<P: AsRef<Path>>(
             if name.to_str().unwrap().starts_with(".") {
                 continue;
             }
-
+            
+            fs::create_dir(&output.join(name))?;
             let output = output.join(path.strip_prefix(input).unwrap());
 
             if input.join("header.md").exists() {
