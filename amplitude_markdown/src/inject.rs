@@ -2,19 +2,17 @@ mod admonition;
 mod code;
 mod quiz;
 
-use amplitude_common::path;
 use anyhow::Context;
 
 use comrak::nodes::{AstNode, NodeValue};
 use comrak::RefMap;
 
 use std::collections::HashMap;
-use std::path::Path;
 
 use comrak::html;
 
-use crate::state::ParseState;
 use crate::state::article::ArticleConfig;
+use crate::state::ParseState;
 
 type Callback = for<'a> fn(
     &ArticleConfig,

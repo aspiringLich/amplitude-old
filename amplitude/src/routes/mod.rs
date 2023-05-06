@@ -1,15 +1,8 @@
-use crate::{
-    error::{HandledRoute, StatusContext},
-    state::State,
-};
+use crate::state::State;
 use afire::{extension::ServeStatic, prelude::*};
-use amplitude_common::path;
-use derive_more::{Deref, DerefMut};
-use serde::{de, Deserialize, Serialize};
-use std::{
-    fs::{self, File},
-    path::{Component, Path, PathBuf},
-};
+
+use serde::{Deserialize, Serialize};
+use std::fs::File;
 
 mod article;
 mod article_list;

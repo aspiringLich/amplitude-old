@@ -1,7 +1,6 @@
 use super::*;
 
-
-pub fn attach(server: &mut Server<State>) {
+pub fn attach(_server: &mut Server<State>) {
     // Serves the json for a quiz
     // server.handled_stateful_route(Method::POST, "/api/quiz", |state, req| {
     //     let s = req.body_str();

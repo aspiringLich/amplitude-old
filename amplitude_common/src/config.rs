@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use clap::Parser;
 use serde::Deserialize;
 

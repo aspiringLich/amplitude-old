@@ -6,7 +6,7 @@ pub struct TrackReq {
     track: String,
 }
 
-pub fn attach(server: &mut Server<State>) {
+pub fn attach(_server: &mut Server<State>) {
     // // Returns the html for a course
     // server.handled_stateful_route(Method::POST, "/api/article_list", |state, req| {
     //     let s = String::from_utf8_lossy(&req.body);

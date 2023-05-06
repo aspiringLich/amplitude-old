@@ -41,7 +41,7 @@ pub fn parse_dir_watch(state: Arc<State>) -> notify::Result<()> {
             Ok(event) if matches!(event.kind, Create(_) | Modify(_) | Remove(_)) => {
                 info!("Change detected, reparsing...");
                 match parse_dir(&state.config.parse) {
-                    Err(e) => error!("Error parsing github repo!"),
+                    Err(_e) => error!("Error parsing github repo!"),
                     Ok(s) => *state.parse_state.write() = s,
                 }
             }

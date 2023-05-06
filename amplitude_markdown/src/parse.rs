@@ -1,10 +1,10 @@
-use std::{ffi::OsStr, fs, path::Path};
+use std::{fs, path::Path};
 
-use amplitude_common::config::{ParseConfig, Config};
+use amplitude_common::config::{Config, ParseConfig};
 use anyhow::{ensure, Context};
 
 use git2::build::RepoBuilder;
-use rand::Rng;
+
 use tracing::warn;
 
 use crate::{
@@ -18,8 +18,7 @@ use crate::{
 use comrak::{parse_document_refs, Arena, ComrakOptions, RefMap};
 
 /// Reparses the things and does the things
-pub fn parse(config: Config) {
-}
+pub fn parse(_config: Config) {}
 
 /// Parse the input `md` and return the output `html`.
 pub(crate) fn parse_md(
@@ -103,20 +102,20 @@ pub fn parse_dir(config: &ParseConfig) -> anyhow::Result<ParseState> {
 
         if path.is_dir() {
             let name = path.file_name().unwrap();
-            if name.to_str().unwrap().starts_with(".") {
+            if name.to_str().unwrap().starts_with('.') {
                 continue;
             }
-            
+
             fs::create_dir(&output.join(name))?;
             let suffix = path.strip_prefix(input).unwrap();
 
             if path.join("header.md").exists() {
                 let (article_config, s) = parse_frontmatter(input)?;
                 let (_, refs) = parse_md(&article_config, &s, &RefMap::new(), &mut state)
-                    .with_context(|| format!("While parsing header file {:?}/header.md", path))?;
+                    .with_context(|| format!("While parsing header file {path:?}/header.md"))?;
 
                 internal_parse_dir(config, &path, &output.join(suffix), &refs, &mut state)
-                    .with_context(|| format!("While parsing dir {:?}", path))?;
+                    .with_context(|| format!("While parsing dir {path:?}"))?;
             } else {
                 internal_parse_dir(
                     config,
@@ -125,7 +124,7 @@ pub fn parse_dir(config: &ParseConfig) -> anyhow::Result<ParseState> {
                     &RefMap::new(),
                     &mut state,
                 )
-                .with_context(|| format!("While parsing dir {:?}", path))?;
+                .with_context(|| format!("While parsing dir {path:?}"))?;
             }
         }
     }
@@ -152,7 +151,7 @@ fn internal_parse_dir<P: AsRef<Path>>(
             match path.extension().map(|s| s.to_str().unwrap()) {
                 Some("md") => {}
                 _ => {
-                    fs::copy(path.to_path_buf(), output.join(name))?;
+                    fs::copy(&path, output.join(name))?;
                 }
             }
             if name == "header.md" {
@@ -161,7 +160,7 @@ fn internal_parse_dir<P: AsRef<Path>>(
 
             let (article_config, s) = parse_frontmatter(&path)?;
             let (html, _) = parse_md(&article_config, &s, &RefMap::new(), state)
-                .with_context(|| format!("While parsing file {:?}", path))?;
+                .with_context(|| format!("While parsing file {path:?}"))?;
 
             ensure!(
                 !state.article_ids.contains_key(&article_config.id),
@@ -173,23 +172,23 @@ fn internal_parse_dir<P: AsRef<Path>>(
             let name = path.file_name().unwrap();
 
             // ignore hidden folders
-            if name.to_str().unwrap().starts_with(".") {
+            if name.to_str().unwrap().starts_with('.') {
                 continue;
             }
-            
+
             fs::create_dir(&output.join(name))?;
             let output = output.join(path.strip_prefix(input).unwrap());
 
             if input.join("header.md").exists() {
                 let (article_config, s) = parse_frontmatter(input)?;
                 let (_, refs) = parse_md(&article_config, &s, &RefMap::new(), state)
-                    .with_context(|| format!("While parsing header file {:?}/header.md", path))?;
+                    .with_context(|| format!("While parsing header file {path:?}/header.md"))?;
 
                 internal_parse_dir(config, &path, &output, &refs, state)
-                    .with_context(|| format!("While parsing dir {:?}", path))?;
+                    .with_context(|| format!("While parsing dir {path:?}"))?;
             } else {
-                internal_parse_dir(config, &path, &output, &refs, state)
-                    .with_context(|| format!("While parsing dir {:?}", path))?;
+                internal_parse_dir(config, &path, &output, refs, state)
+                    .with_context(|| format!("While parsing dir {path:?}"))?;
             }
         }
     }

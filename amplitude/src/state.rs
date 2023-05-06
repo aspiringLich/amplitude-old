@@ -1,12 +1,12 @@
-use std::{env, fs, path::PathBuf};
+use std::{fs, path::PathBuf};
 
-use amplitude_common::config::{Config, LanguageConfig, Args};
+use amplitude_common::config::{Args, Config, LanguageConfig};
 use parking_lot::{Mutex, MutexGuard, RwLock};
 use rusqlite::Connection;
 
 use crate::database::Database;
-use amplitude_common::path;
-use amplitude_markdown::{state::ParseState, parse::parse_dir};
+
+use amplitude_markdown::{parse::parse_dir, state::ParseState};
 
 pub struct State {
     db: Mutex<Connection>,

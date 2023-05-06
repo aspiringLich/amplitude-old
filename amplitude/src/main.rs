@@ -43,7 +43,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let state = State::new()?;
-    let mut server = Server::<State>::new(&state.config.server.host, state.config.server.port).state(state);
+    let mut server =
+        Server::<State>::new(&state.config.server.host, state.config.server.port).state(state);
     RequestLogger.attach(&mut server);
     routes::attach(&mut server);
 
