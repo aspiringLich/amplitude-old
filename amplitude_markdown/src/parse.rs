@@ -1,29 +1,25 @@
-use std::{collections::VecDeque, default::default, fs, path::Path};
+use std::{ffi::OsStr, fs, path::Path};
 
-use amplitude_common::{config::ParseConfig, path};
-use anyhow::Context;
+use amplitude_common::config::ParseConfig;
+use anyhow::{ensure, Context};
 
 use git2::build::RepoBuilder;
+use rand::Rng;
 use tracing::warn;
 
 use crate::{
     inject::{self},
     link_concat::link_concat_callback,
-    state::ParseState,
-    util::get_path_components,
+    state::{
+        article::{parse_frontmatter, ArticleConfig},
+        ParseState,
+    },
 };
-use comrak::{
-    parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
-    ListStyleType, RefMap,
-};
+use comrak::{parse_document_refs, Arena, ComrakOptions, RefMap};
 
 /// Parse the input `md` and return the output `html`.
-///
-/// ## Behavior
-///
-/// - Link concatenation is supported
-pub(crate) fn parse_and_refs<P: AsRef<Path>>(
-    article: P,
+pub(crate) fn parse(
+    config: &ArticleConfig,
     input: &str,
     refs: &RefMap,
     state: &mut ParseState,
@@ -43,31 +39,19 @@ pub(crate) fn parse_and_refs<P: AsRef<Path>>(
         Some(&mut |link| {
             let out = link_concat_callback(link, &this_refs);
             if out.is_none() {
-                warn!("Broken link `{}` in {:?}", link, article.as_ref());
+                warn!("Broken link `{}` in {:?}", link, config.id);
             }
             out
         }),
     );
     // do things
-    inject::inject(article.as_ref(), out, &this_refs, state)?;
+    inject::inject(config, out, &this_refs, state)?;
 
     let mut cm = vec![];
     comrak::format_html(out, options, &mut cm).context("while parsing AST to html")?;
 
     Ok((String::from_utf8(cm).unwrap(), this_refs))
 }
-
-pub(crate) fn parse<P: AsRef<Path>>(
-    article: P,
-    input: &str,
-    refs: &RefMap,
-    state: &mut ParseState,
-) -> anyhow::Result<String> {
-    let (out, _) = parse_and_refs(article, input, refs, state)?;
-    Ok(out)
-}
-
-pub fn parse_init(config: &ParseConfig) {}
 
 /// Clones the articles repo
 pub fn clone_repo(config: &ParseConfig) -> anyhow::Result<()> {
@@ -96,28 +80,100 @@ pub fn parse_dir(config: &ParseConfig) -> anyhow::Result<()> {
     let input = Path::new(&config.clone_path);
     let output = Path::new(&config.output_path);
 
-    let (_, refs) = parse_and_refs(
-        input.join("header.md"),
-        &fs::read_to_string(input.join("header.md"))?,
-        &RefMap::new(),
-        &mut state,
-    )
-    .context("parsing top-level header file")?;
-
-    // recursively parse input directory, skipping
-    // top-level index files
-    let mut dirs = VecDeque::new();
+    // recursively parse input directory
     for item in fs::read_dir(input)? {
         let item = item?;
         let path = item.path();
+
         if path.is_dir() {
-            dirs.push_back(path);
+            if path.file_name().and_then(OsStr::to_str).unwrap().starts_with(".") {
+                continue;
+            }
+            
+            let suffix = path.strip_prefix(input).unwrap();
+
+            if path.join("header.md").exists() {
+                let (article_config, s) = parse_frontmatter(input)?;
+                let (_, refs) = parse(&article_config, &s, &RefMap::new(), &mut state)
+                    .with_context(|| format!("While parsing header file {:?}/header.md", path))?;
+
+                internal_parse_dir(config, &path, &output.join(suffix), &refs, &mut state)
+                    .with_context(|| format!("While parsing dir {:?}", path))?;
+            } else {
+                internal_parse_dir(
+                    config,
+                    &path,
+                    &output.join(suffix),
+                    &RefMap::new(),
+                    &mut state,
+                )
+                .with_context(|| format!("While parsing dir {:?}", path))?;
+            }
         }
     }
 
     Ok(())
 }
 
-fn internal_parse_dir(config: &ParseConfig) {
-    
-} 
+fn internal_parse_dir<P: AsRef<Path>>(
+    config: &ParseConfig,
+    input: P,
+    output: P,
+    refs: &RefMap,
+    state: &mut ParseState,
+) -> anyhow::Result<()> {
+    let input = input.as_ref();
+    let output = output.as_ref();
+
+    for item in fs::read_dir(input)? {
+        let item = item?;
+        let path = item.path();
+
+        if path.is_file() {
+            let name = path.file_name().unwrap();
+            match path.extension().map(|s| s.to_str().unwrap()) {
+                Some("md") => {}
+                _ => {
+                    fs::copy(path.to_path_buf(), output.join(name))?;
+                }
+            }
+            if name == "header.md" {
+                continue;
+            }
+
+            let (article_config, s) = parse_frontmatter(&path)?;
+            let (html, _) = parse(&article_config, &s, &RefMap::new(), state)
+                .with_context(|| format!("While parsing file {:?}", path))?;
+
+            ensure!(
+                !state.article_ids.contains(&article_config.id),
+                "Duplicate article id: {}",
+                article_config.id
+            );
+            fs::write(output.join(&article_config.id).with_extension("html"), html)?;
+        } else if path.is_dir() {
+            let name = path.file_name().unwrap();
+
+            // ignore hidden folders
+            if name.to_str().unwrap().starts_with(".") {
+                continue;
+            }
+
+            let output = output.join(path.strip_prefix(input).unwrap());
+
+            if input.join("header.md").exists() {
+                let (article_config, s) = parse_frontmatter(input)?;
+                let (_, refs) = parse(&article_config, &s, &RefMap::new(), state)
+                    .with_context(|| format!("While parsing header file {:?}/header.md", path))?;
+
+                internal_parse_dir(config, &path, &output, &refs, state)
+                    .with_context(|| format!("While parsing dir {:?}", path))?;
+            } else {
+                internal_parse_dir(config, &path, &output, &refs, state)
+                    .with_context(|| format!("While parsing dir {:?}", path))?;
+            }
+        }
+    }
+
+    Ok(())
+}

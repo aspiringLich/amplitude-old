@@ -14,9 +14,10 @@ use std::path::Path;
 use comrak::html;
 
 use crate::state::ParseState;
+use crate::state::article::ArticleConfig;
 
 type Callback = for<'a> fn(
-    &Path,
+    &ArticleConfig,
     &HashMap<String, String>,
     &'a AstNode<'a>,
     &mut ParseState,
@@ -156,7 +157,7 @@ fn parse_args(input: &str) -> HashMap<String, String> {
 }
 
 pub(crate) fn inject<'a>(
-    article: &'a Path,
+    config: &'a ArticleConfig,
     node: &'a AstNode<'a>,
     refs: &RefMap,
     state: &'a mut ParseState,
@@ -210,7 +211,7 @@ pub(crate) fn inject<'a>(
                 to_detach.push(node);
                 let expected = &info.expected;
                 if expected.matches(n) {
-                    let mut ret = (info.callback)(article, &args, n, state, refs)
+                    let mut ret = (info.callback)(config, &args, n, state, refs)
                         .with_context(|| format!("while calling callback for tag `{text}`"))?;
                     to_detach.append(&mut ret);
                 } else {

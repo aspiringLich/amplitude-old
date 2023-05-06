@@ -4,10 +4,10 @@ use serde::de::DeserializeOwned;
 
 use super::*;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct ArticleConfig {
-    pub title: String,
-    pub ord: usize,
+    pub id: String,
+    pub name: String,
 }
 
 pub fn parse_frontmatter<T: DeserializeOwned>(path: &Path) -> anyhow::Result<(T, String)> {
@@ -43,18 +43,4 @@ pub fn parse_frontmatter<T: DeserializeOwned>(path: &Path) -> anyhow::Result<(T,
         "Did not find end of Frontmatter header on path {}",
         path.display()
     )
-}
-
-impl ParseState {
-    pub fn get_article_config(&self, article: &Path) -> Option<&article::ArticleConfig> {
-        self.article_config.get(article)
-    }
-
-    pub fn insert_article_config(
-        &mut self,
-        article: &Path,
-        config: article::ArticleConfig,
-    ) -> Option<article::ArticleConfig> {
-        self.article_config.insert(article.to_path_buf(), config)
-    }
 }

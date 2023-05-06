@@ -8,8 +8,8 @@ fn main() -> anyhow::Result<()> {
     if env::current_dir()?.ends_with("amplitude_markdown") {
         env::set_current_dir("../")?;
     }
-    clone_repo(&config)?;
-    parse_dir(&config)?;
+    clone_repo(&config.parse_config)?;
+    parse_dir(&config.parse_config)?;
     
     Ok(())
 }

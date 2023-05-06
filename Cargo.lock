@@ -91,6 +91,7 @@ dependencies = [
  "git2",
  "marksman_escape",
  "parking_lot",
+ "rand",
  "serde",
  "toml",
  "tracing",

@@ -1,5 +1,8 @@
 use super::*;
-use crate::{parse::parse, state::quiz::Quiz};
+use crate::{
+    parse::parse,
+    state::{article::ArticleConfig, quiz::Quiz},
+};
 use anyhow::Context;
 
 /// Turns a code block into a quiz
@@ -18,7 +21,7 @@ use anyhow::Context;
 /// ```
 /// ````
 pub(super) fn inject_quiz<'a>(
-    article: &Path,
+    config: &ArticleConfig,
     args: &HashMap<String, String>,
     node: &AstNode<'a>,
     state: &mut ParseState,
@@ -32,15 +35,16 @@ pub(super) fn inject_quiz<'a>(
             let mut quiz: Quiz =
                 toml::from_str(&code.literal).context("failed to parse toml for quiz")?;
             for question in quiz.questions.iter_mut() {
-                question.question = parse(article, &question.question, refs, state)?;
+                question.question = parse(config, &question.question, refs, state)?.0;
                 for answer in question.answers.iter_mut() {
-                    let s = parse(article, &answer.text, refs, state)?;
+                    let (s, _) = parse(config, &answer.text, refs, state)?;
                     answer.text = s
                         .strip_prefix("<p>")
                         .and_then(|s| s.strip_suffix("</p>\n"))
                         .unwrap_or(&s)
                         .to_string();
-                    let s = parse(article, &answer.response, refs, state)?;
+
+                    let (s, _) = parse(config, &answer.response, refs, state)?;
                     answer.response = s
                         .strip_prefix("<p>")
                         .and_then(|s| s.strip_suffix("</p>\n"))
@@ -48,9 +52,8 @@ pub(super) fn inject_quiz<'a>(
                         .to_string();
                 }
             }
-            let article = article.strip_prefix(&path::INPUT).unwrap_or(article);
             anyhow::ensure!(
-                state.insert_quiz(article, id, quiz).is_none(),
+                state.insert_quiz(&config.id, id, quiz).is_none(),
                 "Quiz id `{id}` already exists in this file"
             )
         }
