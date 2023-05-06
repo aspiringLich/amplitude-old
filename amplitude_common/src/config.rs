@@ -1,6 +1,13 @@
 use serde::Deserialize;
 
 #[derive(Deserialize)]
+pub struct ParseConfig {
+    pub git_url: String,
+    pub clone_path: String,
+    pub output_path: String,
+}
+
+#[derive(Deserialize)]
 pub struct Config {
     pub host: String,
     pub port: u16,
@@ -11,6 +18,8 @@ pub struct Config {
     pub docker: Docker,
     pub google_oauth: Option<GoogleOauth>,
     pub github_oauth: Option<GithubOauth>,
+
+    pub parse_config: ParseConfig,
 }
 
 #[derive(Deserialize)]

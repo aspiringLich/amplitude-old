@@ -6,5 +6,10 @@ db_path = "./data.db"
 
 [docker]
 tmp_folder = ""
-command = ""
+command = "docker"
 timeout = 0
+
+[articles]
+git_url = "https://github.com/aspiringLich/amplitude_articles.git"
+clone_path = "./articles"
+output_path = "./output"

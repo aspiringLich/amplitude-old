@@ -8,7 +8,6 @@ use tracing::{error, info};
 
 use crate::state::State;
 use amplitude_common::path;
-use amplitude_markdown::parse::parse_dir;
 
 /// This function will watch the input directory and write to the output
 /// directory when detecting file changes using the `notify` crate.
@@ -40,8 +39,8 @@ pub fn parse_dir_watch(state: Arc<State>) -> notify::Result<()> {
         match event {
             Ok(event) if matches!(event.kind, Create(_) | Modify(_) | Remove(_)) => {
                 info!("Change detected, reparsing...");
-                match parse_dir(&path::INPUT, &path::RENDERED) {
-                    Err(e) => error!("Error parsing directory: '{:?}'", e),
+                match parse_repo(state.config) {
+                    Err(e) => error!("Error parsing github repo!"),
                     Ok(s) => *state.parse_state.write() = s,
                 }
             }

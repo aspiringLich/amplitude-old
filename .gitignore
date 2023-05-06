@@ -1,5 +1,6 @@
 /target
 /rendered
+/articles
 .vite
 *.db*
 .tmp
