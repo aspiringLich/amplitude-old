@@ -5,7 +5,7 @@ use anyhow::{ensure, Context};
 
 use git2::build::RepoBuilder;
 
-use tracing::warn;
+use tracing::{info, warn};
 
 use crate::{
     inject::{self},
@@ -18,7 +18,20 @@ use crate::{
 use comrak::{parse_document_refs, Arena, ComrakOptions, RefMap};
 
 /// Reparses the things and does the things
-pub fn parse(_config: Config) {}
+pub fn parse(config: &Config) -> anyhow::Result<ParseState> {
+    if !config.args.local {
+        info!("Deleting `{}` and recloning repo... (If you dont want this behavior, run with `--local`)", config.parse.clone_path);
+        clone_repo(&config.parse).context("While cloning repo")?;
+    } else {
+        info!(
+            "Using local files in `{}` for articles",
+            config.parse.clone_path
+        );
+    }
+
+    info!("Parsing articles...");
+    parse_dir(&config.parse)
+}
 
 /// Parse the input `md` and return the output `html`.
 pub(crate) fn parse_md(
@@ -27,8 +40,13 @@ pub(crate) fn parse_md(
     refs: &RefMap,
     state: &mut ParseState,
 ) -> anyhow::Result<(String, RefMap)> {
+    // get the refs
     let mut this_refs = parse_document_refs(&Arena::new(), input);
-    this_refs.extend(refs.clone());
+    if !this_refs.map.is_empty() {
+        this_refs.extend(refs.clone());
+    } else {
+        this_refs = refs.clone();
+    }
 
     // were not modifying options, so we can be sneaky
     // also im just too lazy to refactor this
@@ -83,6 +101,14 @@ pub fn parse_dir(config: &ParseConfig) -> anyhow::Result<ParseState> {
     let input = Path::new(&config.clone_path);
     let output = Path::new(&config.output_path);
 
+    // get the top level header file
+    let (_, refs) = parse_md(
+        &ArticleConfig::default(),
+        &fs::read_to_string(input.join("header.md"))?,
+        &RefMap::new(),
+        &mut state,
+    )?;
+
     fs::create_dir_all(output)?;
     // delete everything in output
     for item in fs::read_dir(output)? {
@@ -111,20 +137,14 @@ pub fn parse_dir(config: &ParseConfig) -> anyhow::Result<ParseState> {
 
             if path.join("header.md").exists() {
                 let (article_config, s) = parse_frontmatter(input)?;
-                let (_, refs) = parse_md(&article_config, &s, &RefMap::new(), &mut state)
+                let (_, refs) = parse_md(&article_config, &s, &refs, &mut state)
                     .with_context(|| format!("While parsing header file {path:?}/header.md"))?;
 
                 internal_parse_dir(config, &path, &output.join(suffix), &refs, &mut state)
                     .with_context(|| format!("While parsing dir {path:?}"))?;
             } else {
-                internal_parse_dir(
-                    config,
-                    &path,
-                    &output.join(suffix),
-                    &RefMap::new(),
-                    &mut state,
-                )
-                .with_context(|| format!("While parsing dir {path:?}"))?;
+                internal_parse_dir(config, &path, &output.join(suffix), &refs, &mut state)
+                    .with_context(|| format!("While parsing dir {path:?}"))?;
             }
         }
     }
@@ -159,7 +179,7 @@ fn internal_parse_dir<P: AsRef<Path>>(
             }
 
             let (article_config, s) = parse_frontmatter(&path)?;
-            let (html, _) = parse_md(&article_config, &s, &RefMap::new(), state)
+            let (html, _) = parse_md(&article_config, &s, refs, state)
                 .with_context(|| format!("While parsing file {path:?}"))?;
 
             ensure!(
@@ -181,7 +201,7 @@ fn internal_parse_dir<P: AsRef<Path>>(
 
             if input.join("header.md").exists() {
                 let (article_config, s) = parse_frontmatter(input)?;
-                let (_, refs) = parse_md(&article_config, &s, &RefMap::new(), state)
+                let (_, refs) = parse_md(&article_config, &s, refs, state)
                     .with_context(|| format!("While parsing header file {path:?}/header.md"))?;
 
                 internal_parse_dir(config, &path, &output, &refs, state)

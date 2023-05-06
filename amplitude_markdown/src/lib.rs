@@ -9,4 +9,3 @@ mod link_concat;
 /// pages.
 pub mod parse;
 pub mod state;
-pub(crate) mod util;

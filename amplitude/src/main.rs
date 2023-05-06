@@ -12,7 +12,6 @@ use tracing::{info, metadata::LevelFilter, warn};
 use tracing_subscriber::{
     filter, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt,
 };
-use watch::parse_dir_watch;
 
 use crate::{database::Database, logger::AfireLogger};
 mod database;
@@ -23,7 +22,6 @@ mod routes;
 mod runner;
 mod session;
 mod state;
-mod watch;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     trace::set_log_formatter(AfireLogger);
@@ -47,9 +45,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Server::<State>::new(&state.config.server.host, state.config.server.port).state(state);
     RequestLogger.attach(&mut server);
     routes::attach(&mut server);
-
-    let state = server.state.clone().unwrap();
-    std::thread::spawn(|| parse_dir_watch(state));
 
     let app = server.app();
     let threads = app.config.server.threads;

@@ -4,7 +4,7 @@ use serde::de::DeserializeOwned;
 
 use super::*;
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub struct ArticleConfig {
     pub id: String,
     pub name: String,
