@@ -14,7 +14,7 @@ pub fn attach(server: &mut Server<State>) {
 
         app.db().add_oauth(LoginProvider::Google, &state).unwrap();
 
-        let cfg = app.config.google_oauth.as_ref().unwrap();
+        let cfg = app.config.auth.google_oauth.as_ref().unwrap();
         let redirect = format!(
             "https://accounts.google.com/o/oauth2/v2/auth?client_id={}&redirect_uri={}/auth/google/complete&response_type=code&scope=profile&state={}",
             cfg.client_id,

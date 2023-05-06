@@ -1,6 +1,6 @@
 use std::{env, fs, path::PathBuf};
 
-use amplitude_common::config::{Config, LanguageConfig};
+use amplitude_common::config::{Config, LanguageConfig, Args};
 use parking_lot::{Mutex, MutexGuard, RwLock};
 use rusqlite::Connection;
 
@@ -11,6 +11,7 @@ use amplitude_markdown::{state::ParseState, parse::parse_dir};
 pub struct State {
     db: Mutex<Connection>,
     // breon this is not a nice name
+    // why dont you think of something better
     pub parse_state: RwLock<ParseState>,
     pub language_config: Vec<LanguageConfig>,
     pub config: Config,
@@ -18,22 +19,19 @@ pub struct State {
 
 impl State {
     pub fn new() -> anyhow::Result<Self> {
-        let config_file = PathBuf::from(
-            env::args()
-                .nth(1)
-                .unwrap_or_else(|| "./config.toml".to_string()),
-        );
-        let config = toml::from_str::<Config>(&fs::read_to_string(config_file)?)?;
+        let args = Args::parse();
+        let mut config = toml::from_str::<Config>(&fs::read_to_string(&args.config)?)?;
+        config.args = args;
 
         let tmp_folder = PathBuf::from(&config.docker.tmp_folder);
         if !tmp_folder.exists() {
             fs::create_dir_all(tmp_folder)?;
         }
 
-        let mut db = Connection::open(&config.db_path)?;
+        let mut db = Connection::open(&config.server.db_path)?;
         db.init()?;
 
-        let parse_state = parse_dir(&config.parse_config)?;
+        let parse_state = parse_dir(&config.parse)?;
 
         let raw_lang_config = fs::read_to_string("./langs/languages.json")?;
 

@@ -1,6 +1,6 @@
 use std::{ffi::OsStr, fs, path::Path};
 
-use amplitude_common::config::ParseConfig;
+use amplitude_common::config::{ParseConfig, Config};
 use anyhow::{ensure, Context};
 
 use git2::build::RepoBuilder;
@@ -17,8 +17,12 @@ use crate::{
 };
 use comrak::{parse_document_refs, Arena, ComrakOptions, RefMap};
 
+/// Reparses the things and does the things
+pub fn parse(config: Config) {
+}
+
 /// Parse the input `md` and return the output `html`.
-pub(crate) fn parse(
+pub(crate) fn parse_md(
     config: &ArticleConfig,
     input: &str,
     refs: &RefMap,
@@ -108,7 +112,7 @@ pub fn parse_dir(config: &ParseConfig) -> anyhow::Result<ParseState> {
 
             if path.join("header.md").exists() {
                 let (article_config, s) = parse_frontmatter(input)?;
-                let (_, refs) = parse(&article_config, &s, &RefMap::new(), &mut state)
+                let (_, refs) = parse_md(&article_config, &s, &RefMap::new(), &mut state)
                     .with_context(|| format!("While parsing header file {:?}/header.md", path))?;
 
                 internal_parse_dir(config, &path, &output.join(suffix), &refs, &mut state)
@@ -156,7 +160,7 @@ fn internal_parse_dir<P: AsRef<Path>>(
             }
 
             let (article_config, s) = parse_frontmatter(&path)?;
-            let (html, _) = parse(&article_config, &s, &RefMap::new(), state)
+            let (html, _) = parse_md(&article_config, &s, &RefMap::new(), state)
                 .with_context(|| format!("While parsing file {:?}", path))?;
 
             ensure!(
@@ -178,7 +182,7 @@ fn internal_parse_dir<P: AsRef<Path>>(
 
             if input.join("header.md").exists() {
                 let (article_config, s) = parse_frontmatter(input)?;
-                let (_, refs) = parse(&article_config, &s, &RefMap::new(), state)
+                let (_, refs) = parse_md(&article_config, &s, &RefMap::new(), state)
                     .with_context(|| format!("While parsing header file {:?}/header.md", path))?;
 
                 internal_parse_dir(config, &path, &output, &refs, state)

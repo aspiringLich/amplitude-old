@@ -8,7 +8,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::parse::parse;
+use crate::parse::parse_md;
 
 pub mod article;
 pub mod quiz;

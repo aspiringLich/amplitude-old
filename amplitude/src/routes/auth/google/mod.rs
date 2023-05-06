@@ -6,7 +6,7 @@ mod complete;
 mod redirect;
 
 pub fn attach(server: &mut Server<State>) {
-    if server.app().config.google_oauth.is_none() {
+    if server.app().config.auth.google_oauth.is_none() {
         return;
     }
 

@@ -1,4 +1,24 @@
+use std::path::Path;
+
+use clap::Parser;
 use serde::Deserialize;
+
+#[derive(Parser, Default)]
+pub struct Args {
+    /// Whether or not to reclone the repo from github or to use the existing one
+    #[arg(long, default_value_t = false)]
+    pub local: bool,
+    /// The path of the config file
+    #[arg(long, default_value_t = {"config.toml".to_string()})]
+    pub config: String,
+}
+
+impl Args {
+    /// call `clap::Parser::parse()`
+    pub fn parse() -> Self {
+        <Self as Parser>::parse()
+    }
+}
 
 #[derive(Deserialize)]
 pub struct ParseConfig {
@@ -8,18 +28,30 @@ pub struct ParseConfig {
 }
 
 #[derive(Deserialize)]
-pub struct Config {
+pub struct ServerConfig {
     pub host: String,
     pub port: u16,
     pub threads: usize,
-    pub db_path: String,
     pub req_duration: u64,
 
-    pub docker: Docker,
+    pub db_path: String,
+}
+
+#[derive(Deserialize, Default)]
+pub struct AuthConfig {
     pub google_oauth: Option<GoogleOauth>,
     pub github_oauth: Option<GithubOauth>,
+}
 
-    pub parse_config: ParseConfig,
+#[derive(Deserialize)]
+pub struct Config {
+    pub server: ServerConfig,
+    pub docker: Docker,
+    #[serde(default)]
+    pub auth: AuthConfig,
+    pub parse: ParseConfig,
+    #[serde(skip)]
+    pub args: Args,
 }
 
 #[derive(Deserialize)]

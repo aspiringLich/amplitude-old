@@ -33,12 +33,12 @@ pub fn attach(server: &mut Server<State>) {
         }
 
         // Get Access Token
-        let cfg = app.config.github_oauth.as_ref().unwrap();
+        let cfg = app.config.auth.github_oauth.as_ref().unwrap();
         let resp = ureq::post("https://github.com/login/oauth/access_token")
             .query("client_secret", &cfg.app_secret)
             .query("client_id", &cfg.app_id)
             .query("code", code)
-            .timeout(Duration::from_secs(app.config.req_duration))
+            .timeout(Duration::from_secs(app.config.server.req_duration))
             .call()
             .unwrap()
             .into_string()

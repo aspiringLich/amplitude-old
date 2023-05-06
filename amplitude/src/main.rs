@@ -43,7 +43,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let state = State::new()?;
-    let mut server = Server::<State>::new(&state.config.host, state.config.port).state(state);
+    let mut server = Server::<State>::new(&state.config.server.host, state.config.server.port).state(state);
     RequestLogger.attach(&mut server);
     routes::attach(&mut server);
 
@@ -51,7 +51,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::thread::spawn(|| parse_dir_watch(state));
 
     let app = server.app();
-    let threads = app.config.threads;
+    let threads = app.config.server.threads;
     ctrlc::set_handler(move || {
         info!("Exiting");
         app.db().cleanup().unwrap();

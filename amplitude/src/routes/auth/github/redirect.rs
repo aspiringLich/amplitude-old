@@ -12,7 +12,7 @@ pub fn attach(server: &mut Server<State>) {
 
         app.db().add_oauth(LoginProvider::Github, &state).unwrap();
 
-        let cfg = app.config.github_oauth.as_ref().unwrap();
+        let cfg = app.config.auth.github_oauth.as_ref().unwrap();
         Response::new()
             .status(Status::TemporaryRedirect)
             .header("Cache-Control", "no-store")

@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-    parse::parse,
+    parse::parse_md,
     state::{article::ArticleConfig, quiz::Quiz},
 };
 use anyhow::Context;
@@ -35,16 +35,16 @@ pub(super) fn inject_quiz<'a>(
             let mut quiz: Quiz =
                 toml::from_str(&code.literal).context("failed to parse toml for quiz")?;
             for question in quiz.questions.iter_mut() {
-                question.question = parse(config, &question.question, refs, state)?.0;
+                question.question = parse_md(config, &question.question, refs, state)?.0;
                 for answer in question.answers.iter_mut() {
-                    let (s, _) = parse(config, &answer.text, refs, state)?;
+                    let (s, _) = parse_md(config, &answer.text, refs, state)?;
                     answer.text = s
                         .strip_prefix("<p>")
                         .and_then(|s| s.strip_suffix("</p>\n"))
                         .unwrap_or(&s)
                         .to_string();
 
-                    let (s, _) = parse(config, &answer.response, refs, state)?;
+                    let (s, _) = parse_md(config, &answer.response, refs, state)?;
                     answer.response = s
                         .strip_prefix("<p>")
                         .and_then(|s| s.strip_suffix("</p>\n"))

@@ -17,14 +17,14 @@ pub fn attach(server: &mut Server<State>) {
     server.stateful_route(Method::GET, "/auth/supported", move |app, _req| {
         let mut supported = Vec::new();
 
-        if app.config.github_oauth.is_some() {
+        if app.config.auth.github_oauth.is_some() {
             supported.push(SupportedOauth {
                 name: "GitHub".to_string(),
                 path: "/auth/github/redirect".to_string(),
             });
         }
 
-        if app.config.google_oauth.is_some() {
+        if app.config.auth.google_oauth.is_some() {
             supported.push(SupportedOauth {
                 name: "Google".to_string(),
                 path: "/auth/google/redirect".to_string(),

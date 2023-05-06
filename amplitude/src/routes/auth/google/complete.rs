@@ -33,9 +33,9 @@ pub fn attach(server: &mut Server<State>) {
         }
 
         // Get Access Token
-        let cfg = app.config.google_oauth.as_ref().unwrap();
+        let cfg = app.config.auth.google_oauth.as_ref().unwrap();
         let resp = ureq::post("https://oauth2.googleapis.com/token")
-            .timeout(Duration::from_secs(app.config.req_duration))
+            .timeout(Duration::from_secs(app.config.server.req_duration))
             .send_form(&[
                 ("grant_type", "authorization_code"),
                 ("client_secret", &cfg.client_secret),
@@ -59,7 +59,7 @@ pub fn attach(server: &mut Server<State>) {
         // Get User Info
         let user_raw = ureq::get("https://www.googleapis.com/oauth2/v1/userinfo")
             .set("Authorization", &format!("Bearer {access_token}"))
-            .timeout(Duration::from_secs(app.config.req_duration))
+            .timeout(Duration::from_secs(app.config.server.req_duration))
             .call()
             .unwrap()
             .into_reader();

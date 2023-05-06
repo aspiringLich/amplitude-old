@@ -20,8 +20,8 @@ Google: https://github.com/Basicprogrammer10/coding-hat/tree/master/src/auth
 */
 
 pub fn attach(server: &mut Server<State>) {
-    let github = server.app().config.github_oauth.is_some();
-    let google = server.app().config.google_oauth.is_some();
+    let github = server.app().config.auth.github_oauth.is_some();
+    let google = server.app().config.auth.google_oauth.is_some();
 
     if github {
         info!("Initiating Github oauth");
