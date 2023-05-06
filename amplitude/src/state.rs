@@ -6,7 +6,7 @@ use rusqlite::Connection;
 
 use crate::database::Database;
 use amplitude_common::path;
-use amplitude_markdown::state::ParseState;
+use amplitude_markdown::{state::ParseState, parse::parse_dir};
 
 pub struct State {
     db: Mutex<Connection>,
@@ -33,7 +33,7 @@ impl State {
         let mut db = Connection::open(&config.db_path)?;
         db.init()?;
 
-        let parse_state = parse_repo(&config)?;
+        let parse_state = parse_dir(&config.parse_config)?;
 
         let raw_lang_config = fs::read_to_string("./langs/languages.json")?;
 

@@ -75,7 +75,7 @@ pub fn clone_repo(config: &ParseConfig) -> anyhow::Result<()> {
 }
 
 /// assuming `config.articles.clone_path` exists, parses the articles into html
-pub fn parse_dir(config: &ParseConfig) -> anyhow::Result<()> {
+pub fn parse_dir(config: &ParseConfig) -> anyhow::Result<ParseState> {
     let mut state = ParseState::default();
     let input = Path::new(&config.clone_path);
     let output = Path::new(&config.output_path);
@@ -126,7 +126,7 @@ pub fn parse_dir(config: &ParseConfig) -> anyhow::Result<()> {
         }
     }
 
-    Ok(())
+    Ok(state)
 }
 
 fn internal_parse_dir<P: AsRef<Path>>(

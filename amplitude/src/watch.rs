@@ -3,6 +3,7 @@ use std::{
     thread, time,
 };
 
+use amplitude_markdown::parse::parse_dir;
 use notify::{Config, RecommendedWatcher, Watcher};
 use tracing::{error, info};
 
@@ -39,7 +40,7 @@ pub fn parse_dir_watch(state: Arc<State>) -> notify::Result<()> {
         match event {
             Ok(event) if matches!(event.kind, Create(_) | Modify(_) | Remove(_)) => {
                 info!("Change detected, reparsing...");
-                match parse_repo(state.config) {
+                match parse_dir(&state.config.parse_config) {
                     Err(e) => error!("Error parsing github repo!"),
                     Ok(s) => *state.parse_state.write() = s,
                 }
