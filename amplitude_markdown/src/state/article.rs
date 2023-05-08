@@ -5,6 +5,7 @@ use serde::de::DeserializeOwned;
 use super::*;
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
+#[serde(deny_unknown_fields)]
 pub struct ArticleConfig {
     pub id: String,
     pub name: String,
