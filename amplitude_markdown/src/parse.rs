@@ -17,6 +17,19 @@ use crate::{
 };
 use comrak::{parse_document_refs, Arena, ComrakOptions, RefMap};
 
+pub fn read_article(config: &Config, path: &str) -> anyhow::Result<String> {
+    for c in path.as_bytes() {
+        if c.is_ascii_alphanumeric() || *c == b':' {
+            continue;
+        }
+        anyhow::bail!("Invalid character in path: {:?}", c);
+    }
+
+    let path = config.parse.output_path.clone() + path;
+
+    std::fs::read_to_string(&path).with_context(|| format!("While reading file {:?}", path))
+}
+
 /// Reparses the things and does the things
 pub fn parse(config: &Config) -> anyhow::Result<ParseState> {
     if !config.args.local {
@@ -30,7 +43,16 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseState> {
     }
 
     info!("Parsing articles...");
-    parse_dir(&config.parse)
+    let mut state = parse_dir(&config.parse).context("")?;
+    
+    let index_path = config.parse.clone_path.clone() + "/index.toml";
+    let index = fs::read_to_string(&index_path)
+        .with_context(|| format!("While reading {}", index_path))?;
+    state.courses = toml::from_str(&index)?;
+    
+    dbg!(&state);
+
+    Ok(state)
 }
 
 /// Parse the input `md` and return the output `html`.
@@ -136,8 +158,8 @@ pub fn parse_dir(config: &ParseConfig) -> anyhow::Result<ParseState> {
             let suffix = path.strip_prefix(input).unwrap();
 
             if path.join("header.md").exists() {
-                let (article_config, s) = parse_frontmatter(input)?;
-                let (_, refs) = parse_md(&article_config, &s, &refs, &mut state)
+                let s = fs::read_to_string(&path.join("header.md"))?;
+                let (_, refs) = parse_md(&ArticleConfig::default(), &s, &refs, &mut state)
                     .with_context(|| format!("While parsing header file {path:?}/header.md"))?;
 
                 internal_parse_dir(config, &path, &output.join(suffix), &refs, &mut state)
@@ -183,11 +205,13 @@ fn internal_parse_dir<P: AsRef<Path>>(
                 .with_context(|| format!("While parsing file {path:?}"))?;
 
             ensure!(
-                !state.article_ids.contains_key(&article_config.id),
+                !state.has_id(&article_config.id),
                 "Duplicate article id: {}",
                 article_config.id
             );
-            fs::write(output.join(name), html)?;
+            let output = output.join(name).with_extension("html");
+            state.insert_article(article_config, &output);
+            fs::write(output, html)?;
         } else if path.is_dir() {
             let name = path.file_name().unwrap();
 
@@ -200,8 +224,8 @@ fn internal_parse_dir<P: AsRef<Path>>(
             let output = output.join(path.strip_prefix(input).unwrap());
 
             if input.join("header.md").exists() {
-                let (article_config, s) = parse_frontmatter(input)?;
-                let (_, refs) = parse_md(&article_config, &s, refs, state)
+                let s = fs::read_to_string(&input.join("header.md"))?;
+                let (_, refs) = parse_md(&ArticleConfig::default(), &s, refs, state)
                     .with_context(|| format!("While parsing header file {path:?}/header.md"))?;
 
                 internal_parse_dir(config, &path, &output, &refs, state)

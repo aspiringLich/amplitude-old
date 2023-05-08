@@ -9,3 +9,4 @@ mod link_concat;
 /// pages.
 pub mod parse;
 pub mod state;
+pub mod course;

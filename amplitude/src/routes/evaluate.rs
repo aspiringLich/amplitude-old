@@ -1,9 +1,9 @@
 use std::borrow::Borrow;
 
-use afire::{Content, Method, Response, Server};
-use serde::Deserialize;
+use super::*;
 
 use crate::{
+    error::HandledRoute,
     runner::{self, Language},
     state::State,
 };
@@ -16,15 +16,17 @@ struct EvaluateReq {
 }
 
 pub fn attach(server: &mut Server<State>) {
-    server.stateful_route(Method::GET, "/api/evaluate", |app, req| {
+    server.handled_stateful_route(Method::GET, "/api/evaluate", |app, req| {
         let body = String::from_utf8_lossy(&req.body);
-        let body = serde_json::from_str::<EvaluateReq>(body.borrow()).unwrap();
+        let body = serde_json::from_str::<EvaluateReq>(body.borrow())
+            .context(Status::BadRequest, "Invalid request")?;
+        let lang = Language::from_str(&body.lang)
+            .context(Status::InternalServerError, "Invalid language")?;
+        let res = runner::run(app, lang, &body.code, &body.args)
+            .context(Status::InternalServerError, "Failed to run code")?;
 
-        let lang = Language::from_str(&body.lang).expect("Invalid language");
-        let res = runner::run(app, lang, &body.code, &body.args).unwrap();
-
-        Response::new()
-            .text(serde_json::to_string(&res).unwrap())
-            .content(Content::JSON)
+        Ok(Response::new()
+            .text(serde_json::to_string(&res)?)
+            .content(Content::JSON))
     });
 }

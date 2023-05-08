@@ -1,4 +1,4 @@
-use amplitude_markdown::state::article::ArticleConfig;
+use amplitude_markdown::{parse::read_article, state::article::ArticleConfig};
 
 use super::*;
 
@@ -8,25 +8,51 @@ struct ArticleResponse<'a> {
     config: &'a ArticleConfig,
 }
 
-pub fn attach(_server: &mut Server<State>) {
-    // // Returns the html for a course
-    // server.handled_stateful_route(Method::POST, "/api/article", |state, req| {
-    //     let s = String::from_utf8_lossy(&req.body);
-    //     let req: ArticleReq = serde_json::from_str(&s)?;
+#[derive(Serialize, Debug)]
+struct ArticleConfigResponse<'a> {
+    config: &'a ArticleConfig,
+}
 
-    //     let body = fs::read_to_string(req.file_path()).status(
-    //         Status::NotFound,
-    //         format!("Article not found: {:?}", req.display()),
-    //     )?;
+#[derive(Deserialize, Debug)]
+struct ArticleReq {
+    article: String,
+}
 
-    //     let parse_state = &state.parse_state.read();
-    //     let config = parse_state
-    //         .get_article_config(req.path())
-    //         .context("Article config not found")?;
-    //     let response = ArticleResponse { config, body };
+pub fn attach(server: &mut Server<State>) {
+    // Returns the html for an article
+    server.handled_stateful_route(Method::POST, "/api/article", |state, req| {
+        let s = String::from_utf8_lossy(&req.body);
+        let req: ArticleReq =
+            serde_json::from_str(&s).context(Status::BadRequest, "Bad Request")?;
 
-    //     Ok(Response::new()
-    //         .text(serde_json::to_string(&response)?)
-    //         .content(Content::JSON))
-    // });
+        let body = read_article(&state.config, &req.article)
+            .context(Status::NotFound, "Article not found")?;
+
+        let config = state
+            .parse_state
+            .get_article_config(&req.article)
+            .context(Status::NotFound, "Article not found")?;
+        let response = ArticleResponse { config, body };
+
+        Ok(Response::new()
+            .text(serde_json::to_string(&response)?)
+            .content(Content::JSON))
+    });
+    
+    // Returns the config for an article
+    server.handled_stateful_route(Method::POST, "/api/article-config", |state, req| {
+        let s = String::from_utf8_lossy(&req.body);
+        let req: ArticleReq =
+            serde_json::from_str(&s).context(Status::BadRequest, "Bad Request")?;
+
+        let config = state
+            .parse_state
+            .get_article_config(&req.article)
+            .context(Status::NotFound, "Article not found")?;
+        let response = ArticleConfigResponse { config };
+
+        Ok(Response::new()
+            .text(serde_json::to_string(&response)?)
+            .content(Content::JSON))
+    });
 }

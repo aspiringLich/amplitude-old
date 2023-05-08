@@ -1,7 +1,7 @@
 use std::{fs, path::PathBuf};
 
 use amplitude_common::config::{Args, Config, LanguageConfig};
-use parking_lot::{Mutex, MutexGuard, RwLock};
+use parking_lot::{Mutex, MutexGuard};
 use rusqlite::Connection;
 
 use crate::database::Database;

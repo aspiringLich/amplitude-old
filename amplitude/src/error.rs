@@ -80,20 +80,14 @@ where
 {
     /// Bad name but whatever
     #[track_caller]
-    fn status(self, status: Status, body: impl Display) -> Result<T, StatusError>;
-
-    /// Gives context to an error
-    #[track_caller]
-    fn context(self, body: impl Display) -> Result<T, StatusError> {
-        self.status(Status::InternalServerError, body)
-    }
+    fn context(self, status: Status, body: impl Display) -> Result<T, StatusError>;
 }
 
 impl<T, E> StatusContext<T> for Result<T, E>
 where
-    E: std::error::Error,
+    E: Display,
 {
-    fn status(self, status: Status, body: impl Display) -> Result<T, StatusError> {
+    fn context(self, status: Status, body: impl Display) -> Result<T, StatusError> {
         match self {
             Ok(t) => Ok(t),
             Err(e) => Err(StatusError {
@@ -105,7 +99,7 @@ where
 }
 
 impl<T> StatusContext<T> for Option<T> {
-    fn status(self, status: Status, body: impl Display) -> Result<T, StatusError> {
+    fn context(self, status: Status, body: impl Display) -> Result<T, StatusError> {
         match self {
             Some(t) => Ok(t),
             None => Err(StatusError {
