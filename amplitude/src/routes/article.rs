@@ -1,4 +1,4 @@
-use amplitude_markdown::{parse::read_article, state::article::ArticleConfig};
+use amplitude_markdown::state::article::ArticleConfig;
 
 use super::*;
 
@@ -25,20 +25,22 @@ pub fn attach(server: &mut Server<State>) {
         let req: ArticleReq =
             serde_json::from_str(&s).context(Status::BadRequest, "Bad Request")?;
 
-        let body = read_article(&state.config, &req.article)
+        let body = state
+            .parse_state
+            .read_article(&req.article)
             .context(Status::NotFound, "Article not found")?;
 
         let config = state
             .parse_state
             .get_article_config(&req.article)
-            .context(Status::NotFound, "Article not found")?;
+            .context(Status::NotFound, "Article config not found")?;
         let response = ArticleResponse { config, body };
 
         Ok(Response::new()
             .text(serde_json::to_string(&response)?)
             .content(Content::JSON))
     });
-    
+
     // Returns the config for an article
     server.handled_stateful_route(Method::POST, "/api/article-config", |state, req| {
         let s = String::from_utf8_lossy(&req.body);

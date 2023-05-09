@@ -3,17 +3,19 @@
     import Quiz from "./Quiz.svelte";
     import Explorer from "./Explorer.svelte";
     import Outline from "./Outline.svelte";
-    import { renderComponents, renderComponent, articlePath } from "./article";
+    import { renderComponents, renderComponent } from "./article";
     import { fly } from "svelte/transition";
     import { smoothAnchor } from "./article";
+    import { urlQuery } from "../main";
 
     async function fetchArticle() {
+        let e = new URLSearchParams()
         const a = await fetch("/api/article", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ article: articlePath() }),
+            body: JSON.stringify({ article: urlQuery().article }),
         });
         if (!a.ok) {
             throw new Error("failed to fetch article");

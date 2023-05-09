@@ -21,10 +21,7 @@
 <main>
     <Route path="/"><Home /></Route>
     <Route path="/login-test"><LoginTest /></Route>
-    <Route path="/article/:/:">
-        <Article />
-    </Route>
-    <Route path="/article/:/:/:">
+    <Route path="/course/:/*">
         <Article />
     </Route>
     <!-- <Route path="/about"><About /></Route>

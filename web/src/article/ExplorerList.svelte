@@ -1,7 +1,5 @@
 <script lang="ts">
-    export let entries: ChildEntry[];
-
-    import type { ChildEntry } from "./article";
+    export let entries: any;
 </script>
 
 <ul>

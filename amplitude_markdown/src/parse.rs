@@ -17,19 +17,6 @@ use crate::{
 };
 use comrak::{parse_document_refs, Arena, ComrakOptions, RefMap};
 
-pub fn read_article(config: &Config, path: &str) -> anyhow::Result<String> {
-    for c in path.as_bytes() {
-        if c.is_ascii_alphanumeric() || *c == b':' {
-            continue;
-        }
-        anyhow::bail!("Invalid character in path: {:?}", c);
-    }
-
-    let path = config.parse.output_path.clone() + path;
-
-    std::fs::read_to_string(&path).with_context(|| format!("While reading file {:?}", path))
-}
-
 /// Reparses the things and does the things
 pub fn parse(config: &Config) -> anyhow::Result<ParseState> {
     if !config.args.local {

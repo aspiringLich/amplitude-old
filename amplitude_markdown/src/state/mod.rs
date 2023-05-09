@@ -1,3 +1,4 @@
+use amplitude_common::config::Config;
 use anyhow::Context;
 
 use serde::{Deserialize, Serialize};
@@ -49,5 +50,19 @@ impl ParseState {
     pub fn insert_article(&mut self, config: article::ArticleConfig, path: &Path) {
         self.articles.insert(config.id.to_string(), path.to_path_buf());
         self.article_configs.insert(config.id.to_string(), config);
+    }
+
+    /// Read an article given an id
+    pub fn read_article(&self, article_id: &str) -> anyhow::Result<String> {
+        for c in article_id.as_bytes() {
+            if c.is_ascii_alphanumeric() || b"/_".contains(c) {
+                continue;
+            }
+            anyhow::bail!("Invalid character in path: {}", *c as char);
+        }
+
+        let path = self.articles.get(article_id).context("Article id not found")?;
+
+        std::fs::read_to_string(&path).with_context(|| format!("While reading file {:?}", path))
     }
 }

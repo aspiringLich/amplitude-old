@@ -1,9 +1,11 @@
 <script lang="ts">
+    import { urlQuery } from "../main";
+
     export let id: string;
 
     import Button from "../widgets/Button.svelte";
     import Icon from "../widgets/Icon.svelte";
-    import { articlePath, renderComponents } from "./article";
+    import { renderComponents } from "./article";
 
     async function fetchQuiz() {
         const a = await fetch("/api/quiz", {
@@ -12,7 +14,7 @@
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                article: articlePath(),
+                article: urlQuery().article,
                 id,
             }),
         });
