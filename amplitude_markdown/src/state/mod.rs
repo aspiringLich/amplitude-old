@@ -1,4 +1,3 @@
-use amplitude_common::config::Config;
 use anyhow::Context;
 
 use serde::{Deserialize, Serialize};

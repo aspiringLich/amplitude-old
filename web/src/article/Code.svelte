@@ -2,30 +2,17 @@
     import { onMount } from "svelte";
     import hijs from "highlight.js/lib/common";
     import Icon from "../widgets/Icon.svelte";
-    import Button from "../widgets/Button.svelte";
 
     // import assert from "assert";
 
     let pre_element: HTMLElement;
-    let lines_element: HTMLElement;
     let code: HTMLElement;
 
     onMount(() => {
         code = pre_element.firstElementChild as HTMLElement;
         code.classList.add("nglobal");
         console.assert(code.tagName == "CODE", code);
-
-        let lines = 0;
-        for (let c of code.textContent) {
-            if (c == "\n") lines++;
-        }
-
-        let line_string = "";
-        for (let i = 0; i < lines; i++) {
-            line_string += `${i + 1}<br />`;
-        }
-
-        lines_element.innerHTML = line_string;
+        
         hijs.highlightElement(code as HTMLElement);
     });
 
@@ -36,67 +23,50 @@
     }
 </script>
 
-<div id="code" class="hljs">
-    <code id="lines" bind:this={lines_element} />
+<div class="code hljs">
+    <!-- <code class="lines" bind:this={lines_element} /> -->
     <div
-        id="grid"
+        class="grid"
         on:mouseenter={() => (copy_button = true)}
         on:mouseleave={() => (copy_button = false)}
     >
-        <div id="container">
+        <div class="container">
             <pre bind:this={pre_element}><slot /></pre>
         </div>
-        {#if copy_button}
-            <div id="copy">
-                <Button color="1" onclick={copy} padding={1}>
-                    <Icon icon="content_copy" color="black" />
-                </Button>
-            </div>
-        {/if}
+        <!-- {#if copy_button} -->
+            <button class="hljs copy" on:click={copy}>
+                <Icon icon="content_copy" hover={true}/>
+            </button>
+        <!-- {/if} -->
     </div>
 </div>
 
 <style lang="scss">
-    #code {
+    .copy {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        display: flex;
+        justify-content: end;
+        padding: 0;
+        border: none;
+    }
+
+    .code {
         display: flex;
         flex-direction: row;
         align-items: flex-start;
         border-radius: 0.3em;
     }
-    
-    #grid {
+
+    .grid {
         position: relative;
         // overflow: scroll;
         display: grid;
         width: 100%;
     }
 
-    #lines {
-        padding: 1em 0.5em;
-        display: block;
-        border-right: 1px solid rgba(255, 255, 255, 0.5);
-
-        user-select: none;
-    }
-
-    #copy {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        display: flex;
-        justify-content: end;
-    }
-
-    :global(.n-top-border-radius) #code {
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
-    }
-
-    :global(.n-border-radius) #code {
-        border-radius: 0;
-    }
-
-    #container {
+    .container {
         display: flex;
         flex-direction: row;
         overflow: auto;
@@ -112,6 +82,8 @@
                 overflow: auto;
                 border-radius: 0.3em;
             }
+            
+            padding: 0.25em 1em;
         }
 
         :global(code) {

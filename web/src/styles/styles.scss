@@ -15,34 +15,33 @@
 
 html {
     font-family: "Noto Sans";
-    line-height: 150%;
 }
 
-$margin-factor: 0.5;
+p {
+    line-height: 1.7;
+}
 
-h1 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-family: "Fira Code";
-    margin: calc(0.67em * $margin-factor) 0;
+    font-weight: 800;
+    line-height: 1.5;
 }
 
-h2 {
-    font-family: "Fira Code";
-    margin: calc(0.75em * $margin-factor) 0;
+h1:after {
+    content: " ";
+    display: block;
+    border: 1px dashed black;
 }
 
-h3 {
-    font-family: "Jet Brains Mono";
-    margin: calc(0.83em * $margin-factor) 0;
-}
-
-h4 {
-    font-family: "Jet Brains Mono";
-    margin: calc(1.12em * $margin-factor) 0;
-}
-
-h5 {
-    font-family: "Jet Brains Mono";
-    margin: calc(1.5em * $margin-factor) 0;
+h2:after {
+    content: " ";
+    display: block;
+    border: 0.5px solid rgb(145, 145, 145);
 }
 
 code:not(.nglobal) {

@@ -11,17 +11,4 @@
 </ul>
 
 <style lang="scss">
-    ul {
-        padding-left: 10px;
-
-        li {
-            &[data-readable="true"] {
-                color: black;
-            }
-
-            &[data-readable="false"] {
-                color: var(--color-0-m);
-            }
-        }
-    }
 </style>

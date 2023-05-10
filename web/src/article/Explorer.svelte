@@ -1,15 +1,16 @@
 <script lang="ts">
+    import { urlParts } from "../main";
     import ExplorerList from "./ExplorerList.svelte";
 
     // create a Document from the html str
     async function fetchList() {
-        const a = await fetch("/api/article_list", {
+        const a = await fetch("/api/article-list", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                
+                course: urlParts()[0]
             }),
         });
 
@@ -18,19 +19,16 @@
         }
 
         return a;
-    }
-    
-    let track;
-    // let track: Promise<TrackConfig> = fetchList().then((a) => a.json());
+    }    
 </script>
 
 <div id=container>
-    {#await track then track}
+    <!-- {#await track then track}
         <ExplorerList entries={track.children}></ExplorerList>
     {:catch error}
         <span style:color=red>Could not fetch article list :(</span>
         {error}
-    {/await}
+    {/await} -->
 </div>
 
 <style>

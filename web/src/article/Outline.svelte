@@ -32,7 +32,7 @@
         let name = child.localName;
 
         if (name == "h2") {
-            let id = child.textContent.toLowerCase().replace(/[^a-z0-9]/g, "_");
+            let id = child.textContent.toLowerCase().replace(/[^a-z0-9]/g, "-");
 
             child.id = id;
             child.innerHTML = `<a href="#${id}">${child.innerHTML}</a>`;

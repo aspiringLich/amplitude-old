@@ -28,10 +28,11 @@
     });
 
     $: col = types[type].color;
+    console.log("e")
 </script>
 
 <div
-    class={`admonition`}
+    class="admonition"
     style:border-color="var(--color-{col}-d1)"
     style:--l-padding={l_padding}
 >
@@ -63,6 +64,9 @@
 
         #body {
             padding-left: var(--l-padding);
+            padding-top: .5em;
+            padding-bottom: .5em;
+            padding-right: 1.5em;
             box-sizing: border-box;
             :global(p) {
                 margin: 0.6rem 0;

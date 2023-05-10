@@ -1,4 +1,4 @@
-use std::{fs, path::Path};
+use std::{default::default, fs, path::Path};
 
 use amplitude_common::config::{Config, ParseConfig};
 use anyhow::{ensure, Context};
@@ -15,7 +15,10 @@ use crate::{
         ParseState,
     },
 };
-use comrak::{parse_document_refs, Arena, ComrakOptions, RefMap};
+use comrak::{
+    parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
+    ListStyleType, RefMap,
+};
 
 /// Reparses the things and does the things
 pub fn parse(config: &Config) -> anyhow::Result<ParseState> {
@@ -31,12 +34,12 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseState> {
 
     info!("Parsing articles...");
     let mut state = parse_dir(&config.parse).context("")?;
-    
+
     let index_path = config.parse.clone_path.clone() + "/index.toml";
-    let index = fs::read_to_string(&index_path)
-        .with_context(|| format!("While reading {}", index_path))?;
+    let index =
+        fs::read_to_string(&index_path).with_context(|| format!("While reading {}", index_path))?;
     state.courses = toml::from_str(&index)?;
-    
+
     dbg!(&state);
 
     Ok(state)
@@ -107,6 +110,31 @@ pub fn clone_repo(config: &ParseConfig) -> anyhow::Result<()> {
 /// assuming `config.articles.clone_path` exists, parses the articles into html
 pub fn parse_dir(config: &ParseConfig) -> anyhow::Result<ParseState> {
     let mut state = ParseState::default();
+    state.options = ComrakOptions {
+        extension: ComrakExtensionOptions {
+            strikethrough: true,
+            tagfilter: true,
+            table: true,
+            autolink: true,
+            tasklist: true,
+            superscript: true,
+            header_ids: None,
+            footnotes: true,
+            description_lists: true,
+            front_matter_delimiter: Some("---".to_string()),
+        },
+        parse: default(),
+        render: ComrakRenderOptions {
+            github_pre_lang: false,
+            full_info_string: true,
+            unsafe_: true,
+            hardbreaks: false,
+            width: 0,
+            escape: false,
+            list_style: ListStyleType::default(),
+            sourcepos: false,
+        },
+    };
     let input = Path::new(&config.clone_path);
     let output = Path::new(&config.output_path);
 

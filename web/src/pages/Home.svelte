@@ -1,6 +1,5 @@
 <script>
     // @ts-ignore
-    import { Divider, Menu, Text } from "@svelteuidev/core";
     import Admonition from "../article/Admonition.svelte";
     import Icon from "../widgets/Icon.svelte";
 

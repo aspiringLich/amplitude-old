@@ -13,6 +13,12 @@ mod evaluate;
 mod quiz;
 
 pub fn attach(server: &mut Server<State>) {
+    server.route(Method::ANY, "/api/**", |_| {
+        Response::new()
+            .status(Status::NotFound)
+            .text("Route not found")
+    });
+    
     article::attach(server);
     auth::attach(server);
     evaluate::attach(server);

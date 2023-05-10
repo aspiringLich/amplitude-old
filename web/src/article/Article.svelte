@@ -70,16 +70,12 @@
 
     let width = window.innerWidth;
     $: outline = width >= 1100 && body_element != undefined;
-    $: explorer = width >= 700;
 </script>
 
 <svelte:window on:resize={onResize} />
 
 {#if init}
-    <div class="article" data-right={outline} data-left={explorer}>
-        {#if explorer && sidebars}
-            <Explorer />
-        {/if}
+    <div class="article" data-margin={outline}>
         <div
             in:fly={flyOptions}
             on:introstart|once={transfer}
@@ -106,30 +102,21 @@
         flex-direction: row;
         padding: 0 2em;
 
-        &[data-right="true"] {
+        &[data-margin="true"] {
             margin-right: variables.$outline-width !important;
-        }
-
-        &[data-left="true"] {
-            margin-left: variables.$explorer-width !important;
         }
     }
 
     .container {
         @include mixins.box;
 
-        margin: 0 auto;
+        margin: auto;
         margin-top: 16px;
+        max-width: 740px;
 
         &.heading h1 {
             font-size: 3.5em;
             line-height: 100%;
-
-            &:after {
-                content: " ";
-                display: block;
-                border: 1px dashed black;
-            }
         }
     }
 
