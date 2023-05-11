@@ -33,11 +33,11 @@
         <div class="container">
             <pre bind:this={pre_element}><slot /></pre>
         </div>
-        <!-- {#if copy_button} -->
+        {#if copy_button}
             <button class="hljs copy" on:click={copy}>
                 <Icon icon="content_copy" hover={true}/>
             </button>
-        <!-- {/if} -->
+        {/if}
     </div>
 </div>
 
@@ -57,6 +57,7 @@
         flex-direction: row;
         align-items: flex-start;
         border-radius: 0.3em;
+        margin: 0.75em 0;
     }
 
     .grid {

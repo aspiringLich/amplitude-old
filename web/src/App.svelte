@@ -7,17 +7,6 @@
     import LoginTest from "./pages/LoginTest.svelte";
 </script>
 
-<head>
-    <link
-        rel="stylesheet"
-        href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/agate.min.css"
-    />
-    <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@40,500,0,200"
-    />
-</head>
-
 <main>
     <Route path="/"><Home /></Route>
     <Route path="/login-test"><LoginTest /></Route>

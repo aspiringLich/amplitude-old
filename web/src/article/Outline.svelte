@@ -96,7 +96,7 @@
     @use "variables.scss" as *;
 
     #outline {
-        position: fixed;
+        position: sticky;
         top: 16px;
         right: 0;
         float: right;
@@ -108,6 +108,10 @@
         #scroll {
             overflow-y: scroll;
             overflow-x: hidden;
+        }
+        
+        h1 {
+            margin: 0.25em 0;
         }
 
         ul {

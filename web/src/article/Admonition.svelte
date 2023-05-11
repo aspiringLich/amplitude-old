@@ -15,9 +15,6 @@
     if (!(type in types)) throw new Error(`Unknown admonition type: ${type}`);
     let capitalized = type[0].toUpperCase() + type.slice(1);
 
-    let border_color = `var(--color-${types[type].color}-d1)`;
-    let background_color = `var(--color-${types[type].color}-l1)`;
-
     let body_element: HTMLElement;
     let l_padding = "1em";
     onMount(() => {
@@ -28,14 +25,10 @@
     });
 
     $: col = types[type].color;
-    console.log("e")
+    console.log("e");
 </script>
 
-<div
-    class="admonition"
-    style:border-color="var(--color-{col}-d1)"
-    style:--l-padding={l_padding}
->
+<div class="admonition" style:--l-padding={l_padding}>
     <div id="title" style:background-color="var(--color-{col}-l1">
         <Icon
             icon={types[type].icon ?? type}
@@ -51,33 +44,37 @@
 </div>
 
 <style lang="scss">
+    $border-radius: 0.3em;
+
     .admonition {
-        border: 1px solid;
-        border-radius: 0.3em;
+        // border: 1px solid;
+        // border-radius: 0.3em;
         margin: 1em 0;
         // padding: 0.5em;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        border: 1.5px solid;
         overflow: hidden;
 
         #body {
             padding-left: var(--l-padding);
-            padding-top: .5em;
-            padding-bottom: .5em;
+            padding-top: 0.5em;
+            padding-bottom: 0.5em;
             padding-right: 1.5em;
             box-sizing: border-box;
             :global(p) {
                 margin: 0.6rem 0;
             }
+            border-radius: 0 0 $border-radius $border-radius;
             width: 100%;
             overflow: hidden;
+            background-color: #00000007;
         }
 
         #title {
             height: 2.5em;
             width: 100%;
+            border-radius: $border-radius $border-radius 0 0;
             padding: 0.5em;
             box-sizing: border-box;
         }

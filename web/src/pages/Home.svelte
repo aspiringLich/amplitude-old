@@ -1,7 +1,9 @@
 <script>
     // @ts-ignore
+    import { Menu, Divider, Text } from "@svelteuidev/core"
     import Admonition from "../article/Admonition.svelte";
     import Icon from "../widgets/Icon.svelte";
+    
 
     const session = fetch("/auth/session").then((r) => r.json());
     const supported = fetch("/auth/supported").then((r) => r.json());

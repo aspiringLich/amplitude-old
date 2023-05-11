@@ -5,11 +5,11 @@
     import Outline from "./Outline.svelte";
     import { renderComponents, renderComponent } from "./article";
     import { fly } from "svelte/transition";
-    import { smoothAnchor } from "./article";
+    // import { smoothAnchor } from "./article";
     import { urlQuery } from "../main";
 
     async function fetchArticle() {
-        let e = new URLSearchParams()
+        let e = new URLSearchParams();
         const a = await fetch("/api/article", {
             method: "POST",
             headers: {
@@ -24,12 +24,12 @@
         return a.json();
     }
 
-    let title = "";
+    let name = "";
     let doc;
     let mount = false;
 
     fetchArticle().then((a) => {
-        title = a.config.title;
+        name = a.config.name;
         doc = new DOMParser().parseFromString(a.body, "text/html");
     });
     onMount(() => (mount = true));
@@ -39,56 +39,43 @@
     $: if (mount && doc) {
         renderComponent(doc.body, "Quiz", Quiz);
         renderComponents(doc.body);
+        
+        // replace all h2 with links to themselves
+        doc.body.childNodes.forEach((element) => {
+            if (element.localName != "h2") return;
+
+            let id = element.textContent.toLowerCase().replace(/[^a-z0-9]/g, "-");
+            element.id = id;
+            element.innerHTML = `<a href="#${id}">${element.innerHTML}</a>`;
+        });
 
         children = doc.body.childNodes;
 
         init = true;
     }
 
-    // smoooth
-    $: if (outline_element) {
-        outline_element.querySelectorAll("a").forEach(smoothAnchor);
-    }
-
     let sidebars = false;
     let body_element: Element;
-    let outline_element: Element;
     let children: NodeListOf<ChildNode>;
 
     function transfer() {
         // console.log(children);
         body_element.replaceChildren(...children);
-
-        document.querySelectorAll('a[href^="#"]').forEach(smoothAnchor);
-    }
-
-    function onResize() {
-        width = window.innerWidth;
     }
 
     let flyOptions = { y: -20, duration: 300 };
-
-    let width = window.innerWidth;
-    $: outline = width >= 1100 && body_element != undefined;
 </script>
 
-<svelte:window on:resize={onResize} />
-
 {#if init}
-    <div class="article" data-margin={outline}>
+    <div class="article">
         <div
             in:fly={flyOptions}
             on:introstart|once={transfer}
             on:introend|once={() => (sidebars = true)}
         >
-            <div class="container heading">
-                <h1>{title}</h1>
+            <div class="container body" bind:this={body_element}>
             </div>
-            <div class="container body" bind:this={body_element} />
         </div>
-        {#if outline && sidebars}
-            <Outline article_body={body_element} />
-        {/if}
     </div>
 {/if}
 <div style:height="50vh" />
@@ -97,27 +84,10 @@
     @use "variables";
     @use "../styles/mixins";
 
-    .article {
-        display: flex;
-        flex-direction: row;
-        padding: 0 2em;
-
-        &[data-margin="true"] {
-            margin-right: variables.$outline-width !important;
-        }
-    }
-
     .container {
-        @include mixins.box;
-
         margin: auto;
         margin-top: 16px;
         max-width: 740px;
-
-        &.heading h1 {
-            font-size: 3.5em;
-            line-height: 100%;
-        }
     }
 
     .body {

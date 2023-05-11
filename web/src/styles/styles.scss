@@ -14,11 +14,15 @@
 }
 
 html {
-    font-family: "Noto Sans";
+    font-family:'Noto Sans';
+    font-weight: 100;
+    background-color: #fdfdfd;
+    scroll-behavior: smooth;
 }
 
 p {
     line-height: 1.7;
+    color: #333;
 }
 
 h1,
@@ -30,18 +34,6 @@ h6 {
     font-family: "Fira Code";
     font-weight: 800;
     line-height: 1.5;
-}
-
-h1:after {
-    content: " ";
-    display: block;
-    border: 1px dashed black;
-}
-
-h2:after {
-    content: " ";
-    display: block;
-    border: 0.5px solid rgb(145, 145, 145);
 }
 
 code:not(.nglobal) {
