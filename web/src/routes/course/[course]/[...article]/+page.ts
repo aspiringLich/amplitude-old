@@ -7,10 +7,8 @@ class ArticleResponse {
 }
 
 export const load = async ({ params, fetch }): Promise<ArticleResponse> => {
-    let body = JSON.stringify({ article: params.article });
-    console.log(body);
     return fetchApi("/api/article", {
-        body,
+        body: { article: params.article },
         fetch,
     });
 };
