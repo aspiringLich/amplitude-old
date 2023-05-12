@@ -1,4 +1,5 @@
 use amplitude_markdown::state::article::ArticleConfig;
+use tracing::trace;
 
 use super::*;
 
@@ -21,14 +22,15 @@ struct ArticleReq {
 pub fn attach(server: &mut Server<State>) {
     // Returns the html for an article
     server.handled_stateful_route(Method::POST, "/api/article", |state, req| {
-        let s = String::from_utf8_lossy(&req.body);
-        let req: ArticleReq =
-            serde_json::from_str(&s).context(Status::BadRequest, "Bad Request")?;
+        let req: ArticleReq = json(&req)?;
 
         let body = state
             .parse_state
             .read_article(&req.article)
-            .context(Status::NotFound, "Article not found")?;
+            .with_context(Status::NotFound, || {
+                trace!("/api/article: Article {} not found", req.article);
+                "Article not found"
+            })?;
 
         let config = state
             .parse_state
@@ -38,6 +40,7 @@ pub fn attach(server: &mut Server<State>) {
 
         Ok(Response::new()
             .text(serde_json::to_string(&response)?)
+            .header("Access-Control-Allow-Origin", "*")
             .content(Content::JSON))
     });
 

@@ -13,6 +13,7 @@
 
     // after mounting & fetching the article, render it!
     $: if (body_element) {
+        body_element.innerHTML = data.body;
         renderComponent(body_element, "pre", Code);
         renderComponent(body_element, "Admonition", Admonition);
 

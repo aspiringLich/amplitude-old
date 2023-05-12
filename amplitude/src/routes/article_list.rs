@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct CourseReq {
     course: String,
 }
@@ -8,8 +8,7 @@ struct CourseReq {
 /// Returns the list of articles in a course
 pub fn attach(server: &mut Server<State>) {
     server.handled_stateful_route(Method::POST, "/api/article-list", |state, req| {
-        let s = String::from_utf8_lossy(&req.body);
-        let req: CourseReq = serde_json::from_str(&s).context(Status::BadRequest, "Bad Request")?;
+        let req: CourseReq = json(&req)?;
         let state = &state.parse_state;
 
         let course = state
@@ -26,6 +25,7 @@ pub fn attach(server: &mut Server<State>) {
 
         Ok(Response::new()
             .text(serde_json::to_string(&state.courses)?)
+            .header("Access-Control-Allow-Origin", "*")
             .content(Content::JSON))
     });
 }

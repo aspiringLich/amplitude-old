@@ -16,7 +16,7 @@ struct EvaluateReq {
 }
 
 pub fn attach(server: &mut Server<State>) {
-    server.handled_stateful_route(Method::GET, "/api/evaluate", |app, req| {
+    server.handled_stateful_route(Method::POST, "/api/evaluate", |app, req| {
         let body = String::from_utf8_lossy(&req.body);
         let body = serde_json::from_str::<EvaluateReq>(body.borrow())
             .context(Status::BadRequest, "Invalid request")?;

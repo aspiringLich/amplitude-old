@@ -13,6 +13,7 @@ export default defineConfig({
     plugins: [sveltekit()],
     resolve: {
         alias: {
+            "@src": path.resolve(__dirname, "src"),
             "@styles": path.resolve(__dirname, "src/styles"),
         },
     },

@@ -81,6 +81,12 @@ where
     /// Bad name but whatever
     #[track_caller]
     fn context(self, status: Status, body: impl Display) -> Result<T, StatusError>;
+
+    #[track_caller]
+    fn with_context<F, D>(self, status: Status, body: F) -> Result<T, StatusError>
+    where
+        D: Display,
+        F: FnOnce() -> D;
 }
 
 impl<T, E> StatusContext<T> for Result<T, E>
@@ -96,6 +102,25 @@ where
             }),
         }
     }
+
+    fn with_context<F, D>(self, status: Status, body: F) -> Result<T, StatusError>
+    where
+        D: Display,
+        F: FnOnce() -> D,
+    {
+        match self {
+            Ok(t) => Ok(t),
+            Err(e) => Err(StatusError {
+                status,
+                body: Some(format!(
+                    "{}\n[{}]: {}",
+                    Box::new(body()),
+                    panic::Location::caller(),
+                    e,
+                )),
+            }),
+        }
+    }
 }
 
 impl<T> StatusContext<T> for Option<T> {
@@ -105,6 +130,24 @@ impl<T> StatusContext<T> for Option<T> {
             None => Err(StatusError {
                 status,
                 body: Some(format!("{}\n[{}]", body, std::panic::Location::caller())),
+            }),
+        }
+    }
+
+    fn with_context<F, D>(self, status: Status, body: F) -> Result<T, StatusError>
+    where
+        D: Display,
+        F: FnOnce() -> D,
+    {
+        match self {
+            Some(t) => Ok(t),
+            None => Err(StatusError {
+                status,
+                body: Some(format!(
+                    "{}\n[{}]",
+                    Box::new(body()),
+                    std::panic::Location::caller()
+                )),
             }),
         }
     }
