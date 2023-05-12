@@ -21,4 +21,11 @@ pub fn attach(server: &mut Server<State>) {
             .text(serde_json::to_string(course)?)
             .content(Content::JSON))
     });
+    server.handled_stateful_route(Method::POST, "/api/course-list", |state, _req| {
+        let state = &state.parse_state;
+
+        Ok(Response::new()
+            .text(serde_json::to_string(&state.courses)?)
+            .content(Content::JSON))
+    });
 }

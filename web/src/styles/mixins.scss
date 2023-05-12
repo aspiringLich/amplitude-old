@@ -1,7 +1,0 @@
-
-// A box with a shadow and a border - used for ui panes and such
-@mixin box {
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
-    border: 3px solid #eeeeee;
-    padding: 10px 20px 10px 20px;
-}

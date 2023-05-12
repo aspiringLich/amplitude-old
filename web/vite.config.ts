@@ -1,9 +1,7 @@
+import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
-import { svelte } from "@sveltejs/vite-plugin-svelte";
-import { resolve } from "path";
-import sveltePreprocess from "svelte-preprocess";
+import path from "path";
 
-// https://vitejs.dev/config/
 export default defineConfig({
     server: {
         proxy: {
@@ -12,25 +10,10 @@ export default defineConfig({
             },
         },
     },
-    plugins: [
-        svelte({
-            preprocess: [
-                sveltePreprocess({
-                    includePaths: ["src/styles"],
-                }),
-            ],
-        }),
-    ],
+    plugins: [sveltekit()],
     resolve: {
         alias: {
-            $static: resolve("./static"),
-            $assets: resolve("./static/assets"),
-            $fonts: resolve("./static/assets/fonts"),
-        },
-    },
-    build: {
-        watch: {
-            include: ["../src/**/*.scss"],
+            "@styles": path.resolve(__dirname, "src/styles"),
         },
     },
 });

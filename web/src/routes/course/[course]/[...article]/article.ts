@@ -1,8 +1,5 @@
 import type { ComponentType } from "svelte";
 
-import Code from "./Code.svelte";
-import Admonition from "./Admonition.svelte";
-
 import {
     destroy_component,
     detach,
@@ -11,7 +8,7 @@ import {
     mount_component,
     noop,
     SvelteComponent,
-} from 'svelte/internal';
+} from "svelte/internal";
 
 // https://github.com/sveltejs/svelte/issues/2588
 function createSlots(slots) {
@@ -37,8 +34,7 @@ function createSlots(slots) {
                     l: noop,
                 };
             };
-        }
-        else {
+        } else {
             return function () {
                 return {
                     c: noop,
@@ -56,46 +52,39 @@ function createSlots(slots) {
         }
     }
     return svelteSlots;
-};
+}
 
 // for slots: currently only works for a single default slot
 export function renderComponent(
     doc: HTMLElement,
     query: string,
-    type: ComponentType,
-    extra_props: any = {}
+    type: ComponentType
 ) {
     doc.querySelectorAll(query).forEach((target) => {
         let props = {};
         for (const attr of target.attributes) {
             props[attr.name] = attr.value;
         }
-        for (const prop in extra_props) {
-            props[prop] = extra_props[prop];
-        }
         let slots = target.childNodes.length > 0;
 
         if (slots) {
-            props["$$slots"] = createSlots({ default: [...target.children, { $$scope: {} }] });
+            props["$$slots"] = createSlots({
+                default: [...target.children, { $$scope: {} }],
+            });
             props["$$scope"] = {};
         }
 
         try {
-            new type({
-                target: target.parentElement,
+            let { html } = (type as any).render({
+                target: target.parentElement as Element,
                 anchor: target,
                 props,
             });
+            console.log(html);
         } catch (e) {
             console.error(e);
         }
 
         target.remove();
     });
-}
-
-// renders a document from a html str
-export function renderComponents(el: HTMLElement, extra_props: any = {}) {
-    renderComponent(el, "pre", Code);
-    renderComponent(el, "Admonition", Admonition);
 }

@@ -1,10 +1,6 @@
-<script lang="ts">
-    import { urlQuery } from "../main";
-
+<!-- <script lang="ts">
     export let id: string;
 
-    import Button from "../widgets/Button.svelte";
-    import Icon from "../widgets/Icon.svelte";
     import { renderComponents } from "./article";
 
     async function fetchQuiz() {
@@ -290,4 +286,4 @@
         box-sizing: border-box;
         width: 100%;
     }
-</style>
+</style> -->

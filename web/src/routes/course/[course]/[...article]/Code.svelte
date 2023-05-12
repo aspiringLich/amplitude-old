@@ -1,7 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import hijs from "highlight.js/lib/common";
-    import Icon from "../widgets/Icon.svelte";
 
     // import assert from "assert";
 
@@ -35,7 +34,7 @@
         </div>
         {#if copy_button}
             <button class="hljs copy" on:click={copy}>
-                <Icon icon="content_copy" hover={true}/>
+                <!-- <Icon icon="content_copy" hover={true}/> -->
             </button>
         {/if}
     </div>
