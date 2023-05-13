@@ -65,9 +65,8 @@ export function renderComponent(
         for (const attr of target.attributes) {
             props[attr.name] = attr.value;
         }
-        let slots = target.childNodes.length > 0;
 
-        if (slots) {
+        if (target.childElementCount) {
             props["$$slots"] = createSlots({
                 default: [...target.children, { $$scope: {} }],
             });
@@ -75,12 +74,11 @@ export function renderComponent(
         }
 
         try {
-            let { html } = (type as any).render({
+            new type({
                 target: target.parentElement as Element,
                 anchor: target,
                 props,
             });
-            console.log(html);
         } catch (e) {
             console.error(e);
         }

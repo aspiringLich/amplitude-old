@@ -1,21 +1,20 @@
 @font-face {
     font-family: "Noto Sans";
-    src: url("$fonts/NotoSans-Regular.ttf");
+    src: "assets/fonts/NotoSans-Regular.ttf";
 }
 
 @font-face {
     font-family: "Fira Code";
-    src: url("$fonts/FiraCode-Regular.ttf");
+    src: "assets/fonts/FiraCode-Regular.ttf";
 }
 
 @font-face {
     font-family: "Jet Brains Mono";
-    src: url("$fonts/JetBrainsMonoNL-Regular.ttf");
+    src: "assets/fonts/JetBrainsMonoNL-Regular.ttf";
 }
 
 html {
-    font-family:'Noto Sans';
-    font-weight: 100;
+    font-family: "Noto Sans";
     background-color: #fdfdfd;
     scroll-behavior: smooth;
 }

@@ -5,19 +5,20 @@ use std::{
 };
 
 use afire::{Method, Request, Response, Server, Status};
+use tracing::trace;
 
 pub(super) trait HandledRoute<T: Sync + Send> {
     fn handled_route(
         &mut self,
         method: Method,
-        path: &str,
+        path: &'static  str,
         handler: impl (Fn(&Request) -> Result<Response, StatusError>) + Sync + Send + 'static,
     );
 
     fn handled_stateful_route(
         &mut self,
         method: Method,
-        path: &str,
+        path: &'static str,
         handler: impl (Fn(Arc<T>, &Request) -> Result<Response, StatusError>) + Sync + Send + 'static,
     );
 }
@@ -26,12 +27,13 @@ impl<T: Send + Sync> HandledRoute<T> for Server<T> {
     fn handled_route(
         &mut self,
         method: Method,
-        path: &str,
+        path: &'static str,
         handler: impl (Fn(&Request) -> Result<Response, StatusError>) + Sync + Send + 'static,
     ) {
         self.route(method, path, move |req| {
             let err = handler(req);
             err.unwrap_or_else(|e| {
+                trace!("{}: {}", &path, e.body.as_ref().unwrap_or(&"".to_string()));
                 Response::new().status(e.status).text(
                     e.body
                         .unwrap_or_else(|| e.status.reason_phrase().to_string()),
@@ -43,12 +45,13 @@ impl<T: Send + Sync> HandledRoute<T> for Server<T> {
     fn handled_stateful_route(
         &mut self,
         method: Method,
-        path: &str,
+        path: &'static str,
         handler: impl (Fn(Arc<T>, &Request) -> Result<Response, StatusError>) + Sync + Send + 'static,
     ) {
         self.stateful_route(method, path, move |state, req| {
             let err = handler(state, req);
             err.unwrap_or_else(|e| {
+                trace!("{}: {}", &path, e.body.as_ref().unwrap_or(&"".to_string()));
                 Response::new().status(e.status).text(
                     e.body
                         .unwrap_or_else(|| e.status.reason_phrase().to_string()),

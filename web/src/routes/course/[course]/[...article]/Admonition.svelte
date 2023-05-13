@@ -3,24 +3,24 @@
 
     export let type: string;
 
-    // let types = {
-    //     note: { color: "purple" },
-    //     info: { color: "blue" },
-    //     warning: { color: "yellow" },
-    //     success: { color: "green", icon: "check_circle" },
-    //     failiure: { color: "red", icon: "error" },
-    // };
-    // if (!(type in types)) throw new Error(`Unknown admonition type: ${type}`);
-    // let capitalized = type[0].toUpperCase() + type.slice(1);
+    let types = {
+        note: { color: "purple" },
+        info: { color: "blue" },
+        warning: { color: "yellow" },
+        success: { color: "green", icon: "check_circle" },
+        failiure: { color: "red", icon: "error" },
+    };
+    if (!(type in types)) throw new Error(`Unknown admonition type: ${type}`);
+    let capitalized = type[0].toUpperCase() + type.slice(1);
 
     let body_element: HTMLElement;
     let l_padding = "1em";
-    // onMount(() => {
-    //     if (body_element.children.length == 1) {
-    //         let child = body_element?.firstElementChild;
-    //         if (child?.id == "code") l_padding = "0";
-    //     }
-    // });
+    onMount(() => {
+        if (body_element.children.length == 1) {
+            let child = body_element?.firstElementChild;
+            if (child?.id == "code") l_padding = "0";
+        }
+    });
         
     let col = "";
     // $: col = types[type].color;

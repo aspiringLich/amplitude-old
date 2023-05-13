@@ -7,7 +7,8 @@ class ArticleResponse {
 }
 
 export const load = async ({ params, fetch }): Promise<ArticleResponse> => {
-    return fetchApi("/api/article", {
+    return await fetchApi("/api/article", {
+        method: "POST",
         body: { article: params.article },
         fetch,
     });
@@ -27,3 +28,4 @@ export const entries = (async () => {
 }) satisfies EntryGenerator;
 
 export const prerender = true;
+export const ssr = false;
