@@ -1,12 +1,38 @@
 import adapter from '@sveltejs/adapter-auto';
 import { vitePreprocess } from '@sveltejs/kit/vite';
 import sveltePreprocess from 'svelte-preprocess';
+import path from 'path';
+
+function importer(url) {
+	for (const [alias, aliasPath] in
+		[
+			["$lib", "src/lib"],
+			["@src", "src"],
+			["@styles", "src/styles"],
+		]) {
+		if (url.startsWith(alias)) {
+			return {
+				file: url.replace(alias, aliasPath),
+			};
+		}
+	}
+}
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	// Consult https://kit.svelte.dev/docs/integrations#preprocessors
 	// for more information about preprocessors
-	preprocess: [vitePreprocess(), sveltePreprocess()],
+	preprocess: [vitePreprocess({
+		style: {
+			css: {
+				preprocessorOptions: {
+					scss: {
+						importer,
+					}
+				}
+			}
+		}
+	}), sveltePreprocess()],
 	experimental: {
 		useVitePreprocess: true,
 	},
