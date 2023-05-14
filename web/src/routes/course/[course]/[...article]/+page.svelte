@@ -8,7 +8,7 @@
 
     export let data;
 
-    let body: HTMLElement;
+    let body: HTMLElement; 
     onMount(() => {
         renderComponent(body, "pre", Code);
         renderComponent(body, "admonition", Admonition);

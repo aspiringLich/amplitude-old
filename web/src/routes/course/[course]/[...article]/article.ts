@@ -1,5 +1,4 @@
 import type { ComponentType } from "svelte";
-import { browser } from "$app/environment";
 import {
     destroy_component,
     detach,
@@ -9,6 +8,7 @@ import {
     noop,
     SvelteComponent,
 } from "svelte/internal";
+// import svelte from "svelte/compiler"
 
 // https://github.com/sveltejs/svelte/issues/2588
 function createSlots(slots) {

@@ -1,20 +1,29 @@
 import type { EntryGenerator, RouteParams } from "./$types";
 import { fetchApi } from "@src/lib/utils";
+import { renderComponent } from "./article";
+import { JSDOM } from "jsdom";
 
 class ArticleResponse {
     body: string;
     config: {
         title: string;
-        id: string
+        id: string;
     };
 }
 
 export const load = async ({ params, fetch }): Promise<ArticleResponse> => {
-    return await fetchApi("/api/article", {
+    let response: ArticleResponse = await fetchApi("/api/article", {
         method: "POST",
         body: params,
         fetch,
     });
+
+    let doc = new JSDOM(response.body).window.document as Document;
+    
+    // renderComponent(doc.body, "pre", (await import(`./Code.svelte`)).default);
+    // renderComponent(doc.body, "admonition", (await import(`./Admonition.svelte`)).default);
+
+    return response;
 };
 
 export const entries = (async () => {
