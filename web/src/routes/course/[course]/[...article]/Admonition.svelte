@@ -29,6 +29,7 @@
 
 <div class="admonition" style:--l-padding={l_padding}>
     <div id="title" style:background-color="var(--color-{col}-l1">
+        {capitalized}
         <!-- <Icon
             icon={types[type].icon ?? type}
             size="1.5em"

@@ -1,20 +1,17 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { fly } from "svelte/transition";
     import { renderComponent } from "./article.js";
+    import { fly } from "svelte/transition";
+
     import Code from "./Code.svelte";
     import Admonition from "./Admonition.svelte";
-    // import { smoothAnchor } from "./article";
 
     export let data;
 
-    let html = `<h1>${data.name}</h1>${data.body}`;
     let body: HTMLElement;
-
     onMount(() => {
-        body.innerHTML = html;
         renderComponent(body, "pre", Code);
-        renderComponent(body, "Admonition", Admonition);
+        renderComponent(body, "admonition", Admonition);
     });
 
     let flyOptions = { y: -20, duration: 300 };
@@ -22,7 +19,10 @@
 
 <div class="article">
     <div in:fly={flyOptions}>
-        <div class="container body" bind:this={body} />
+        <div class="container body" bind:this={body}>
+            <h1>{@html data.config.title}</h1>
+            {@html data.body}
+        </div>
     </div>
 </div>
 <div style:height="50vh" />

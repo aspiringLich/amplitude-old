@@ -1,15 +1,18 @@
 import type { EntryGenerator, RouteParams } from "./$types";
-import { fetchApi } from "$lib/utils";
+import { fetchApi } from "@src/lib/utils";
 
 class ArticleResponse {
     body: string;
-    name: string;
+    config: {
+        title: string;
+        id: string
+    };
 }
 
 export const load = async ({ params, fetch }): Promise<ArticleResponse> => {
     return await fetchApi("/api/article", {
         method: "POST",
-        body: { article: params.article },
+        body: params,
         fetch,
     });
 };
@@ -28,4 +31,4 @@ export const entries = (async () => {
 }) satisfies EntryGenerator;
 
 export const prerender = true;
-export const ssr = false;
+// export const csr = false;

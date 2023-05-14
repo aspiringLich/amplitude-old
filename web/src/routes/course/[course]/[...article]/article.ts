@@ -1,5 +1,5 @@
 import type { ComponentType } from "svelte";
-
+import { browser } from "$app/environment";
 import {
     destroy_component,
     detach,

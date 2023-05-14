@@ -2,23 +2,23 @@ import { browser } from "$app/environment";
 
 export const fetchApi = async <T>(
     url: string,
-    opts: {
-        method: "POST" | "GET";
-        body: any;
-        fetch: (
+    opts?: {
+        method?: "POST" | "GET",
+        body?: any;
+        fetch?: (
             input: RequestInfo | URL,
             init?: RequestInit
         ) => Promise<Response>;
-    } = {
-        method: "POST",
-        body: {},
-        fetch: fetch,
     }
 ): Promise<T> => {
+    opts = opts ?? {};
+    opts.fetch = opts.fetch ?? fetch;
+    opts.method = opts.method ?? "GET";
+    
     // console.log("fetching", url, opts, "\n")
     let input = browser ? url : `http://127.0.0.1:8080${url}`;
     const req = await opts.fetch(input, {
-        method: opts.method,
+        method: opts.method ?? "GET",
         headers: {
             "Content-Type": "application/json",
         },
@@ -26,10 +26,8 @@ export const fetchApi = async <T>(
     });
     if (!req.ok) {
         console.log(req);
-        throw new Error(
-            `failed to fetch ${url} with ${JSON.stringify(opts.body)}`
-        );
+        throw new Error(`failed to fetch ${url} with` + JSON.stringify(opts));
     }
 
-    return req.json();
+    return await req.json();
 };
