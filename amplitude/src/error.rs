@@ -11,7 +11,7 @@ pub(super) trait HandledRoute<T: Sync + Send> {
     fn handled_route(
         &mut self,
         method: Method,
-        path: &'static  str,
+        path: &'static str,
         handler: impl (Fn(&Request) -> Result<Response, StatusError>) + Sync + Send + 'static,
     );
 

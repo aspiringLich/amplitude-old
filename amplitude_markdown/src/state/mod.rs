@@ -34,8 +34,8 @@ impl ParseState {
         self.quizzes
             .insert((article.to_string(), id.to_string()), quiz)
     }
-   
-    /// Get a course by its id 
+
+    /// Get a course by its id
     pub fn get_article_config(&self, article_id: &str) -> Option<&article::ArticleConfig> {
         self.article_configs.get(article_id)
     }
@@ -44,10 +44,11 @@ impl ParseState {
     pub fn has_id(&self, article_id: &str) -> bool {
         self.article_configs.contains_key(article_id)
     }
-    
+
     /// Get a course by its id
     pub fn insert_article(&mut self, config: article::ArticleConfig, path: &Path) {
-        self.articles.insert(config.id.to_string(), path.to_path_buf());
+        self.articles
+            .insert(config.id.to_string(), path.to_path_buf());
         self.article_configs.insert(config.id.to_string(), config);
     }
 
@@ -60,8 +61,11 @@ impl ParseState {
             anyhow::bail!("Invalid character in path: {}", *c as char);
         }
 
-        let path = self.articles.get(article_id).context("Article id not found")?;
+        let path = self
+            .articles
+            .get(article_id)
+            .context("Article id not found")?;
 
-        std::fs::read_to_string(&path).with_context(|| format!("While reading file {:?}", path))
+        std::fs::read_to_string(path).with_context(|| format!("While reading file {path:?}"))
     }
 }

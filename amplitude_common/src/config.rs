@@ -27,7 +27,7 @@ pub struct ParseConfig {
 }
 
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)] 
+#[serde(deny_unknown_fields)]
 pub struct ServerConfig {
     pub host: String,
     pub port: u16,
@@ -38,14 +38,14 @@ pub struct ServerConfig {
 }
 
 #[derive(Deserialize, Default)]
-#[serde(deny_unknown_fields)] 
+#[serde(deny_unknown_fields)]
 pub struct AuthConfig {
     pub google_oauth: Option<GoogleOauth>,
     pub github_oauth: Option<GithubOauth>,
 }
 
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)] 
+#[serde(deny_unknown_fields)]
 pub struct Config {
     pub server: ServerConfig,
     pub docker: Docker,
@@ -57,7 +57,7 @@ pub struct Config {
 }
 
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)] 
+#[serde(deny_unknown_fields)]
 pub struct Docker {
     pub tmp_folder: String,
     pub command: String,
@@ -65,7 +65,7 @@ pub struct Docker {
 }
 
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)] 
+#[serde(deny_unknown_fields)]
 pub struct GoogleOauth {
     pub client_id: String,
     pub client_secret: String,
@@ -73,14 +73,14 @@ pub struct GoogleOauth {
 }
 
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)] 
+#[serde(deny_unknown_fields)]
 pub struct GithubOauth {
     pub app_id: String,
     pub app_secret: String,
 }
 
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)] 
+#[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct LanguageConfig {
     pub name: String,

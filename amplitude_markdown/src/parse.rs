@@ -37,7 +37,7 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseState> {
 
     let index_path = config.parse.clone_path.clone() + "/index.toml";
     let index =
-        fs::read_to_string(&index_path).with_context(|| format!("While reading {}", index_path))?;
+        fs::read_to_string(&index_path).with_context(|| format!("While reading {index_path}"))?;
     state.courses = toml::from_str(&index)?;
 
     dbg!(&state);

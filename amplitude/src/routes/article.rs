@@ -22,15 +22,16 @@ struct ArticleReq {
 pub fn attach(server: &mut Server<State>) {
     // Returns the html for an article
     server.handled_stateful_route(Method::POST, "/api/article", |state, req| {
-        let req: ArticleReq = json(&req)?;
+        let req: ArticleReq = json(req)?;
 
-        let body = state
-            .parse_state
-            .read_article(&req.article)
-            .with_context(Status::NotFound, || {
-                trace!("/api/article: Article {} not found", req.article);
-                "Article not found"
-            })?;
+        let body =
+            state
+                .parse_state
+                .read_article(&req.article)
+                .with_context(Status::NotFound, || {
+                    trace!("/api/article: Article {} not found", req.article);
+                    "Article not found"
+                })?;
 
         let config = state
             .parse_state

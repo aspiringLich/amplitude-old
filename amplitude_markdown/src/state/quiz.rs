@@ -1,7 +1,7 @@
 use super::*;
 
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
-#[serde(deny_unknown_fields)] 
+#[serde(deny_unknown_fields)]
 pub struct Answer {
     pub text: String,
     #[serde(default)]
@@ -11,14 +11,14 @@ pub struct Answer {
 }
 
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
-#[serde(deny_unknown_fields)] 
+#[serde(deny_unknown_fields)]
 pub struct Question {
     pub question: String,
     pub answers: Vec<Answer>,
 }
 
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
-#[serde(deny_unknown_fields)] 
+#[serde(deny_unknown_fields)]
 pub struct Quiz {
     pub questions: Vec<Question>,
 }

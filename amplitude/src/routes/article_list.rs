@@ -8,7 +8,7 @@ struct CourseReq {
 /// Returns the list of articles in a course
 pub fn attach(server: &mut Server<State>) {
     server.handled_stateful_route(Method::POST, "/api/article-list", |state, req| {
-        let req: CourseReq = json(&req)?;
+        let req: CourseReq = json(req)?;
         let state = &state.parse_state;
 
         let course = state
