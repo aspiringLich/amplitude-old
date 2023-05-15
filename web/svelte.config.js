@@ -31,7 +31,9 @@ const config = {
 				}
 			}
 		}
-	}), sveltePreprocess()],
+	}), sveltePreprocess({
+		includePaths: ["src/styles"],
+	})],
 	experimental: {
 		useVitePreprocess: true,
 	},
