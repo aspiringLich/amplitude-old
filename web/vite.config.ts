@@ -15,6 +15,8 @@ export default defineConfig({
         alias: {
             "@src": path.resolve("./src"),
             "@styles": path.resolve("./src/styles"),
+            "@static": path.resolve("./"),
+            "@assets": path.resolve("./assets"),
         },
     },
 });

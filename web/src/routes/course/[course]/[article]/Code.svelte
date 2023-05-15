@@ -40,7 +40,7 @@
     </div>
 </div>
 
-<style lang="scss">
+<style lang="scss">    
     .copy {
         position: absolute;
         bottom: 5px;

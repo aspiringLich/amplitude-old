@@ -1,7 +1,5 @@
 import type { EntryGenerator, RouteParams } from "./$types";
 import { fetchApi } from "@src/lib/utils";
-import { renderComponent } from "./article";
-import { JSDOM } from "jsdom";
 
 class ArticleResponse {
     body: string;
@@ -14,12 +12,12 @@ class ArticleResponse {
 export const load = async ({ params, fetch }): Promise<ArticleResponse> => {
     let response: ArticleResponse = await fetchApi("/api/article", {
         method: "POST",
-        body: params,
+        body: {
+            course: params.course,
+            article: params.article.replaceAll("-", "/"),
+        },
         fetch,
-    });
-
-    let doc = new JSDOM(response.body).window.document as Document;
-    
+    });    
     // renderComponent(doc.body, "pre", (await import(`./Code.svelte`)).default);
     // renderComponent(doc.body, "admonition", (await import(`./Admonition.svelte`)).default);
 

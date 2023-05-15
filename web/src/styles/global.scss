@@ -1,22 +1,23 @@
+@use "variables";
+
 @font-face {
     font-family: "Noto Sans";
-    src: "assets/fonts/NotoSans-Regular.ttf";
+    src: url("@assets/fonts/NotoSans-Regular.ttf");
 }
 
 @font-face {
     font-family: "Fira Code";
-    src: "assets/fonts/FiraCode-Regular.ttf";
+    src: url("@assets/fonts/FiraCode-Regular.ttf");
 }
 
 @font-face {
     font-family: "Jet Brains Mono";
-    src: "assets/fonts/JetBrainsMonoNL-Regular.ttf";
+    src: url("@assets/fonts/JetBrainsMonoNL-Regular.ttf");
 }
 
 html {
     font-family: "Noto Sans";
     background-color: #fdfdfd;
-    scroll-behavior: smooth;
 }
 
 p {
@@ -45,4 +46,15 @@ code:not(.nglobal) {
     background-color: rgba(0, 0, 0, 0.1);
     padding: 0.2em 0.4em;
     border-radius: 0.3em;
+}
+
+blockquote {
+    margin: 0;
+    padding: 0em 1.5em;
+
+    box-sizing: border-box;
+    border-radius: 0 0 variables.$border-radius variables.$border-radius;
+    width: 100%;
+    overflow: hidden;
+    background-color: #0000000a;
 }

@@ -14,20 +14,18 @@
     let capitalized = type[0].toUpperCase() + type.slice(1);
 
     let body_element: HTMLElement;
-    let l_padding = "1em";
     onMount(() => {
         if (body_element.children.length == 1) {
             let child = body_element?.firstElementChild;
-            if (child?.id == "code") l_padding = "0";
         }
     });
-        
+
     let col = "";
     // $: col = types[type].color;
     // console.log("e");
 </script>
 
-<div class="admonition" style:--l-padding={l_padding}>
+<div class="admonition">
     <div id="title" style:background-color="var(--color-{col}-l1">
         {capitalized}
         <!-- <Icon
@@ -38,13 +36,13 @@
             {capitalized}
         </Icon> -->
     </div>
-    <div id="body" class="n-top-border-radius" bind:this={body_element}>
+    <blockquote class="body" bind:this={body_element}>
         <slot />
-    </div>
+    </blockquote>
 </div>
 
 <style lang="scss">
-    $border-radius: 0.3em;
+    @use "@styles/variables";
 
     .admonition {
         // border: 1px solid;
@@ -56,25 +54,10 @@
         align-items: flex-start;
         overflow: hidden;
 
-        #body {
-            padding-left: var(--l-padding);
-            padding-top: 0.5em;
-            padding-bottom: 0.5em;
-            padding-right: 1.5em;
-            box-sizing: border-box;
-            :global(p) {
-                margin: 0.6rem 0;
-            }
-            border-radius: 0 0 $border-radius $border-radius;
-            width: 100%;
-            overflow: hidden;
-            background-color: #00000007;
-        }
-
         #title {
             height: 2.5em;
             width: 100%;
-            border-radius: $border-radius $border-radius 0 0;
+            border-radius: variables.$border-radius variables.$border-radius 0 0;
             padding: 0.5em;
             box-sizing: border-box;
         }
