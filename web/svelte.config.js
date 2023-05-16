@@ -34,7 +34,6 @@ const config = {
 			}
 		}), 
 		sveltePreprocess({
-			includePaths: ["src/styles"],
 			scss: {
 				importer,
 			}

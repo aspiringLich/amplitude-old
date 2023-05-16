@@ -4,17 +4,20 @@ $colors: (
         "red": 0,
     ),
     (
-        "yellow": 47,
-        "sat": 1.2,
+        "yellow": 45,
+        "sat": 1.1,
+        "val": 0.93
     ),
     (
-        "green": 120,
+        "green": 90,
+        "val": 0.95
     ),
     (
         "blue": 189,
     ),
     (
         "purple": 264,
+        "val": 1.02
     );
 
 @function try-get($map, $key, $default) {
@@ -41,7 +44,7 @@ $colors: (
         $sat: try-get($val, "sat", 1);
         $val: try-get($val, "val", 1);
 
-        --#{$name}-light: hsl(#{$hue}, #{$sat * 90%}, #{$val * 87%});
-        --#{$name}-medium: hsl(#{$hue}, #{$sat * 90%}, #{$val * 77%});
+        --#{$name}-light: hsl(#{$hue}, #{$sat * 90%}, #{$val * 93%});
+        --#{$name}-medium: hsl(#{$hue}, #{$sat * 90%}, #{$val * 57%});
     }
 }
