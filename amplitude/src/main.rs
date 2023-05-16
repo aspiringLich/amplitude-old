@@ -35,11 +35,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    if !PathBuf::from("web/dist").exists() {
-        warn!("web/dist not built!");
-        warn!("^ please go into web/ and run `npm run build`");
-    }
-
     let state = State::new()?;
     let mut server =
         Server::<State>::new(&state.config.server.host, state.config.server.port).state(state);

@@ -1,0 +1,47 @@
+@use "sass:map";
+
+$colors: (
+        "red": 0,
+    ),
+    (
+        "yellow": 47,
+        "sat": 1.2,
+    ),
+    (
+        "green": 120,
+    ),
+    (
+        "blue": 189,
+    ),
+    (
+        "purple": 264,
+    );
+
+@function try-get($map, $key, $default) {
+    $val: map.get($map, $key);
+    @if $val == null {
+        $val: $default;
+    }
+    @return $val;
+}
+
+@function key($map, $index) {
+    @return nth(nth($map, $index), 1);
+}
+
+@function val($map, $index) {
+    @return nth(nth($map, $index), 2);
+}
+
+:root {
+    @each $val in $colors {
+        $name: key($val, 1);
+        $hue: val($val, 1);
+
+        $sat: try-get($val, "sat", 1);
+        $val: try-get($val, "val", 1);
+
+        --#{$name}-light: hsl(#{$hue}, #{$sat * 90%}, #{$val * 87%});
+        --#{$name}-medium: hsl(#{$hue}, #{$sat * 90%}, #{$val * 77%});
+    }
+}

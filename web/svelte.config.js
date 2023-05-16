@@ -21,22 +21,28 @@ function importer(url) {
 const config = {
 	// Consult https://kit.svelte.dev/docs/integrations#preprocessors
 	// for more information about preprocessors
-	preprocess: [vitePreprocess({
-		style: {
-			css: {
-				preprocessorOptions: {
-					scss: {
-						importer,
+	preprocess: [
+		vitePreprocess({
+			style: {
+				css: {
+					preprocessorOptions: {
+						scss: {
+							importer,
+						}
 					}
 				}
 			}
-		}
-	}), sveltePreprocess({
-		includePaths: ["src/styles"],
-	})],
-	experimental: {
-		useVitePreprocess: true,
-	},
+		}), 
+		sveltePreprocess({
+			includePaths: ["src/styles"],
+			scss: {
+				importer,
+			}
+		})
+	],
+	// experimental: {
+	// 	useVitePreprocess: true,
+	// },
 
 	kit: {
 		// adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
