@@ -1,7 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { renderComponent } from "./article.js";
-
+    
+    import Quiz from "./Quiz.svelte";
     import Code from "./Code.svelte";
     import Admonition from "./Admonition.svelte";
 
@@ -14,6 +15,7 @@
     onMount(() => {
         renderComponent(body, "pre", Code);
         renderComponent(body, "admonition", Admonition);
+        renderComponent(body, "quiz", Quiz)
 
         // turn all h2s into links to themselves
         body.childNodes.forEach((element: HTMLElement) => {
@@ -30,7 +32,7 @@
         if (hash) {
             let element = document.getElementById(hash.slice(1));
             if (element) {
-                window.scrollTo(0, element.offsetTop + 20)
+                window.scrollTo(0, element.offsetTop + 20);
             }
         }
 

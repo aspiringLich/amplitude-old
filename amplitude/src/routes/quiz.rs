@@ -14,8 +14,10 @@ pub fn attach(server: &mut Server<State>) {
 
         let quiz = state
             .parse_state
-            .get_quiz(req.article, req.id)
-            .context(Status::NotFound, "Quiz not found!")?;
+            .get_quiz(&req.article, &req.id)
+            .with_context(Status::NotFound, || {
+                format!("Quiz not found! ({}/{})", &req.article, &req.id)
+            })?;
 
         Ok(Response::new()
             .text(serde_json::to_string(&quiz)?)

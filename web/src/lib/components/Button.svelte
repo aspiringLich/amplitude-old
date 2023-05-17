@@ -1,5 +1,5 @@
 <script lang="ts">
-    export let color: string;
+    export let color: string = "green";
     export let onclick = () => {};
     export let enabled = true;
     export let grayout = true;
@@ -7,7 +7,6 @@
     // 1 - 4px
     // 2 - 0px
     export let padding = 0;
-    export let stretch = false;
 
     let padding_style = {
         0: "8px 16px",
@@ -19,47 +18,51 @@
 </script>
 
 <div
-    style:--click="var(--color-{col}-l0)"
-    style:--hover="var(--color-{col}-l2)"
-    style:--background="var(--color-{col}-l1)"
-    style:--dark="var(--color-{col}-d1)"
+    class="button"
+    style:--click="var(--{color}-light_)"
+    style:--hover="var(--{color}-light-)"
+    style:--background="var(--{color}-light)"
+    style:color="var(--{color}-dark)"
     style:padding={padding_style}
     class:enabled
-    class:stretch
     on:click={() => enabled && onclick()}
     on:keydown={(event) => event.key == "Enter" && onclick}
 >
-    <slot />
+    <div class="flex">
+        <slot />
+    </div>
 </div>
 
 <style lang="scss">
-    @use "../styles/utils" as *;
-
-    div {
+    .flex {
+        display: flex;
+        gap: var(--gap);
+    }
+    
+    .button {
         position: inherit;
         display: inline-block;
         line-height: 100%;
 
-        &.stretch {
-            box-sizing: border-box;
-            width: 100%;
-            height: 100%;
-        }
-
         text-decoration: none;
         border-radius: 4px;
-        border: 1.5px solid var(--dark);
-        color: var(--dark);
         user-select: none;
-        // transition: 0.15s;
-        background: gradient(var(--background), 40%);
+    }
 
-        &:hover.enabled {
-            background: gradient(var(--hover), 40%);
+    .button.enabled {
+        background: var(--background);
+        color: var(--dark);
+        &:hover {
+            background: var(--hover);
         }
 
-        &:active.enabled {
-            background: gradient(var(--click), 40%);
+        &:active {
+            background: var(--click);
         }
+    }
+
+    .button:not(.enabled) {
+        background: var(--gray-light);
+        color: var(--gray-dark);
     }
 </style>

@@ -4,8 +4,24 @@ use serde::de::DeserializeOwned;
 
 use super::*;
 
+#[derive(Deserialize)]
+struct RawArticleConfig {
+    pub id: String,
+    pub name: String,
+}
+
+impl From<RawArticleConfig> for ArticleConfig {
+    fn from(raw: RawArticleConfig) -> Self {
+        Self {
+            id: raw.id.replace("/", "-"),
+            name: raw.name,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 #[serde(deny_unknown_fields)]
+#[serde(from = "RawArticleConfig")]
 pub struct ArticleConfig {
     pub id: String,
     pub name: String,

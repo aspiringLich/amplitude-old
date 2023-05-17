@@ -6,8 +6,9 @@ import path from 'path';
 function importer(url) {
 	for (const [alias, aliasPath] in
 		[
-			["$lib", "./src/lib"],
-			["@src", "./src"],
+			["$lib", path.resolve("./src/lib")],
+			["@src", path.resolve("./src")],
+			["@styles", path.resolve("./src/styles")],
 		]) {
 		if (url.startsWith(alias)) {
 			return {

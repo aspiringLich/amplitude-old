@@ -36,7 +36,7 @@
     <div
         id="title"
         style:background-color="var(--{item.color}-light)"
-        style:color="var(--{item.color}-medium)"
+        style:color="var(--{item.color}-dark)"
     >
         <svelte:component this={item.icon} size={18} />
         {capitalized}
@@ -58,11 +58,11 @@
         #title {
             height: 2.5em;
             width: 100%;
-            border-radius: 0.3em 0.3em 0 0;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
             padding: 0.5em;
             box-sizing: border-box;
             display: flex;
-            gap: 4px;
+            gap: var(--gap);
             align-items: center;
         }
     }

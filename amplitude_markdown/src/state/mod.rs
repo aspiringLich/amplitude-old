@@ -25,8 +25,8 @@ pub struct ParseState {
 
 impl ParseState {
     /// Get a quiz config by its id
-    pub fn get_quiz(&self, article_id: String, quiz_id: String) -> Option<&quiz::Quiz> {
-        self.quizzes.get(&(article_id, quiz_id))
+    pub fn get_quiz(&self, article_id: &str, quiz_id: &str) -> Option<&quiz::Quiz> {
+        self.quizzes.get(&(article_id.to_string(), quiz_id.to_string()))
     }
 
     /// Insert a quiz config into the state
@@ -55,7 +55,7 @@ impl ParseState {
     /// Read an article given an id
     pub fn read_article(&self, article_id: &str) -> anyhow::Result<String> {
         for c in article_id.as_bytes() {
-            if c.is_ascii_alphanumeric() || b"/_".contains(c) {
+            if c.is_ascii_alphanumeric() || b"-_".contains(c) {
                 continue;
             }
             anyhow::bail!("Invalid character in path: {}", *c as char);

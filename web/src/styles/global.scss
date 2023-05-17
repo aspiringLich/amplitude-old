@@ -17,7 +17,7 @@
 
 html {
     font-family: "Noto Sans";
-    background-color: #fdfdfd;
+    background-color: var(--bg);
 }
 
 p {
@@ -43,7 +43,7 @@ code:not(.nglobal) {
 }
 
 :not(pre) > code:not(.nglobal) {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: var(--fg-transparent);
     padding: 0.2em 0.4em;
     border-radius: 0.3em;
 }
@@ -53,8 +53,8 @@ blockquote {
     padding: 0em 1.5em;
 
     box-sizing: border-box;
-    border-radius: 0 0 variables.$border-radius variables.$border-radius;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
     width: 100%;
     overflow: hidden;
-    background-color: #0000000a;
+    background-color: var(--fg-transparent);
 }

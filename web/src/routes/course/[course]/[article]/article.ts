@@ -1,5 +1,6 @@
 import type { ComponentType } from "svelte";
 import {
+    compute_rest_props,
     destroy_component,
     detach,
     insert,
@@ -85,4 +86,8 @@ export function renderComponent(
 
         target.remove();
     });
+}
+
+export function getArticle() {
+    return window.location.pathname.split("/")[3];
 }
