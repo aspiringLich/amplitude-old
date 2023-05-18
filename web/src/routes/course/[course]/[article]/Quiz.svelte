@@ -41,14 +41,20 @@
     {:else}
         {@const question = questions[n].question}
         {@const answers = questions[n].answers}
-        
-        {@html question}
+
+        <div class="question">
+            {@html question}
+        </div>
     {/if}
 </div>
 
 <svelte:window on:scroll={() => observer.observe(container)} />
 
 <style lang="scss">
+    .question {
+        width: 100%;
+    }
+    
     .container {
         display: flex;
         flex-direction: column;

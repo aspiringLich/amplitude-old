@@ -1,10 +1,6 @@
 <script lang="ts">
+    import { renderArticle } from "./article";
     import { onMount } from "svelte";
-    import { renderComponent } from "./article.js";
-    
-    import Quiz from "./Quiz.svelte";
-    import Code from "./Code.svelte";
-    import Admonition from "./Admonition.svelte";
 
     export let data;
 
@@ -13,26 +9,13 @@
     let padding = 1000;
 
     onMount(() => {
-        renderComponent(body, "pre", Code);
-        renderComponent(body, "admonition", Admonition);
-        renderComponent(body, "quiz", Quiz)
+        renderArticle(body);
 
-        // turn all h2s into links to themselves
-        body.childNodes.forEach((element: HTMLElement) => {
-            if (element.localName != "h2") return;
-
-            let id = element.textContent
-                .toLowerCase()
-                .replace(/[^a-z0-9]/g, "-");
-            element.id = id;
-            element.innerHTML = `<a href="#${id}">${element.innerHTML}</a>`;
-        });
-        // scroll to the correct position
         let hash = window.location.hash;
         if (hash) {
-            let element = document.getElementById(hash.slice(1));
+            let element: HTMLElement = body.querySelector("#" + hash.slice(1));
             if (element) {
-                window.scrollTo(0, element.offsetTop + 20);
+                body.scrollTo(0, element.offsetTop + 20);
             }
         }
 
@@ -61,6 +44,7 @@
         {@html data.body}
     </div>
 </div>
+
 <div style:height="{padding}vh" />
 
 <!-- <div style:height="50vh" /> -->

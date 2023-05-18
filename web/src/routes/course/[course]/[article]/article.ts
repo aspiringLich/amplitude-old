@@ -9,6 +9,9 @@ import {
     noop,
     SvelteComponent,
 } from "svelte/internal";
+import Quiz from "./Quiz.svelte";
+import Code from "./Code.svelte";
+import Admonition from "./Admonition.svelte";
 // import svelte from "svelte/compiler"
 
 // https://github.com/sveltejs/svelte/issues/2588
@@ -90,4 +93,19 @@ export function renderComponent(
 
 export function getArticle() {
     return window.location.pathname.split("/")[3];
+}
+
+export function renderArticle(body: HTMLElement) {
+    renderComponent(body, "pre", Code);
+    renderComponent(body, "admonition", Admonition);
+    renderComponent(body, "quiz", Quiz);
+
+    // turn all h2s into links to themselves
+    body.childNodes.forEach((element: HTMLElement) => {
+        if (element.localName != "h2") return;
+
+        let id = element.textContent.toLowerCase().replace(/[^a-z0-9]/g, "-");
+        element.id = id;
+        element.innerHTML = `<a href="#${id}">${element.innerHTML}</a>`;
+    });
 }
