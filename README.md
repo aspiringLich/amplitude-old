@@ -18,4 +18,4 @@ cd web
 npm i
 npm run dev # the rust server AND the sveltekit server must be both running
 ```
-[amplitude_articles]: https://github.com/rcsc/amplitude_articles
+[amplitude_articles]: https://github.com/rcsc/amplitude_articles.git
