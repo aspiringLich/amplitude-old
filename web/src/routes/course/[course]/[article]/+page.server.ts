@@ -1,14 +1,7 @@
 import type { EntryGenerator, RouteParams } from "./$types";
 import { fetchApi } from "@src/lib/utils";
+import type { ArticleResponse } from "./article";
 import { JSDOM } from "jsdom";
-
-class ArticleResponse {
-    body: string;
-    config: {
-        title: string;
-        id: string;
-    };
-}
 
 export const load = async ({ params, fetch }): Promise<ArticleResponse> => {
     let response: ArticleResponse = await fetchApi("/api/article", {

@@ -109,3 +109,12 @@ export function renderArticle(body: HTMLElement) {
         element.innerHTML = `<a href="#${id}">${element.innerHTML}</a>`;
     });
 }
+
+// The response from the server containing information about the article
+export class ArticleResponse {
+    body: string;
+    config: {
+        title: string;
+        id: string;
+    };
+}
