@@ -2,7 +2,7 @@
 
 :root {
     --bg: #fdfdfd;
-    --fg-transparent: rgba(0, 0, 0, 0.04);
+    --fg: rgba(0, 0, 0, 0.04);
 
     --button-disabled: #737373;
 
@@ -59,8 +59,8 @@ $colors: (
 
         --#{$name}-light-: hsl(#{$hue}, #{$sat * 90%}, #{$val * 99%});
         --#{$name}-light: hsl(#{$hue}, #{$sat * 90%}, #{$val * 96%});
-        --#{$name}-light_: hsl(#{$hue}, #{$sat * 90%}, #{$val * 88%});
+        --#{$name}-light_: hsl(#{$hue}, #{$sat * 90%}, #{$val * 92%});
         --#{$name}-medium: hsl(#{$hue}, #{$sat * 90%}, #{$val * 76%});
-        --#{$name}-dark: hsl(#{$hue}, #{$sat * 90%}, #{$val * 60%});
+        --#{$name}-dark: hsl(#{$hue}, #{$sat * 90%}, #{$val * 50%});
     }
 }

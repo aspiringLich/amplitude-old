@@ -43,7 +43,7 @@ code:not(.nglobal) {
 }
 
 :not(pre) > code:not(.nglobal) {
-    background-color: var(--fg-transparent);
+    background-color: var(--fg);
     padding: 0.2em 0.4em;
     border-radius: 0.3em;
 }
@@ -56,5 +56,5 @@ blockquote {
     border-radius: 0 0 var(--border-radius) var(--border-radius);
     width: 100%;
     overflow: hidden;
-    background-color: var(--fg-transparent);
+    background-color: var(--fg);
 }

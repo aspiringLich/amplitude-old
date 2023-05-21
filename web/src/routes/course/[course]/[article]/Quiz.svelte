@@ -1,7 +1,8 @@
 <script lang="ts">
     import Button from "@src/lib/components/Button.svelte";
     import { fetchApi } from "@src/lib/utils";
-    import { getArticle } from "@src/routes/course/[course]/[article]/article";
+    import { getArticle, renderArticle } from "./article";
+    import { afterUpdate } from "svelte";
 
     export let id: string;
 
@@ -17,13 +18,15 @@
     let questions: {
         question: string;
         answers: {
-            answer: string;
+            text: string;
+            response: string;
             correct: boolean;
         }[];
     }[];
 
     let container: HTMLElement;
     let n = -1;
+
     async function init() {
         fetchApi(`/api/quiz`, {
             method: "POST",
@@ -33,28 +36,58 @@
             n = 0;
         });
     }
+
+    afterUpdate(() => {
+        // only run when n is changed
+        if (prev_n == n) return;
+        prev_n = n;
+
+        renderArticle(container);
+    });
+
+    let prev_n = n;
 </script>
 
-<div class="container" bind:this={container}>
+<blockquote class="container" bind:this={container}>
     {#if n == -1}
         <h1>Loading...</h1>
     {:else}
         {@const question = questions[n].question}
         {@const answers = questions[n].answers}
 
+        <div class="buttons">
+            <Button>Previous</Button>
+            <Button>Submit</Button>
+        </div>
         <div class="question">
             {@html question}
+            {#each answers as answer, i}
+                <blockquote>
+                    
+                </blockquote>
+            {/each}
         </div>
     {/if}
-</div>
+</blockquote>
 
 <svelte:window on:scroll={() => observer.observe(container)} />
 
 <style lang="scss">
+    blockquote.selected {
+        background-color: var(--green-l);
+    }
+
+    .buttons {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+        width: 100%;
+    }
+
     .question {
         width: 100%;
     }
-    
+
     .container {
         display: flex;
         flex-direction: column;

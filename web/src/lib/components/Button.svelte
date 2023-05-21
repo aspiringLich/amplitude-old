@@ -20,7 +20,6 @@
 <div
     class="button"
     style:--click="var(--{color}-light_)"
-    style:--hover="var(--{color}-light-)"
     style:--background="var(--{color}-light)"
     style:color="var(--{color}-dark)"
     style:padding={padding_style}
@@ -52,10 +51,6 @@
     .button.enabled {
         background: var(--background);
         color: var(--dark);
-        &:hover {
-            background: var(--hover);
-        }
-
         &:active {
             background: var(--click);
         }
