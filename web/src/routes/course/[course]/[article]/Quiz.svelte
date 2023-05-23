@@ -1,8 +1,9 @@
 <script lang="ts">
-    import Button from "@src/lib/components/Button.svelte";
-    import { fetchApi } from "@src/lib/utils";
+    import Button from "$src/lib/components/Button.svelte";
+    import { fetchApi } from "$src/lib/utils";
     import { getArticle, renderArticle } from "./article";
     import { afterUpdate } from "svelte";
+    import { ChevronLeft, ChevronRight } from "radix-icons-svelte";
 
     export let id: string;
 
@@ -56,15 +57,19 @@
         {@const answers = questions[n].answers}
 
         <div class="buttons">
-            <Button>Previous</Button>
+            <Button><ChevronLeft /></Button>
             <Button>Submit</Button>
+            <Button><ChevronRight /></Button>
         </div>
         <div class="question">
             {@html question}
             {#each answers as answer, i}
-                <blockquote>
-                    
-                </blockquote>
+                <label for={i.toString()}>
+                    <input type="radio" id={i.toString()} name={id} />
+                    <blockquote>
+                        {@html answer.text}
+                    </blockquote>
+                </label>
             {/each}
         </div>
     {/if}
@@ -73,8 +78,13 @@
 <svelte:window on:scroll={() => observer.observe(container)} />
 
 <style lang="scss">
-    blockquote.selected {
-        background-color: var(--green-l);
+    input {
+        appearance: none;
+        height: 0;
+    }
+
+    label {
+        display: flex;
     }
 
     .buttons {
@@ -82,6 +92,11 @@
         justify-content: space-between;
         padding: 8px;
         width: 100%;
+
+        :global(path) {
+            stroke: var(--button-text);
+            stroke-width: 0.06em;
+        }
     }
 
     .question {

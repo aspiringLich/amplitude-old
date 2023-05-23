@@ -1,7 +1,7 @@
 <script lang="ts">
     import { ArticleResponse, renderArticle } from "./article";
     import { onMount } from "svelte";
-    
+
     export let data: ArticleResponse;
 
     let body: HTMLElement;

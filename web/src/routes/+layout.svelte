@@ -4,7 +4,7 @@
 <slot />
 
 <style lang="scss" global>
-    @import "@styles/global";
-    @import "@styles/styles";
-    @import "@styles/variables";
+    @import "$styles/global";
+    @import "$styles/styles";
+    @import "$styles/variables";
 </style>

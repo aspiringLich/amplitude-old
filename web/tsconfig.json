@@ -10,10 +10,10 @@
         "sourceMap": true,
         "baseUrl": ".",
         "paths": {
-            "@src": ["./src/"],
-            "@src/*": ["./src/*"],
-            "@styles": ["./src/styles/"],
-            "@styles/*": ["./src/styles/*"],
+            "$src": ["./src/"],
+            "$src/*": ["./src/*"],
+            "$styles": ["./src/styles/"],
+            "$styles/*": ["./src/styles/*"],
             "$lib": ["./src/lib/"],
             "$lib/*": ["./src/lib/*"]
         }

@@ -16,10 +16,10 @@ export default defineConfig({
     ],
     resolve: {
         alias: {
-            "@src": path.resolve("./src"),
-            "@styles": path.resolve("./src/styles"),
-            "@static": path.resolve("./"),
-            "@assets": path.resolve("./assets"),
+            "$src": path.resolve("./src"),
+            "$styles": path.resolve("./src/styles"),
+            "$static": path.resolve("./"),
+            "$assets": path.resolve("./assets"),
         },
     },
 });

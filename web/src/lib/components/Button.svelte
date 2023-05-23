@@ -46,6 +46,12 @@
         text-decoration: none;
         border-radius: 4px;
         user-select: none;
+        
+        font-weight: 700;
+    }
+    
+    .button:hover {
+        cursor: pointer;
     }
 
     .button.enabled {
