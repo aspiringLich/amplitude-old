@@ -35,8 +35,8 @@
 <div class="admonition">
     <div
         id="title"
-        style:background-color="var(--{item.color}-light)"
-        style:color="var(--{item.color}-dark)"
+        style:background-color="var(--{item.color}-800)"
+        style:color="var(--{item.color})"
     >
         <svelte:component this={item.icon} size={18} />
         {capitalized}

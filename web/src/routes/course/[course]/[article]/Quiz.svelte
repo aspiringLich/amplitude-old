@@ -100,12 +100,6 @@
         </div>
         <div class="question">
             {@html questions[n].question}
-            
-            {#if answered}
-                <blockquote class="response">
-                    {@html questions[n].answers[answers[n].num].response}
-                </blockquote>
-            {/if}
 
             {#each questions[n].answers as answer, i}
                 <blockquote
@@ -128,6 +122,12 @@
                     </label>
                 </blockquote>
             {/each}
+
+            {#if answered}
+                <blockquote class="response">
+                    {@html questions[n].answers[answers[n].num].response}
+                </blockquote>
+            {/if}
         </div>
     {/if}
 </blockquote>
@@ -143,10 +143,6 @@
     @mixin input($unchecked, $checked) {
         input {
             @include border($unchecked);
-        }
-
-        .response {
-            background-color: $unchecked;
         }
 
         &.selected input {
@@ -170,20 +166,21 @@
         transition: background-color 0.2s linear;
 
         &.selected {
-            background-color: var(--blue-light_);
-            input:checked {
-                @include border(--blue-medium);
-            }
+            background-color: var(--blue-700);
+        }
+
+        input:checked {
+            @include border(--blue-100);
         }
 
         &.incorrect {
-            background-color: var(--red-light__);
-            @include input(--red-light__, --red-medium);
+            background-color: var(--red-700);
+            @include input(--red-700, --red-100);
         }
 
         &.correct {
-            background-color: var(--green-light__);
-            @include input(--green-light__, --green-medium);
+            background-color: var(--green-700);
+            @include input(--green-700, --green-100);
         }
     }
 
@@ -199,7 +196,7 @@
         margin-left: 0;
         position: relative;
 
-        border: 2px solid var(--gray-medium);
+        border: 4px solid var(--gray-100);
     }
 
     label {

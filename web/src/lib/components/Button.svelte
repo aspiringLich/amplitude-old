@@ -5,13 +5,13 @@
     export let onclick = () => {};
 
     const hpad = 1.25;
-    const vpad = 0.75;
+    const vpad = 0.75;   
 </script>
 
 <button
-    style:--click="var(--{color}-light_)"
-    style:--background="var(--{color}-light)"
-    style:--color="var(--{color}-dark)"
+    style:--local-background="var(--{color}-800)"
+    style:--local-click="var(--{color}-900)"
+    style:--local-color="var(--{color})"
     style:padding={`${padding * vpad}em ${padding * hpad}em`}
     class:enabled
     on:click={onclick}
@@ -52,24 +52,20 @@
 
     button.enabled {
         cursor: pointer;
-        background: var(--background);
-        color: var(--color);
-        &:active {
-            background: var(--click);
-        }
 
+        background: var(--local-background);
+        color: var(--local-color);
+        &:active {
+            background: var(--local-click);
+        }
+    
         :global(path) {
-            stroke: var(--color);
+            stroke: var(--local-color);
         }
     }
 
     button:not(.enabled) {
-        cursor: default;
-        background: var(--gray-light__);
-        color: var(--gray-dark);
-
-        :global(path) {
-            stroke: var(--gray-dark);
-        }
+        background-color: var(--gray-600);
+        color: var(--gray);
     }
 </style>
