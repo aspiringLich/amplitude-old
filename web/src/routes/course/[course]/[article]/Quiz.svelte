@@ -24,6 +24,8 @@
             correct: boolean;
         }[];
     }[];
+    type Correct = true | false | undefined;
+    let correct: Correct[];
 
     let container: HTMLElement;
     let n = -1;
@@ -33,8 +35,9 @@
             method: "POST",
             body: { id, article: getArticle() },
         }).then((res) => {
-            questions = (res as any).questions;
             n = 0;
+            questions = (res as any).questions;
+            correct = Array(questions.length);
         });
     }
 
@@ -46,6 +49,25 @@
         renderArticle(container);
     });
 
+    const gen_deselect = (i: number) => {
+        return () => {
+            if (selected == i) selected = undefined;
+        };
+    };
+    function submit() {
+        console.log("dalkjfkfjak");
+        correct[n] = questions[n].answers[selected].correct;
+        console.log(correct);
+        selected = undefined;
+    }
+    $: console.log(selected);
+    const inc = () => n++;
+    const dec = () => n--;
+
+    let selected: number;
+
+    // $: console.log(selected)
+
     let prev_n = n;
 </script>
 
@@ -55,21 +77,35 @@
     {:else}
         {@const question = questions[n].question}
         {@const answers = questions[n].answers}
+        {@const submitted = correct[n] !== undefined}
 
         <div class="buttons">
-            <Button><ChevronLeft /></Button>
-            <Button>Submit</Button>
-            <Button><ChevronRight /></Button>
+            <Button onclick={dec} enabled={n > 0}>
+                <ChevronLeft />
+            </Button>
+            <Button onclick={submit} enabled={selected !== undefined}>
+                Submit
+            </Button>
+            <Button onclick={inc} enabled={n < questions.length - 1}>
+                <ChevronRight />
+            </Button>
         </div>
         <div class="question">
             {@html question}
             {#each answers as answer, i}
-                <label for={i.toString()}>
-                    <input type="radio" id={i.toString()} name={id} />
-                    <blockquote>
+                <blockquote class="choice" class:selected={i == selected}>
+                    <input
+                        type="radio"
+                        value={i}
+                        id={i.toString()}
+                        name={id}
+                        bind:group={selected}
+                        on:click={gen_deselect(i)}
+                    />
+                    <label for={i.toString()}>
                         {@html answer.text}
-                    </blockquote>
-                </label>
+                    </label>
+                </blockquote>
             {/each}
         </div>
     {/if}
@@ -78,25 +114,54 @@
 <svelte:window on:scroll={() => observer.observe(container)} />
 
 <style lang="scss">
+    $c-padding: 0.5em;
+    $i-size: 1em;
+
+    .choice {
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+
+        width: 100%;
+        margin: 1em 0;
+        padding-left: $c-padding;
+
+        transition: background-color 0.2s linear;
+
+        &.selected {
+            background-color: var(--blue-light_);
+        }
+    }
+
     input {
         appearance: none;
-        height: 0;
+
+        border-radius: 50%;
+        width: $i-size;
+        height: $i-size;
+
+        transition: 0.1s all linear;
+        margin-right: $c-padding;
+        margin-left: 0;
+        position: relative;
+
+        border: 2px solid var(--gray-medium);
+
+        &:checked {
+            border: 0.5em solid var(--blue-medium);
+        }
     }
 
     label {
-        display: flex;
+        flex-grow: 99;
     }
 
     .buttons {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         padding: 8px;
         width: 100%;
-
-        :global(path) {
-            stroke: var(--button-text);
-            stroke-width: 0.06em;
-        }
     }
 
     .question {

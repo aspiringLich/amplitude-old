@@ -63,6 +63,7 @@ $colors: (
         --#{$name}-light-: hsl(#{$hue}, #{$sat * 90%}, #{$val * 99%});
         --#{$name}-light: hsl(#{$hue}, #{$sat * 90%}, #{$val * 96%});
         --#{$name}-light_: hsl(#{$hue}, #{$sat * 90%}, #{$val * 92%});
+        --#{$name}-light__: hsl(#{$hue}, #{$sat * 90%}, #{$val * 88%});
         --#{$name}-medium: hsl(#{$hue}, #{$sat * 90%}, #{$val * 76%});
         --#{$name}-dark: hsl(#{$hue}, #{$sat * 90%}, #{$val * 50%});
     }

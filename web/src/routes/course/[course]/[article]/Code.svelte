@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import hijs from "highlight.js/lib/common";
+    import { Copy } from "radix-icons-svelte";
 
     // import assert from "assert";
 
@@ -34,7 +35,7 @@
         </div>
         {#if copy_button}
             <button class="hljs copy" on:click={copy}>
-                <!-- <Icon icon="content_copy" hover={true}/> -->
+                <Copy />
             </button>
         {/if}
     </div>
@@ -49,6 +50,12 @@
         justify-content: end;
         padding: 0;
         border: none;
+        
+        cursor: pointer;
+        
+        &:active {
+            color: var(--gray-medium);
+        }
     }
 
     .code {
