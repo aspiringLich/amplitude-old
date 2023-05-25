@@ -1,8 +1,8 @@
 <script lang="ts">
-    import Button from "$src/lib/components/Button.svelte";
-    import { fetchApi } from "$src/lib/utils";
+    import Button from "$lib/components/Button.svelte";
+    import { fetchApi } from "$lib/utils";
     import { getArticle, renderArticle } from "./article";
-    import { afterUpdate } from "svelte";
+    import { afterUpdate, onMount } from "svelte";
     import { ChevronLeft, ChevronRight } from "radix-icons-svelte";
 
     export let id: string;
@@ -12,6 +12,7 @@
             if (entry.isIntersecting) {
                 init();
                 observer.disconnect();
+                observer = undefined;
             }
         });
     });
@@ -24,11 +25,17 @@
             correct: boolean;
         }[];
     }[];
-    type Correct = true | false | undefined;
-    let correct: Correct[];
+    let answers: { correct: boolean; num: number }[];
 
     let container: HTMLElement;
     let n = -1;
+    let prev_n = n;
+
+    function try_init() {
+        if (observer) observer.observe(container);
+    }
+
+    onMount(try_init);
 
     async function init() {
         fetchApi(`/api/quiz`, {
@@ -37,7 +44,8 @@
         }).then((res) => {
             n = 0;
             questions = (res as any).questions;
-            correct = Array(questions.length);
+            questions.push(questions[0]);
+            answers = Array(questions.length);
         });
     }
 
@@ -54,36 +62,36 @@
             if (selected == i) selected = undefined;
         };
     };
-    function submit() {
-        console.log("dalkjfkfjak");
-        correct[n] = questions[n].answers[selected].correct;
-        console.log(correct);
-        selected = undefined;
-    }
-    $: console.log(selected);
-    const inc = () => n++;
-    const dec = () => n--;
 
+    const submit = () => {
+        if (selected === undefined) return;
+        answers[n] = {
+            correct: questions[n].answers[selected].correct,
+            num: selected,
+        };
+    };
+
+    const inc = () => (selected = answers[++n]?.num);
+
+    const dec = () => (selected = answers[--n]?.num);
     let selected: number;
-
-    // $: console.log(selected)
-
-    let prev_n = n;
 </script>
+
+<svelte:window on:scroll={try_init} />
 
 <blockquote class="container" bind:this={container}>
     {#if n == -1}
         <h1>Loading...</h1>
     {:else}
-        {@const question = questions[n].question}
-        {@const answers = questions[n].answers}
-        {@const submitted = correct[n] !== undefined}
-
+        {@const answered = answers[n] !== undefined}
         <div class="buttons">
             <Button onclick={dec} enabled={n > 0}>
                 <ChevronLeft />
             </Button>
-            <Button onclick={submit} enabled={selected !== undefined}>
+            <Button
+                onclick={submit}
+                enabled={selected !== undefined && answers[n] === undefined}
+            >
                 Submit
             </Button>
             <Button onclick={inc} enabled={n < questions.length - 1}>
@@ -91,14 +99,27 @@
             </Button>
         </div>
         <div class="question">
-            {@html question}
-            {#each answers as answer, i}
-                <blockquote class="choice" class:selected={i == selected}>
+            {@html questions[n].question}
+            
+            {#if answered}
+                <blockquote class="response">
+                    {@html questions[n].answers[answers[n].num].response}
+                </blockquote>
+            {/if}
+
+            {#each questions[n].answers as answer, i}
+                <blockquote
+                    class="choice"
+                    class:selected={i == selected}
+                    class:correct={answered && answer.correct}
+                    class:incorrect={answered && !answer.correct}
+                >
                     <input
                         type="radio"
                         value={i}
                         id={i.toString()}
                         name={id}
+                        disabled={answered}
                         bind:group={selected}
                         on:click={gen_deselect(i)}
                     />
@@ -111,11 +132,31 @@
     {/if}
 </blockquote>
 
-<svelte:window on:scroll={() => observer.observe(container)} />
-
 <style lang="scss">
     $c-padding: 0.5em;
     $i-size: 1em;
+
+    @mixin border($color) {
+        border: calc($i-size / 2) solid var($color);
+    }
+
+    @mixin input($unchecked, $checked) {
+        input {
+            @include border($unchecked);
+        }
+
+        .response {
+            background-color: $unchecked;
+        }
+
+        &.selected input {
+            @include border($checked);
+        }
+    }
+
+    .response {
+        margin: 1em 0;
+    }
 
     .choice {
         display: flex;
@@ -130,6 +171,19 @@
 
         &.selected {
             background-color: var(--blue-light_);
+            input:checked {
+                @include border(--blue-medium);
+            }
+        }
+
+        &.incorrect {
+            background-color: var(--red-light__);
+            @include input(--red-light__, --red-medium);
+        }
+
+        &.correct {
+            background-color: var(--green-light__);
+            @include input(--green-light__, --green-medium);
         }
     }
 
@@ -146,10 +200,6 @@
         position: relative;
 
         border: 2px solid var(--gray-medium);
-
-        &:checked {
-            border: 0.5em solid var(--blue-medium);
-        }
     }
 
     label {

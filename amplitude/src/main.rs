@@ -1,6 +1,6 @@
 #![feature(try_trait_v2)]
 
-use std::{path::PathBuf, process};
+use std::process;
 
 use afire::{
     trace::{self, Level},
@@ -8,7 +8,7 @@ use afire::{
 };
 use logger::RequestLogger;
 use state::State;
-use tracing::{info, metadata::LevelFilter, warn};
+use tracing::{info, metadata::LevelFilter};
 use tracing_subscriber::{
     filter, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt,
 };

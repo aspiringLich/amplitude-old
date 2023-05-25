@@ -31,7 +31,7 @@
         on:mouseleave={() => (copy_button = false)}
     >
         <div class="container">
-            <pre bind:this={pre_element}><slot /></pre>
+            <pre class="component" bind:this={pre_element}><slot /></pre>
         </div>
         {#if copy_button}
             <button class="hljs copy" on:click={copy}>

@@ -38,18 +38,10 @@ pub(super) fn inject_quiz<'a>(
                 question.question = parse_md(config, &question.question, refs, state)?.0;
                 for answer in question.answers.iter_mut() {
                     let (s, _) = parse_md(config, &answer.text, refs, state)?;
-                    answer.text = s
-                        .strip_prefix("<p>")
-                        .and_then(|s| s.strip_suffix("</p>\n"))
-                        .unwrap_or(&s)
-                        .to_string();
+                    answer.text = s.to_string();
 
                     let (s, _) = parse_md(config, &answer.response, refs, state)?;
-                    answer.response = s
-                        .strip_prefix("<p>")
-                        .and_then(|s| s.strip_suffix("</p>\n"))
-                        .unwrap_or(&s)
-                        .to_string();
+                    answer.response = s.to_string();
                 }
             }
             anyhow::ensure!(

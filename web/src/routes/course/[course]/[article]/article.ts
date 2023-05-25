@@ -96,7 +96,7 @@ export function getArticle() {
 }
 
 export function renderArticle(body: HTMLElement) {
-    renderComponent(body, "pre", Code);
+    renderComponent(body, "pre:not(.component)", Code);
     renderComponent(body, "admonition", Admonition);
     renderComponent(body, "quiz", Quiz);
 

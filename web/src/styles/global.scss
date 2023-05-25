@@ -53,7 +53,7 @@ blockquote {
     padding: 0em 1.5em;
 
     box-sizing: border-box;
-    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    border-radius: var(--border-radius);
     width: 100%;
     overflow: hidden;
     background-color: var(--fg);

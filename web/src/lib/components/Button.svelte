@@ -4,8 +4,8 @@
     export let padding = 1.0;
     export let onclick = () => {};
 
-    const hpad = 1.25,
-        vpad = 0.75;
+    const hpad = 1.25;
+    const vpad = 0.75;
 </script>
 
 <button
