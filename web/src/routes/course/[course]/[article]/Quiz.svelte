@@ -4,6 +4,7 @@
     import { getArticle, renderArticle } from "./article";
     import { afterUpdate, onMount } from "svelte";
     import { ChevronLeft, ChevronRight } from "radix-icons-svelte";
+    import Admonition from "./Admonition.svelte";
 
     export let id: string;
 
@@ -42,10 +43,9 @@
             method: "POST",
             body: { id, article: getArticle() },
         }).then((res) => {
-            n = 0;
             questions = (res as any).questions;
-            questions.push(questions[0]);
             answers = Array(questions.length);
+            n = 0;
         });
     }
 
@@ -72,8 +72,8 @@
     };
 
     const inc = () => (selected = answers[++n]?.num);
-
     const dec = () => (selected = answers[--n]?.num);
+
     let selected: number;
 </script>
 
@@ -124,9 +124,13 @@
             {/each}
 
             {#if answered}
-                <blockquote class="response">
-                    {@html questions[n].answers[answers[n].num].response}
-                </blockquote>
+                {@const answer = questions[n].answers[answers[n].num]}
+                <Admonition
+                    type={answer.correct ? "correct" : "incorrect"}
+                    darken={1}
+                >
+                    {@html answer.response}
+                </Admonition>
             {/if}
         </div>
     {/if}
@@ -148,10 +152,6 @@
         &.selected input {
             @include border($checked);
         }
-    }
-
-    .response {
-        margin: 1em 0;
     }
 
     .choice {
@@ -196,7 +196,7 @@
         margin-left: 0;
         position: relative;
 
-        border: 4px solid var(--gray-100);
+        border: 2px solid var(--gray-100);
     }
 
     label {
@@ -207,7 +207,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 8px;
+        margin-bottom: 8px;
         width: 100%;
     }
 

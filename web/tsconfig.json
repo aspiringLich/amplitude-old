@@ -11,12 +11,12 @@
         "sourceMap": true,
         "baseUrl": ".",
         "paths": {
+            "$lib": ["./src/lib/"],
+            "$lib/*": ["./src/lib/*"],
             "$src": ["./src/"],
             "$src/*": ["./src/*"],
             "$styles": ["./src/styles/"],
             "$styles/*": ["./src/styles/*"],
-            "$lib": ["./src/lib/"],
-            "$lib/*": ["./src/lib/*"]
         }
     },
     "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte", "src/**/*.scss"]

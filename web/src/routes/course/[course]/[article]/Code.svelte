@@ -54,7 +54,7 @@
         cursor: pointer;
         
         &:active {
-            color: var(--gray-medium);
+            color: var(--gray-100);
         }
     }
 

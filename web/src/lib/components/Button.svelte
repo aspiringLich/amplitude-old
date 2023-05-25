@@ -44,10 +44,6 @@
         font-weight: 700;
 
         transition: color 0.1s linear, background-color 0.1s linear;
-
-        :global(path) {
-            stroke-width: 0.06em;
-        }
     }
 
     button.enabled {
@@ -62,10 +58,20 @@
         :global(path) {
             stroke: var(--local-color);
         }
+        
+        :global(path) {
+            stroke: var(--local-color);
+            stroke-width: 0.1em;
+        }
     }
 
     button:not(.enabled) {
         background-color: var(--gray-600);
         color: var(--gray);
+        
+        :global(path) {
+            stroke: var(--gray);
+            stroke-width: 0.05em;
+        }
     }
 </style>
