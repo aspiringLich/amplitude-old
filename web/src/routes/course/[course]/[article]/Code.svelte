@@ -69,7 +69,7 @@
     .grid {
         position: relative;
         // overflow: scroll;
-        display: grid;
+        // display: grid;
         width: 100%;
     }
 

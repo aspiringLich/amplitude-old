@@ -5,7 +5,7 @@
     export let onclick = () => {};
 
     const hpad = 1.25;
-    const vpad = 0.75;   
+    const vpad = 0.75;
 </script>
 
 <button
@@ -14,7 +14,9 @@
     style:--local-color="var(--{color})"
     style:padding={`${padding * vpad}em ${padding * hpad}em`}
     class:enabled
-    on:click={onclick}
+    on:click={() => {
+        if (enabled) onclick();
+    }}
     {...$$restProps}
 >
     <div class="flex">
@@ -36,13 +38,13 @@
         position: inherit;
         display: inline-block;
         line-height: 100%;
-
         text-decoration: none;
         border-radius: 4px;
+        height: 100%;
+
         user-select: none;
 
         font-weight: 700;
-
         transition: color 0.1s linear, background-color 0.1s linear;
     }
 
@@ -54,11 +56,11 @@
         &:active {
             background: var(--local-click);
         }
-    
+
         :global(path) {
             stroke: var(--local-color);
         }
-        
+
         :global(path) {
             stroke: var(--local-color);
             stroke-width: 0.1em;
@@ -68,7 +70,7 @@
     button:not(.enabled) {
         background-color: var(--gray-600);
         color: var(--gray);
-        
+
         :global(path) {
             stroke: var(--gray);
             stroke-width: 0.05em;

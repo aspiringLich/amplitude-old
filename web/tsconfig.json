@@ -11,6 +11,8 @@
         "sourceMap": true,
         "baseUrl": ".",
         "paths": {
+            "$cmpt": ["./src/components/"],
+            "$cmpt/*": ["./src/components/*"],
             "$lib": ["./src/lib/"],
             "$lib/*": ["./src/lib/*"],
             "$src": ["./src/"],

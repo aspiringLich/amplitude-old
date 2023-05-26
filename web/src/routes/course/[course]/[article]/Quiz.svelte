@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Button from "$lib/components/Button.svelte";
+    import Button from "$cmpt/Button.svelte";
     import { fetchApi } from "$lib/utils";
     import { getArticle, renderArticle } from "./article";
     import { afterUpdate, onMount } from "svelte";
@@ -207,7 +207,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 8px;
+        margin-top: 1em;
         width: 100%;
     }
 

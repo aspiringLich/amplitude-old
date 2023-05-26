@@ -31,13 +31,9 @@
             opacity: 1 !important;
             transform: translateY(0) !important;
         }
-
-        noscript * {
-            color: red;
-        }
     </style>
-    why you disable javascript :(
 </noscript>
+
 <div class="article" bind:this={article}>
     <div class="container body" bind:this={body}>
         <h1>{@html data.config.title}</h1>
