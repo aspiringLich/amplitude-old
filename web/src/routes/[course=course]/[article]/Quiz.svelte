@@ -1,6 +1,6 @@
 <script lang="ts">
     import Button from "$cmpt/Button.svelte";
-    import { fetchApi } from "$lib/utils";
+    import { fetchApi } from "$lib/fetch";
     import { getArticle, renderArticle } from "./article";
     import { afterUpdate, onMount } from "svelte";
     import { ChevronLeft, ChevronRight } from "radix-icons-svelte";

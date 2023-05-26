@@ -8,8 +8,9 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::course::Course;
+use course::Course;
 
+pub mod course;
 pub mod article;
 pub mod quiz;
 

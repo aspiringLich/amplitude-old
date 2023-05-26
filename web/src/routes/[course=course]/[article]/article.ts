@@ -92,7 +92,7 @@ export function renderComponent(
 }
 
 export function getArticle() {
-    return window.location.pathname.split("/")[3];
+    return window.location.pathname.split("/")[2];
 }
 
 export function renderArticle(body: HTMLElement) {

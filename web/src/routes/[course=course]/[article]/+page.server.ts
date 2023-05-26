@@ -1,5 +1,5 @@
 import type { EntryGenerator, RouteParams } from "./$types";
-import { fetchApi } from "$lib/utils";
+import { fetchApi } from "$lib/fetch";
 import type { ArticleResponse } from "./article";
 import { JSDOM } from "jsdom";
 

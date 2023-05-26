@@ -3,7 +3,7 @@ import { browser } from "$app/environment";
 export const fetchApi = async <T>(
     url: string,
     opts?: {
-        method?: "POST" | "GET",
+        method?: "POST" | "GET";
         body?: any;
         fetch?: (
             input: RequestInfo | URL,
@@ -14,7 +14,7 @@ export const fetchApi = async <T>(
     opts = opts ?? {};
     opts.fetch = opts.fetch ?? fetch;
     opts.method = opts.method ?? "GET";
-    
+
     // console.log("fetching", url, opts, "\n")
     let input = browser ? url : `http://127.0.0.1:8080${url}`;
     const req = await opts.fetch(input, {
@@ -31,3 +31,9 @@ export const fetchApi = async <T>(
 
     return await req.json();
 };
+
+export type CourseItem = Map<String, [String | CourseItem]>;
+
+export const fetchCourseList = async (): Promise<CourseItem> => {
+    return await fetchApi("/api/course-list");
+}

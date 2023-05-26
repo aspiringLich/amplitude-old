@@ -15,8 +15,6 @@
             "$cmpt/*": ["./src/components/*"],
             "$lib": ["./src/lib/"],
             "$lib/*": ["./src/lib/*"],
-            "$src": ["./src/"],
-            "$src/*": ["./src/*"],
             "$styles": ["./src/styles/"],
             "$styles/*": ["./src/styles/*"],
         }
