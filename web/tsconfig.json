@@ -1,7 +1,7 @@
 {
     "extends": "./.svelte-kit/tsconfig.json",
     "compilerOptions": {
-        "verbatimModuleSyntax": true,
+        // "verbatimModuleSyntax": false,
         "allowJs": true,
         "checkJs": true,
         "esModuleInterop": true,

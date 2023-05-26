@@ -17,6 +17,8 @@ export default defineConfig({
     resolve: {
         alias: {
             "$src": path.resolve("./src"),
+            "$lib": path.resolve("./src/lib"),
+            "$cmpt": path.resolve("./src/components"),
             "$styles": path.resolve("./src/styles"),
             "$static": path.resolve("./"),
             "$assets": path.resolve("./assets"),

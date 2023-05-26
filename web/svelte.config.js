@@ -8,6 +8,7 @@ function importer(url) {
 		[
 			["$lib", path.resolve("./src/lib")],
 			["$src", path.resolve("./src")],
+			["$cmpt", path.resolve("./src/components")],
 			["$styles", path.resolve("./src/styles")],
 		]) {
 		if (url.startsWith(alias)) {
