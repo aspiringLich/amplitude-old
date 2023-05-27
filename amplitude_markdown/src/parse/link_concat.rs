@@ -42,7 +42,7 @@ mod tests {
 
     #[test]
     fn test_link_concat() {
-        use crate::link_concat::link_concat_callback;
+        use crate::parse::link_concat::link_concat_callback;
 
         let links = "
 [a]: https://a.com

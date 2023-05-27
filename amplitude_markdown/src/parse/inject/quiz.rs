@@ -1,7 +1,7 @@
 use super::*;
 use crate::{
-    parse::parse_md,
-    state::{article::ArticleConfig, quiz::Quiz},
+    parse::md::parse_md,
+    config::{article::ArticleConfig, quiz::Quiz},
 };
 use anyhow::Context;
 
@@ -58,7 +58,7 @@ pub(super) fn inject_quiz<'a>(
 
 #[cfg(test)]
 mod tests {
-    use crate::state::quiz::{Answer, Question};
+    use crate::config::quiz::{Question, Answer};
 
     #[test]
     fn test_serde() {

@@ -1,18 +1,17 @@
+use std::collections::HashMap;
+
+use anyhow::Context;
+use comrak::{
+    html,
+    nodes::{AstNode, NodeValue},
+    RefMap,
+};
+
+use crate::config::article::ArticleConfig;
+
 mod admonition;
 mod code;
 mod quiz;
-
-use anyhow::Context;
-
-use comrak::nodes::{AstNode, NodeValue};
-use comrak::RefMap;
-
-use std::collections::HashMap;
-
-use comrak::html;
-
-use crate::state::article::ArticleConfig;
-use crate::state::ParseState;
 
 type Callback = for<'a> fn(
     &ArticleConfig,
