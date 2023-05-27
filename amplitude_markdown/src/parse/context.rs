@@ -56,6 +56,11 @@ impl<'a> ItemContext<'a> {
     pub fn markdown_context(&self) -> &'a MarkdownContext<'a> {
         self.context.markdown_context
     }
+
+    /// Return the `ComrakOptions` used for parsing markdown
+    pub fn markdown_options(&self) -> &ComrakOptions {
+        self.context.markdown_context.options
+    }
     
     /// Insert an article config
     pub fn insert_article(&mut self, article: ArticleConfig) {

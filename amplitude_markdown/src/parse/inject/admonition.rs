@@ -1,14 +1,12 @@
 use super::*;
 
 pub fn inject_admonition<'a>(
-    _: &ArticleConfig,
-    args: &HashMap<String, String>,
+    args: &CallbackArgs,
     node: &'a AstNode<'a>,
     ctx: &mut ItemContext,
-    _: &RefMap,
 ) -> anyhow::Result<Vec<&'a AstNode<'a>>> {
     let mut out = vec![];
-    html::format_document(node, &ctx.options(), &mut out).context("failed to parse admonition")?;
+    html::format_document(node, &ctx.markdown_context(), &mut out).context("failed to parse admonition")?;
 
     anyhow::ensure!(args.len() == 1, "admonition must be provided with a type");
     let tag = args.keys().next().unwrap();

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use super::context::ItemContext;
+use super::context::{ItemContext, MarkdownContext};
 use crate::items::article::ArticleConfig;
 use anyhow::Context;
 use comrak::{
@@ -14,13 +14,33 @@ mod code;
 mod quiz;
 mod utils;
 
-type Callback = for<'a> fn(
-    &ArticleConfig,
-    &HashMap<String, String>,
-    &'a AstNode<'a>,
-    &mut ItemContext,
-    &RefMap,
-) -> anyhow::Result<Vec<&'a AstNode<'a>>>;
+type CallbackArgs = HashMap<String, String>;
+type CallbackRet<'a> = anyhow::Result<Vec<&'a AstNode<'a>>>;
+
+pub trait Callback<'a> {
+    fn run_callback(&mut self, args: CallbackArgs, ast: &'a AstNode<'a>, ctx: &mut ItemContext)
+        -> CallbackRet<'a>;
+}
+
+impl<'a, F: Send + Sync + 'static> Callback<'a> for F
+where
+    &'a mut F: FnMut(CallbackArgs, &'a AstNode<'a>, &mut ItemContext) -> CallbackRet<'a>,
+{
+    fn run_callback(&mut self, args: CallbackArgs, ast: &'a AstNode<'a>, ctx: &mut ItemContext)
+            -> CallbackRet<'a> {
+        (self)(args, ast, ctx)
+    }
+}
+
+impl<'a, F: Send + Sync + 'static> Callback<'a> for F
+where
+    &'a mut F: FnMut(&CallbackArgs, &'a AstNode<'a>, &MarkdownContext) -> CallbackRet<'a>,
+{
+    fn run_callback(&mut self, args: CallbackArgs, ast: &'a AstNode<'a>, ctx: &mut ItemContext)
+            -> CallbackRet<'a> {
+        (self)(&args, ast, ctx.markdown_context())
+    }
+}
 
 /// A list of tags that are expected to be found in the markdown to call the
 /// callback
@@ -93,22 +113,22 @@ fn display_node(node: &AstNode) -> String {
 
 struct CallbackInfo {
     expected: ExpectedTag,
-    callback: Callback,
+    callback: &'static Callback,
     /// The keys that are expected to be present in the tag
     /// bool for if the key is mandatory
     keys: HashMap<&'static str, bool>,
 }
 
 impl CallbackInfo {
-    fn new(
+    fn new<F: IntoCallback>(
         expected: ExpectedTag,
-        callback: Callback,
+        callback: F,
         expected_keys: &[&'static str],
         mandatory_keys: &[&'static str],
     ) -> Self {
         Self {
             expected,
-            callback,
+            callback: callback.into_callback(),
             keys: expected_keys
                 .iter()
                 .map(|s| (*s, false))
@@ -189,7 +209,6 @@ pub fn test_parse_args() {
 pub(crate) fn inject<'a>(
     config: &'a ArticleConfig,
     node: &'a AstNode<'a>,
-    refs: &RefMap,
     state: &'a mut ItemContext<'a>,
 ) -> anyhow::Result<()> {
     // variables were going to detach
