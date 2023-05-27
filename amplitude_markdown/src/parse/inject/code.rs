@@ -1,11 +1,9 @@
 use super::*;
 
 pub fn inject_code<'a>(
-    _: &ArticleConfig,
-    args: &HashMap<String, String>,
+    args: CallbackArgs,
     node: &AstNode<'a>,
-    _: &mut ParseState,
-    _: &RefMap,
+    
 ) -> anyhow::Result<Vec<&'a AstNode<'a>>> {
     let val = &mut node.data.borrow_mut().value;
     match val {

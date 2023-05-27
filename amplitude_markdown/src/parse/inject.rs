@@ -1,12 +1,11 @@
 use std::collections::HashMap;
 
-use super::context::{ItemContext, MarkdownContext};
+use super::context::ItemContext;
 use crate::items::article::ArticleConfig;
 use anyhow::Context;
 use comrak::{
     html,
     nodes::{AstNode, NodeValue},
-    RefMap,
 };
 
 mod admonition;
@@ -17,37 +16,77 @@ mod utils;
 type CallbackArgs = HashMap<String, String>;
 type CallbackRet<'a> = anyhow::Result<Vec<&'a AstNode<'a>>>;
 
-pub trait Callback<'a> {
-    fn run_callback(&mut self, args: CallbackArgs, ast: &'a AstNode<'a>, ctx: &mut ItemContext)
-        -> CallbackRet<'a>;
+trait DynCallback: Send + Sync + 'static {
+    fn run_callback<'a>(
+        &mut self,
+        args: CallbackArgs,
+        node: &'a AstNode<'a>,
+        ctx: &mut ItemContext,
+    ) -> CallbackRet<'a>;
+
+    fn marker(&self) -> &'static str;
+    fn expected_tag(&self) -> ExpectedTag;
+    fn mandatory_keys(&self) -> &'static [&'static str];
+    fn optional_keys(&self) -> &'static [&'static str];
 }
 
-impl<'a, F: Send + Sync + 'static> Callback<'a> for F
-where
-    &'a mut F: FnMut(CallbackArgs, &'a AstNode<'a>, &mut ItemContext) -> CallbackRet<'a>,
-{
-    fn run_callback(&mut self, args: CallbackArgs, ast: &'a AstNode<'a>, ctx: &mut ItemContext)
-            -> CallbackRet<'a> {
-        (self)(args, ast, ctx)
+pub trait Callback: Send + Sync + 'static {
+    fn run_callback<'a>(
+        &mut self,
+        args: CallbackArgs,
+        node: &'a AstNode<'a>,
+        ctx: &mut ItemContext,
+    ) -> CallbackRet<'a>;
+
+    const MARKER: &'static str;
+    const EXPECTED_TAG: ExpectedTag;
+    const MANDATORY_KEYS: &'static [&'static str] = &[];
+    const OPTIONAL_KEYS: &'static [&'static str] = &[];
+}
+
+impl<T: Callback> DynCallback for T {
+    fn run_callback<'a>(
+        &mut self,
+        args: CallbackArgs,
+        node: &'a AstNode<'a>,
+        ctx: &mut ItemContext,
+    ) -> CallbackRet<'a> {
+        self.run_callback(args, node, ctx)
+    }
+
+    fn marker(&self) -> &'static str {
+        Self::MARKER
+    }
+
+    fn expected_tag(&self) -> ExpectedTag {
+        Self::EXPECTED_TAG
+    }
+
+    fn mandatory_keys(&self) -> &'static [&'static str] {
+        Self::MANDATORY_KEYS
+    }
+
+    fn optional_keys(&self) -> &'static [&'static str] {
+        Self::OPTIONAL_KEYS
     }
 }
 
-impl<'a, F: Send + Sync + 'static> Callback<'a> for F
-where
-    &'a mut F: FnMut(&CallbackArgs, &'a AstNode<'a>, &MarkdownContext) -> CallbackRet<'a>,
-{
-    fn run_callback(&mut self, args: CallbackArgs, ast: &'a AstNode<'a>, ctx: &mut ItemContext)
-            -> CallbackRet<'a> {
-        (self)(&args, ast, ctx.markdown_context())
+const CALLBACKS: &[&'static dyn DynCallback] = &[&admonition::Admonition];
+#[ctor::ctor]
+static MARKERS: HashMap<&'static str, &'static dyn DynCallback> = {
+    let mut tags = HashMap::new();
+    for callback in CALLBACKS {
+        tags.insert(callback.marker(), *callback);
     }
-}
+    tags
+};
 
 /// A list of tags that are expected to be found in the markdown to call the
 /// callback
 #[derive(Debug)]
 enum ExpectedTag {
     CodeBlock(Option<&'static str>),
-    Quote,
+    BlockQuote,
 }
 
 impl ExpectedTag {
@@ -67,7 +106,7 @@ impl ExpectedTag {
                 _ => false,
             },
             CodeBlock(None) => matches!(val, NodeValue::CodeBlock(_)),
-            Quote => matches!(val, NodeValue::BlockQuote),
+            BlockQuote => matches!(val, NodeValue::BlockQuote),
         }
     }
 }
@@ -111,60 +150,6 @@ fn display_node(node: &AstNode) -> String {
     .to_string()
 }
 
-struct CallbackInfo {
-    expected: ExpectedTag,
-    callback: &'static Callback,
-    /// The keys that are expected to be present in the tag
-    /// bool for if the key is mandatory
-    keys: HashMap<&'static str, bool>,
-}
-
-impl CallbackInfo {
-    fn new<F: IntoCallback>(
-        expected: ExpectedTag,
-        callback: F,
-        expected_keys: &[&'static str],
-        mandatory_keys: &[&'static str],
-    ) -> Self {
-        Self {
-            expected,
-            callback: callback.into_callback(),
-            keys: expected_keys
-                .iter()
-                .map(|s| (*s, false))
-                .chain(mandatory_keys.iter().map(|s| (*s, true)))
-                .collect(),
-        }
-    }
-}
-
-#[ctor::ctor]
-static INJECTION_TAGS: HashMap<String, CallbackInfo> = {
-    let mut m = HashMap::new();
-    let mut insert = |tag: &str, info: CallbackInfo| {
-        m.insert(tag.to_string(), info);
-    };
-    use ExpectedTag::*;
-    insert(
-        "@quiz",
-        CallbackInfo::new(CodeBlock(Some("toml")), quiz::inject_quiz, &[], &["id"]),
-    );
-    insert(
-        "@!",
-        CallbackInfo::new(
-            Quote,
-            admonition::inject_admonition,
-            &["note", "info", "warning", "success", "failiure"],
-            &[],
-        ),
-    );
-    insert(
-        "@code",
-        CallbackInfo::new(CodeBlock(None), code::inject_code, &[], &[]),
-    );
-    m
-};
-
 fn parse_args(input: &str) -> HashMap<String, String> {
     let mut out = HashMap::new();
 
@@ -183,33 +168,10 @@ fn parse_args(input: &str) -> HashMap<String, String> {
     out
 }
 
-#[test]
-pub fn test_parse_args() {
-    let get = |s| {
-        parse_args(s)
-            .into_iter()
-            .map(|(a, b)| (a.as_str(), b.as_str()))
-            .collect::<Vec<_>>()
-    };
-    assert_eq!(get("a b c"), [("a", ""), ("b", ""), ("c", "")]);
-    assert_eq!(get("a b=c"), [("a", ""), ("b", "c")]);
-    assert_eq!(
-        get("a b c d=e f=g h"),
-        [
-            ("a", ""),
-            ("b", ""),
-            ("c", ""),
-            ("d", "e"),
-            ("f", "g"),
-            ("h", "")
-        ]
-    );
-}
-
 pub(crate) fn inject<'a>(
     config: &'a ArticleConfig,
     node: &'a AstNode<'a>,
-    state: &'a mut ItemContext<'a>,
+    ctx: &'a mut ItemContext<'a>,
 ) -> anyhow::Result<()> {
     // variables were going to detach
     let mut to_detach = vec![];
@@ -233,10 +195,10 @@ pub(crate) fn inject<'a>(
                 .split_once(|c: char| c.is_whitespace())
                 .unwrap_or((text, ""));
 
-            if let Some(info) = INJECTION_TAGS.get(text) {
+            if let Some(info) = MARKERS.get(text) {
                 let args = parse_args(post);
-                for (key, mandatory) in &info.keys {
-                    if !args.contains_key(*key) && *mandatory {
+                for key in info.mandatory_keys() {
+                    if !args.contains_key(*key) {
                         anyhow::bail!(
                             "Missing mandatory key `{key}` in tag `{text}`",
                             key = key,
@@ -245,9 +207,11 @@ pub(crate) fn inject<'a>(
                     }
                 }
                 for arg in &args {
-                    if !arg.1.is_empty() && !info.keys.contains_key(arg.0.as_str()) {
+                    if !info.mandatory_keys().contains(&arg.0.as_str())
+                        && !info.optional_keys().contains(&arg.0.as_str())
+                    {
                         anyhow::bail!(
-                            "Unexpected key `{key}` in tag `{text}`",
+                            "Unknown key `{key}` in tag `{text}`",
                             key = arg.0,
                             text = text
                         );
@@ -257,10 +221,12 @@ pub(crate) fn inject<'a>(
                 let n = node
                     .next_sibling()
                     .with_context(|| format!("Unexpected end of AST after tag `{text}`"))?;
+
                 to_detach.push(node);
-                let expected = &info.expected;
+                let expected = &info.expected_tag();
                 if expected.matches(n) {
-                    let mut ret = (info.callback)(config, &args, n, state, refs)
+                    let mut ret = info
+                        .run_callback(args, n, ctx)
                         .with_context(|| format!("while calling callback for tag `{text}`"))?;
                     to_detach.append(&mut ret);
                 } else {
@@ -280,4 +246,27 @@ pub(crate) fn inject<'a>(
     }
 
     Ok(())
+}
+
+#[test]
+pub fn test_parse_args() {
+    let get = |s| {
+        parse_args(s)
+            .into_iter()
+            .map(|(a, b)| (a.as_str(), b.as_str()))
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(get("a b c"), [("a", ""), ("b", ""), ("c", "")]);
+    assert_eq!(get("a b=c"), [("a", ""), ("b", "c")]);
+    assert_eq!(
+        get("a b c d=e f=g h"),
+        [
+            ("a", ""),
+            ("b", ""),
+            ("c", ""),
+            ("d", "e"),
+            ("f", "g"),
+            ("h", "")
+        ]
+    );
 }

@@ -12,7 +12,5 @@ pub mod utils;
 pub trait Item {
     fn parse_from_dir(dir: &Path, context: &mut ItemContext) -> anyhow::Result<Self>
     where
-        Self: Sized;
-    
-    fn insert(&self, context: &mut CourseContext);
+        Self: Sized;    
 }

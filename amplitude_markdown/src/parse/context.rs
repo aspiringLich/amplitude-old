@@ -1,14 +1,11 @@
 use std::{
     collections::{HashMap, HashSet},
-    default::default,
+    default::default, path::PathBuf,
 };
 
 use comrak::{ComrakOptions, RefMap};
 
-use crate::items::{
-    article::{ArticleConfig, RawArticleConfig},
-    quiz::Quiz,
-};
+use crate::items::{article::ArticleConfig, quiz::Quiz};
 
 use super::track::Track;
 
@@ -21,6 +18,7 @@ pub struct MarkdownContext<'a> {
 /// Storing information about what weve parsed so far
 #[derive(Debug)]
 pub struct ParseContext<'a> {
+    path: PathBuf,
     markdown_context: &'a MarkdownContext<'a>,
     item_ids: HashSet<String>,
     tracks: HashMap<String, Track>,
@@ -29,8 +27,9 @@ pub struct ParseContext<'a> {
 }
 
 impl<'a> ParseContext<'a> {
-    pub fn new(markdown_context: &'a MarkdownContext) -> Self {
+    pub fn new(path: PathBuf, markdown_context: &'a MarkdownContext) -> Self {
         Self {
+            path,
             markdown_context,
             item_ids: default(),
             tracks: default(),
@@ -61,17 +60,17 @@ impl<'a> ItemContext<'a> {
     pub fn markdown_options(&self) -> &ComrakOptions {
         self.context.markdown_context.options
     }
-    
-    /// Insert an article config
-    pub fn insert_article(&mut self, article: ArticleConfig) {
-        self.context.articles.insert(article.id.clone(), article);
+
+    /// Add an article config
+    pub fn add_article(&mut self, article: ArticleConfig, s: &str) {
+        self.context.articles.insert(self.id, article);
     }
-    
-    /// Insert a quiz
-    pub fn insert_quiz(&mut self, quiz: Quiz) {
-        self.context.quizzes.insert(quiz.id.clone(), quiz);
+
+    /// Add a quiz
+    pub fn add_quiz(&mut self, quiz: Quiz) {
+        self.context.quizzes.insert(self.id, quiz);
     }
-    
+
     /// Create a new `ItemContext` from a `ParseContext` and an item id
     pub fn from(context: &'a mut ParseContext, id: &str) -> anyhow::Result<Self> {
         if context.item_ids.contains(id) {

@@ -7,19 +7,14 @@ use std::{
 use anyhow::Context;
 use serde::de::DeserializeOwned;
 
+use crate::parse::parse_md;
+
 use super::*;
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 #[serde(deny_unknown_fields)]
-pub struct RawArticleConfig {
-    pub name: String,
-    pub description: String,
-}
-
-#[derive(Deserialize, Debug)]
 pub struct ArticleConfig {
-    pub id: String,
-    pub name: String,
+    pub title: String,
     pub description: String,
 }
 
@@ -40,6 +35,10 @@ impl Item for ArticleConfig {
 
         let (config, s): (ArticleConfig, String) = parse_frontmatter(&dir.join("article.md"))
             .context("While reading article / parsing frontmatter header")?;
+        let html = parse_md(&config, &s, context).context("While parsing article markdown")?;
+        
+        context.add_article(config, &html);
+        Ok(config)
     }
 }
 

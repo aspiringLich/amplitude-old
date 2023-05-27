@@ -66,7 +66,7 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
 
 /// Parse the input `md` and return the output `html`.
 /// Has full access to `ItemContext`
-pub(crate) fn full_parse_md(
+pub(crate) fn parse_md(
     config: &ArticleConfig,
     input: &str,
     ctx: &mut ItemContext,
