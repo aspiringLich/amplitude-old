@@ -17,7 +17,7 @@ use link_concat::link_concat_callback;
 use std::{collections::HashSet, default::default, fs, path::Path};
 use tracing::{info, warn};
 
-use self::{context::ItemContext, output::ParseData};
+use self::{context::{ItemContext, MarkdownContext}, output::ParseData};
 
 /// Clones the articles repo
 pub fn clone_repo(config: &ParseConfig) -> anyhow::Result<()> {
@@ -65,29 +65,23 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
 }
 
 /// Parse the input `md` and return the output `html`.
-pub(crate) fn parse_md(
+/// Has full access to `ItemContext`
+pub(crate) fn full_parse_md(
     config: &ArticleConfig,
     input: &str,
-    refs: &RefMap,
     ctx: &mut ItemContext,
-) -> anyhow::Result<(String, RefMap)> {
+) -> anyhow::Result<String> {
+    let md_ctx = ctx.markdown_context();
+    
     // get the refs
     let mut this_refs = parse_document_refs(&Arena::new(), input);
-    if !this_refs.map.is_empty() {
-        this_refs.extend(refs.clone());
-    } else {
-        this_refs = refs.clone();
-    }
-
-    // were not modifying options, so we can be sneaky
-    // also im just too lazy to refactor this
-    let options = unsafe { &*(&state.options as *const ComrakOptions) };
+    this_refs.extend(md_ctx.refs.clone());
 
     let arena = Arena::new();
     let out = comrak::parse_document_with_broken_link_callback(
         &arena,
         input,
-        options,
+        md_ctx.options,
         Some(&mut |link| {
             let out = link_concat_callback(link, &this_refs);
             if out.is_none() {
@@ -97,10 +91,10 @@ pub(crate) fn parse_md(
         }),
     );
     // do things
-    inject::inject(config, out, &this_refs, state)?;
+    inject::inject(config, out, &this_refs, ctx)?;
 
     let mut cm = vec![];
-    comrak::format_html(out, options, &mut cm).context("while parsing AST to html")?;
+    comrak::format_html(out, md_ctx.options, &mut cm).context("while parsing AST to html")?;
 
-    Ok((String::from_utf8(cm).unwrap(), this_refs))
+    Ok(String::from_utf8(cm).unwrap())
 }

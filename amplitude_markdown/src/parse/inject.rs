@@ -1,17 +1,18 @@
 use std::collections::HashMap;
 
+use super::context::ItemContext;
+use crate::items::article::ArticleConfig;
 use anyhow::Context;
 use comrak::{
     html,
     nodes::{AstNode, NodeValue},
     RefMap,
 };
-use crate::items::article::ArticleConfig;
-use super::context::ItemContext;
 
 mod admonition;
 mod code;
 mod quiz;
+mod utils;
 
 type Callback = for<'a> fn(
     &ArticleConfig,
@@ -146,11 +147,43 @@ static INJECTION_TAGS: HashMap<String, CallbackInfo> = {
 
 fn parse_args(input: &str) -> HashMap<String, String> {
     let mut out = HashMap::new();
-    for word in input.split(|c: char| c.is_whitespace()) {
-        let (key, value) = word.split_once('=').unwrap_or((word, ""));
-        out.insert(key.to_string(), value.to_string());
+
+    let words = input.split_whitespace().collect::<Vec<_>>();
+    let mut i = 0;
+
+    while i < words.len() {
+        if words[i] == "=" {
+            out[words[i - 1]] = words[i + 1].to_string();
+            i += 2;
+        } else {
+            out[words[i]] = "".to_string();
+            i += 1;
+        }
     }
     out
+}
+
+#[test]
+pub fn test_parse_args() {
+    let get = |s| {
+        parse_args(s)
+            .into_iter()
+            .map(|(a, b)| (a.as_str(), b.as_str()))
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(get("a b c"), [("a", ""), ("b", ""), ("c", "")]);
+    assert_eq!(get("a b=c"), [("a", ""), ("b", "c")]);
+    assert_eq!(
+        get("a b c d=e f=g h"),
+        [
+            ("a", ""),
+            ("b", ""),
+            ("c", ""),
+            ("d", "e"),
+            ("f", "g"),
+            ("h", "")
+        ]
+    );
 }
 
 pub(crate) fn inject<'a>(
