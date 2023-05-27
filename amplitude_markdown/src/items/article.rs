@@ -1,4 +1,11 @@
-use std::{collections::HashSet, io::{self, BufRead, Read}};
+use std::{
+    collections::HashSet,
+    fs,
+    io::{self, BufRead, Read},
+};
+
+use anyhow::Context;
+use serde::de::DeserializeOwned;
 
 use super::*;
 
@@ -9,7 +16,7 @@ pub struct RawArticleConfig {
     pub description: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct ArticleConfig {
     pub id: String,
     pub name: String,
@@ -17,7 +24,7 @@ pub struct ArticleConfig {
 }
 
 impl Item for ArticleConfig {
-    fn parse_from_dir(dir: &Path, context: &CourseContext) -> anyhow::Result<Self>
+    fn parse_from_dir(dir: &Path, context: &mut ItemContext) -> anyhow::Result<Self>
     where
         Self: Sized,
     {
@@ -29,12 +36,10 @@ impl Item for ArticleConfig {
             items.contains("article.md"),
             "Required item: `article.md` not found",
         );
-        anyhow::ensure!(
-            items.len() == 1,
-            "Unexpected files / directories",
-        );
-        
-        todo!()
+        anyhow::ensure!(items.len() == 1, "Unexpected files / directories",);
+
+        let (config, s): (ArticleConfig, String) = parse_frontmatter(&dir.join("article.md"))
+            .context("While reading article / parsing frontmatter header")?;
     }
 }
 

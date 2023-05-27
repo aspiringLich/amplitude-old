@@ -1,7 +1,9 @@
+pub mod context;
 pub mod course;
 mod inject;
 mod link_concat;
-pub mod context;
+pub mod output;
+mod track;
 
 use crate::items::article::ArticleConfig;
 use amplitude_common::config::{Config, ParseConfig};
@@ -12,8 +14,10 @@ use comrak::{
 };
 use git2::build::RepoBuilder;
 use link_concat::link_concat_callback;
-use std::{default::default, fs, path::Path, collections::HashSet};
+use std::{collections::HashSet, default::default, fs, path::Path};
 use tracing::{info, warn};
+
+use self::{context::ItemContext, output::ParseData};
 
 /// Clones the articles repo
 pub fn clone_repo(config: &ParseConfig) -> anyhow::Result<()> {
@@ -36,9 +40,8 @@ pub fn clone_repo(config: &ParseConfig) -> anyhow::Result<()> {
     Ok(())
 }
 
-
 /// Reparses the things and does the things
-pub fn parse(config: &Config) -> anyhow::Result<ParseState> {
+pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
     if !config.args.local {
         info!("Deleting `{}` and recloning repo... (If you dont want this behavior, run with `--local`)", config.parse.clone_path);
         clone_repo(&config.parse).context("While cloning repo")?;
@@ -61,33 +64,12 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseState> {
     Ok(state)
 }
 
-/// Clones the articles repo
-pub fn clone_repo(config: &ParseConfig) -> anyhow::Result<()> {
-    let clone_path = &config.clone_path;
-    fs::create_dir_all(clone_path)?;
-
-    // delete everything
-    for item in fs::read_dir(clone_path)? {
-        let item = item?;
-        let path = item.path();
-        if path.is_dir() {
-            fs::remove_dir_all(path)?;
-        } else {
-            fs::remove_file(path)?;
-        }
-    }
-
-    RepoBuilder::new().clone(&config.git_url, Path::new(clone_path))?;
-
-    Ok(())
-}
-
 /// Parse the input `md` and return the output `html`.
 pub(crate) fn parse_md(
     config: &ArticleConfig,
     input: &str,
     refs: &RefMap,
-    state: &mut ParseState,
+    ctx: &mut ItemContext,
 ) -> anyhow::Result<(String, RefMap)> {
     // get the refs
     let mut this_refs = parse_document_refs(&Arena::new(), input);

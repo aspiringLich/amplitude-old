@@ -6,8 +6,8 @@ use comrak::{
     nodes::{AstNode, NodeValue},
     RefMap,
 };
-
 use crate::items::article::ArticleConfig;
+use super::context::ItemContext;
 
 mod admonition;
 mod code;
@@ -17,7 +17,7 @@ type Callback = for<'a> fn(
     &ArticleConfig,
     &HashMap<String, String>,
     &'a AstNode<'a>,
-    &mut ParseState,
+    &mut ItemContext,
     &RefMap,
 ) -> anyhow::Result<Vec<&'a AstNode<'a>>>;
 
@@ -157,7 +157,7 @@ pub(crate) fn inject<'a>(
     config: &'a ArticleConfig,
     node: &'a AstNode<'a>,
     refs: &RefMap,
-    state: &'a mut ParseState,
+    state: &'a mut ItemContext<'a>,
 ) -> anyhow::Result<()> {
     // variables were going to detach
     let mut to_detach = vec![];

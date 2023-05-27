@@ -1,6 +1,5 @@
 use super::*;
 use crate::{
-    parse::md::parse_md,
     items::{article::ArticleConfig, quiz::Quiz},
 };
 use anyhow::Context;
@@ -24,7 +23,7 @@ pub(super) fn inject_quiz<'a>(
     config: &ArticleConfig,
     args: &HashMap<String, String>,
     node: &AstNode<'a>,
-    state: &mut ParseState,
+    state: &mut ItemContext,
     refs: &RefMap,
 ) -> anyhow::Result<Vec<&'a AstNode<'a>>> {
     let id = args.get("id").context("Quiz must have an id")?;

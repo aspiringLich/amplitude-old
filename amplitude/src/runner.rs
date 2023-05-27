@@ -12,15 +12,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::state::State;
 
-pub enum Language {
-    C,
-    Cpp,
-    JavaScript,
-    Python,
-    Rust,
-    Java,
-}
-
 #[derive(Serialize, Deserialize)]
 pub struct RunOutput {
     pub stdout: String,
@@ -80,29 +71,4 @@ pub fn run(app: Arc<State>, lang: Language, src: &str, args: &str) -> anyhow::Re
         runtime: time.elapsed(),
         exit_code: run.status.code().unwrap(),
     })
-}
-
-impl Language {
-    fn image(&self) -> &str {
-        match self {
-            Language::C => "c",
-            Language::Cpp => "c++",
-            Language::JavaScript => "javascript",
-            Language::Python => "python",
-            Language::Rust => "rust",
-            Language::Java => "java",
-        }
-    }
-
-    pub fn from_str(s: &str) -> Option<Self> {
-        Some(match s.to_ascii_lowercase().as_str() {
-            "c" => Language::C,
-            "c++" | "cpp" => Language::Cpp,
-            "javascript" => Language::JavaScript,
-            "python" => Language::Python,
-            "rust" => Language::Rust,
-            "java" => Language::Java,
-            _ => return None,
-        })
-    }
 }
