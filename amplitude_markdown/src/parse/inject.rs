@@ -7,7 +7,7 @@ use comrak::{
     RefMap,
 };
 
-use crate::config::article::ArticleConfig;
+use crate::items::article::ArticleConfig;
 
 mod admonition;
 mod code;
