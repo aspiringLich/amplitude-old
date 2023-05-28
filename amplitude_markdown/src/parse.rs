@@ -12,12 +12,7 @@ use comrak::{
 };
 use git2::build::RepoBuilder;
 use link_concat::link_concat_callback;
-use std::{
-    collections::HashMap,
-    default::default,
-    fs,
-    path::{Path, PathBuf},
-};
+use std::{collections::HashMap, default::default, fs, path::Path};
 use tracing::{info, warn};
 
 use self::{
@@ -83,7 +78,10 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
             sourcepos: false,
         },
     };
-    let md_ctx = MarkdownContext { options, refs: RefMap::new() };
+    let md_ctx = MarkdownContext {
+        options,
+        refs: RefMap::new(),
+    };
 
     info!("Parsing articles...");
 
@@ -158,7 +156,7 @@ pub struct RawCourseData {
     pub course_data: HashMap<String, CourseConfig>,
     markdown_context: MarkdownContext,
     items: HashMap<String, ItemType>,
-    tracks: HashMap<String, Track>,
+    tracks: HashMap<String, Vec<Track>>,
 }
 
 /// Storing information about what weve parsed so far
@@ -166,14 +164,12 @@ pub struct RawCourseData {
 pub struct ParseData {
     pub course_data: HashMap<String, CourseConfig>,
     pub items: HashMap<String, ItemType>,
-    pub tracks: HashMap<String, Track>,
+    pub tracks: HashMap<String, Vec<Track>>,
 }
 
 impl ParseData {
     pub fn from_raw(data: RawCourseData) -> anyhow::Result<Self> {
-        for (id, item) in &data.items {
-            
-        }
+        for (id, item) in &data.items {}
 
         Ok(Self {
             course_data: data.course_data,
@@ -205,7 +201,12 @@ impl RawCourseData {
         })
     }
 
-    pub fn add_track(&mut self, id: String, track: Track) {
-        self.tracks.insert(id, track);
+    #[must_use]
+    pub fn add_track(&mut self, course_id: String, track: Track) -> anyhow::Result<()> {
+        self.tracks
+            .get_mut(&course_id)
+            .with_context(|| format!("Course `{course_id}` not found"))?
+            .push(track);
+        Ok(())
     }
 }

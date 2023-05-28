@@ -1,8 +1,5 @@
-use std::{collections::HashMap, default::default, fs, path::PathBuf};
-
 use super::{course::Track, parse_md, RawCourseData};
 use crate::items::ItemType;
-use amplitude_common::config::Config;
 use anyhow::Context;
 use comrak::{ComrakOptions, RefMap};
 use tracing::debug;
@@ -32,20 +29,34 @@ impl<'a> DataContext<'a> {
         );
         self.context.items.insert(self.id.clone(), item);
         if !track_id.is_empty() {
-            self.context
-                .tracks
-                .get_mut(track_id)
+            let id = self.id.clone();
+            self.get_course_tracks()?
+                .iter_mut()
+                .rfind(|track| track.id == track_id)
                 .with_context(|| format!("Track `{track_id}` not found"))?
                 .items
-                .push(self.id.clone());
+                .push(id);
         }
 
         Ok(())
     }
 
-    pub fn add_track(&mut self, track: Track, track_id: String) {
-        debug!("{:24} (id: {})", "Adding track to context", track_id);
-        self.context.tracks.insert(track_id, track);
+    fn get_course_tracks(&mut self) -> anyhow::Result<&mut Vec<Track>> {
+        let course_id = self.id.split_once("/").map(|(a, _)| a).unwrap_or(&self.id);
+        let tracks = self
+            .context
+            .tracks
+            .get_mut(course_id)
+            .with_context(|| format!("Course `{course_id}` not found"))?;
+
+        Ok(tracks)
+    }
+
+    #[must_use]
+    pub fn add_track(&mut self, track: Track) -> anyhow::Result<()> {
+        debug!("{:24} (id: {})", "Adding track to context", track.id);
+        self.get_course_tracks()?.push(track);
+        Ok(())
     }
 
     /// Return the id

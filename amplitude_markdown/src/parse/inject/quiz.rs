@@ -1,4 +1,3 @@
-use comrak::nodes::NodeCodeBlock;
 
 use crate::items::{self, ItemType};
 
@@ -20,7 +19,7 @@ impl Callback for Quiz {
         let NodeValue::CodeBlock(ref code) = ast.value else { anyhow::bail!("Expected Code block") };
 
         let quiz = items::quiz::Quiz::from_str(&code.literal, id.clone(), ctx)?;
-        ctx.add_item(ItemType::Quiz(quiz), "");
+        ctx.add_item(ItemType::Quiz(quiz), "")?;
 
         ast.value = NodeValue::HtmlInline(format!("<Quiz id=\"{id}\" />\n"));
 

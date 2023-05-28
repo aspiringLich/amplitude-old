@@ -52,8 +52,15 @@ pub fn parse_course(
     }
     .unwrap_or(RefMap::new());
     data.markdown_context.refs = refs;
-
+    
     let course_id = path.file_name().to_string();
+
+    let course: CourseConfig =
+        toml::from_str(&fs::read_to_string(path.join("course.toml"))?)?;
+    data.course_data.insert(course_id.clone(), course);
+    
+    data.tracks.insert(course_id.clone(), Vec::new());
+
     for dir in fs::read_dir(&path)? {
         let dir = dir?;
         let path = dir.path();
@@ -86,7 +93,7 @@ pub fn parse_track(path: PathBuf, ctx: &mut DataContext) -> anyhow::Result<()> {
     let track_id = strip_prefix(&path);
     let track = Track::from_raw(track, track_id.clone())?;
 
-    ctx.add_track(track, track_id.clone());
+    ctx.add_track(track)?;
 
     for item in fs::read_dir(&path)? {
         let item = item?;
