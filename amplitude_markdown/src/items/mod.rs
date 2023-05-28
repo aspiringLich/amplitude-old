@@ -16,7 +16,9 @@ pub mod utils;
 
 use utils::*;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
+#[serde(tag = "type")]
+#[serde(rename_all = "snake_case")]
 pub enum ItemType {
     Article(article::Article),
     Quiz(quiz::Quiz),

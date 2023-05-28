@@ -23,7 +23,6 @@ impl Args {
 pub struct ParseConfig {
     pub git_url: String,
     pub clone_path: String,
-    pub output_path: String,
 }
 
 #[derive(Deserialize, Debug)]

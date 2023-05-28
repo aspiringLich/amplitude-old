@@ -1,10 +1,12 @@
 use std::borrow::Borrow;
 
+use amplitude_common::lang::Language;
+
 use super::*;
 
 use crate::{
     error::HandledRoute,
-    runner::{self, Language},
+    runner,
     state::State,
 };
 

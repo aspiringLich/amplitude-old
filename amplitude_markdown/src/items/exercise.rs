@@ -1,7 +1,7 @@
 
 use super::*;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Exercise;
 
 impl Item for Exercise {

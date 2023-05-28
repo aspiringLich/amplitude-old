@@ -18,7 +18,7 @@ mod database;
 mod error;
 mod logger;
 mod misc;
-// mod routes;
+mod routes;
 mod runner;
 mod session;
 mod state;
@@ -39,7 +39,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut server =
         Server::<State>::new(&state.config.server.host, state.config.server.port).state(state);
     RequestLogger.attach(&mut server);
-    // routes::attach(&mut server);
+    routes::attach(&mut server);
 
     let app = server.app();
     let threads = app.config.server.threads;

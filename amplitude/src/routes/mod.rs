@@ -7,11 +7,10 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use tracing::trace;
 
-mod article;
-mod article_list;
+mod item;
+mod item_list;
 mod auth;
 mod evaluate;
-mod quiz;
 
 pub fn attach(server: &mut Server<State>) {
     server.route(Method::ANY, "/api/**", |_| {
@@ -20,11 +19,10 @@ pub fn attach(server: &mut Server<State>) {
             .text("Route not found")
     });
 
-    article::attach(server);
     auth::attach(server);
     evaluate::attach(server);
-    quiz::attach(server);
-    article_list::attach(server);
+    item_list::attach(server);
+    item::attach(server);
 }
 
 pub fn json<T>(req: &Request) -> anyhow::Result<T>
