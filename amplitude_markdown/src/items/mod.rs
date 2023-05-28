@@ -47,7 +47,11 @@ pub trait Item {
     ) -> anyhow::Result<ItemType>;
 }
 
-pub fn parse_item(path: &Path, mut context: &mut DataContext, track_id: &str) -> anyhow::Result<()> {
+pub fn parse_item(
+    path: &Path,
+    mut context: &mut DataContext,
+    track_id: &str,
+) -> anyhow::Result<()> {
     let mut errors = ErrorList::new("Could not parse as valid item", file!());
     macro parse_item($item:ty, $name:literal) {
         match <$item>::parse_from_dir(
@@ -59,7 +63,9 @@ pub fn parse_item(path: &Path, mut context: &mut DataContext, track_id: &str) ->
         {
             Ok(item) => {
                 // debug!("{:#?}", &item);
-                context.add_item(item, track_id);
+                context
+                    .add_item(item, track_id)
+                    .context("While adding item to context")?;
                 return Ok(());
             }
             Err(err) => errors.push(err),

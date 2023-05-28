@@ -4,10 +4,7 @@ use super::context::DataContext;
 
 use crate::parse::parse_ast;
 use anyhow::Context;
-use comrak::{
-    html,
-    nodes::{AstNode, NodeValue},
-};
+use comrak::nodes::{AstNode, NodeValue};
 
 mod admonition;
 mod code;

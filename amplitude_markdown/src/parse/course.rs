@@ -1,11 +1,8 @@
-use std::path::PathBuf;
-
-use serde::{Deserialize, Serialize};
-use tracing_subscriber::registry::Data;
+use super::*;
 
 use crate::items::parse_item;
-
-use super::*;
+use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(deny_unknown_fields)]
@@ -42,7 +39,6 @@ impl Track {
 
 pub fn parse_course(
     path: PathBuf,
-    config: &Config,
     data: &mut RawCourseData,
 ) -> anyhow::Result<()> {
     let arena = Arena::new();
@@ -52,13 +48,12 @@ pub fn parse_course(
     }
     .unwrap_or(RefMap::new());
     data.markdown_context.refs = refs;
-    
+
     let course_id = path.file_name().to_string();
 
-    let course: CourseConfig =
-        toml::from_str(&fs::read_to_string(path.join("course.toml"))?)?;
+    let course: CourseConfig = toml::from_str(&fs::read_to_string(path.join("course.toml"))?)?;
     data.course_data.insert(course_id.clone(), course);
-    
+
     data.tracks.insert(course_id.clone(), Vec::new());
 
     for dir in fs::read_dir(&path)? {

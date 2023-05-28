@@ -12,7 +12,8 @@ use comrak::{
 };
 use git2::build::RepoBuilder;
 use link_concat::link_concat_callback;
-use std::{collections::HashMap, default::default, fs, path::Path};
+use serde::{ser::SerializeMap, Serialize, Serializer};
+use std::{collections::HashMap, default::default, fs, path::Path, vec};
 use tracing::{info, warn};
 
 use self::{
@@ -95,13 +96,13 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
                 continue;
             }
 
-            parse_course(path, config, &mut data)
+            parse_course(path, &mut data)
                 .with_context(|| format!("While parsing course `{name}`"))?;
         }
     }
     let data = ParseData::from_raw(data).context("While generating `ParseData`")?;
 
-    dbg!(&data);
+    // dbg!(&data);
 
     Ok(data)
 }
@@ -165,16 +166,48 @@ pub struct ParseData {
     pub course_data: HashMap<String, CourseConfig>,
     pub items: HashMap<String, ItemType>,
     pub tracks: HashMap<String, Vec<Track>>,
+    pub tree: HashMap<String, TreeItem>,
+}
+
+fn as_hashmap<K: Serialize, V: Serialize, S: Serializer>(
+    list: &[(K, V)],
+    s: S,
+) -> Result<S::Ok, S::Error> {
+    let mut map = s.serialize_map(Some(list.len()))?;
+    for (k, v) in list {
+        map.serialize_entry(&k, &v)?;
+    }
+    map.end()
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(untagged)]
+pub enum TreeItem {
+    #[serde(serialize_with = "as_hashmap")]
+    Course(Vec<(String, TreeItem)>),
+    Track(Vec<String>),
 }
 
 impl ParseData {
     pub fn from_raw(data: RawCourseData) -> anyhow::Result<Self> {
-        for (id, item) in &data.items {}
+        let mut courses: HashMap<_, _> = HashMap::new();
+        for (id, tracks) in &data.tracks {
+            courses.insert(
+                id.clone(),
+                TreeItem::Course(
+                    tracks
+                        .iter()
+                        .map(|t| (t.id.clone(), TreeItem::Track(t.items.clone())))
+                        .collect(),
+                ),
+            );
+        }
 
         Ok(Self {
             course_data: data.course_data,
             items: data.items,
             tracks: data.tracks,
+            tree: courses,
         })
     }
 }
