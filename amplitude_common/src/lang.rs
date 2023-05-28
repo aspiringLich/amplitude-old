@@ -11,7 +11,7 @@ pub enum Language {
 }
 
 impl Language {
-    pub fn image(&self) -> &str {
+    pub fn image(&self) -> &'static str {
         match self {
             Self::C => "c",
             Self::Cpp => "c++",
@@ -22,7 +22,7 @@ impl Language {
         }
     }
 
-    pub fn extension(&self) -> &str {
+    pub fn extension(&self) -> &'static str {
         match self {
             Self::C => "c",
             Self::Cpp => "cpp",

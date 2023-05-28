@@ -1,13 +1,9 @@
-use std::{
-    collections::HashSet,
-    fs,
-    io::{self, BufRead, Read},
-};
+use std::io::{self, BufRead, Read};
 
 use anyhow::Context;
 use serde::de::DeserializeOwned;
 
-use crate::{parse::parse_md, OsStrToString};
+use crate::parse::parse_md;
 
 use super::*;
 
@@ -18,19 +14,18 @@ pub struct Article {
 }
 
 impl Item for Article {
-    fn parse_from_dir(dir: &Path, context: &mut ItemContext) -> anyhow::Result<ItemType>
+    fn parse_from_dir(
+        dir: &Path,
+        contents: DirContents,
+        context: &mut ItemContext,
+    ) -> anyhow::Result<ItemType>
     where
         Self: Sized,
     {
-        let items = dir
-            .read_dir()?
-            .filter_map(|e| e.ok().map(|p| p.file_name().to_string()))
-            .collect::<HashSet<_>>();
         anyhow::ensure!(
-            items.contains("article.md"),
+            contents.contains("article.md"),
             "Required item: `article.md` not found",
         );
-        anyhow::ensure!(items.len() == 1, "Unexpected files / directories",);
 
         let (config, s): (Article, String) = parse_frontmatter(&dir.join("article.md"))
             .context("While reading article / parsing frontmatter header")?;
