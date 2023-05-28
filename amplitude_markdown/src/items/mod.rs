@@ -1,3 +1,4 @@
+use crate::items::utils::ErrorList;
 use crate::parse::context::ItemContext;
 use anyhow::Context;
 use anyhow::Error;
@@ -21,7 +22,7 @@ pub trait Item {
 }
 
 pub fn parse_item(path: &Path, mut context: ItemContext) -> anyhow::Result<ItemType> {
-    let mut errors: Vec<Error> = Vec::new();
+    let mut errors = ErrorList::new("Could not parse as valid item", file!());
     macro parse_item($item:ty, $name:literal) {
         match <$item>::parse_from_dir(path, &mut context)
             .with_context(|| format!("While attempting to parse as `{}`", $name))
@@ -33,36 +34,38 @@ pub fn parse_item(path: &Path, mut context: ItemContext) -> anyhow::Result<ItemT
 
     parse_item!(article::Article, "Article");
 
-    anyhow::bail!(errors
-        .into_iter()
-        .map(|err| {
-            let s = err.backtrace().to_string();
-            let mut backtrace = s
-                .lines()
-                .skip_while(|l| !l.contains("amplitude_markdown"))
-                .take_while(|l| !l.contains(std::file!()))
-                .enumerate()
-                .filter_map(|(i, s)| {
-                    (i % 2 == 1)
-                        .then(|| format!("    {}: {}", i / 2, s.trim().strip_prefix("at ").unwrap()))
-                })
-                .collect::<Vec<_>>()
-                .join("\n");
+    anyhow::bail!(errors)
 
-            if backtrace.is_empty() {
-                backtrace = "backtrace disabled".to_string()
-            }
+    // anyhow::bail!(errors
+    //     .into_iter()
+    //     .map(|err| {
+    //         let s = err.backtrace().to_string();
+    //         let mut backtrace = s
+    //             .lines()
+    //             .skip_while(|l| !l.contains("amplitude_markdown"))
+    //             .take_while(|l| !l.contains(std::file!()))
+    //             .enumerate()
+    //             .filter_map(|(i, s)| {
+    //                 (i % 2 == 1)
+    //                     .then(|| format!("    {}: {}", i / 2, s.trim().strip_prefix("at ").unwrap()))
+    //             })
+    //             .collect::<Vec<_>>()
+    //             .join("\n");
 
-            let chain = err
-                .chain()
-                .skip(1)
-                .enumerate()
-                .map(|(i, e)| format!("    {i}: {e}"))
-                .collect::<Vec<_>>()
-                .join("\n");
+    //         if backtrace.is_empty() {
+    //             backtrace = "backtrace disabled".to_string()
+    //         }
 
-            format!("{err}\n\nCaused By:\n{chain}\nBacktrace:\n{backtrace}",)
-        })
-        .collect::<Vec<_>>()
-        .join("\n"));
+    //         let chain = err
+    //             .chain()
+    //             .skip(1)
+    //             .enumerate()
+    //             .map(|(i, e)| format!("    {i}: {e}"))
+    //             .collect::<Vec<_>>()
+    //             .join("\n");
+
+    //         format!("{err}\n\nCaused By:\n{chain}\nBacktrace:\n{backtrace}",)
+    //     })
+    //     .collect::<Vec<_>>()
+    //     .join("\n"));
 }

@@ -121,7 +121,7 @@ pub fn parse_track(path: PathBuf, context: &mut CourseParseContext) -> anyhow::R
         let id = strip_prefix(&path);
 
         parse_item(&path, ItemContext::from(context, &track_id, &id)?)
-            .with_context(|| format!("While parsing item {id}"))?;
+            .with_context(|| format!("While parsing item at path `{}`", path.to_string_lossy()))?;
     }
 
     Ok(())
