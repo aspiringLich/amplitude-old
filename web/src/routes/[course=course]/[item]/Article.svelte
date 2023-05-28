@@ -1,8 +1,8 @@
 <script lang="ts">
-    import { ArticleResponse, renderArticle } from "./article";
+    import { ArticleData, renderArticle } from "./item";
     import { onMount } from "svelte";
 
-    export let data: ArticleResponse;
+    export let data: ArticleData;
 
     let body: HTMLElement;
     let article: HTMLElement;
@@ -36,7 +36,7 @@
 
 <div class="article" bind:this={article}>
     <div class="container body" bind:this={body}>
-        <h1>{@html data.config.title}</h1>
+        <h1>{@html data.title}</h1>
         {@html data.body}
     </div>
 </div>

@@ -102,7 +102,7 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
     }
     let data = ParseData::from_raw(data).context("While generating `ParseData`")?;
 
-    // dbg!(&data);
+    dbg!(&data);
 
     Ok(data)
 }

@@ -32,8 +32,15 @@ export const fetchApi = async <T>(
     return await req.json();
 };
 
-export type CourseItem = Map<String, [String | CourseItem]>;
+type List = { [key: string]: { [key: string]: string[] } };
 
-export const fetchCourseList = async (): Promise<CourseItem> => {
-    return await fetchApi("/api/course-list");
-}
+export const fetchItemList = async (): Promise<string[]> => {
+    let list: List = await fetchApi("/api/list");
+    let items: string[] = []; 
+    for (const [_, value] of Object.entries(list)) {
+        for (const [_, item] of Object.entries(value)) {
+            items.push(...item)
+        }
+    }
+    return items;
+};

@@ -4,13 +4,13 @@ use crate::state::State;
 use afire::prelude::*;
 
 use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use tracing::trace;
 
-mod item;
-mod item_list;
 mod auth;
 mod evaluate;
+mod item;
+mod list;
 
 pub fn attach(server: &mut Server<State>) {
     server.route(Method::ANY, "/api/**", |_| {
@@ -21,8 +21,8 @@ pub fn attach(server: &mut Server<State>) {
 
     auth::attach(server);
     evaluate::attach(server);
-    item_list::attach(server);
-    item::attach(server);
+    list::attach(server);
+    item::attach(server);    
 }
 
 pub fn json<T>(req: &Request) -> anyhow::Result<T>

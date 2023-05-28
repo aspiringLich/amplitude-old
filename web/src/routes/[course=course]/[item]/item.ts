@@ -111,10 +111,22 @@ export function renderArticle(body: HTMLElement) {
 }
 
 // The response from the server containing information about the article
-export class ArticleResponse {
+export class ArticleData {
     body: string;
-    config: {
-        title: string;
-        id: string;
-    };
+    title: string;
+    type: "article";
 }
+
+export class QuizData {
+    questions: {
+        question: string;
+        answers: {
+            text: string;
+            response: string;
+            correct: boolean;
+        }[];
+    }[];
+    type: "quiz";
+}
+
+export type Item = ArticleData | QuizData;

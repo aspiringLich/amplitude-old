@@ -21,7 +21,7 @@ impl Callback for Quiz {
         let quiz = items::quiz::Quiz::from_str(&code.literal, id.clone(), ctx)?;
         ctx.add_item(ItemType::Quiz(quiz), "")?;
 
-        ast.value = NodeValue::HtmlInline(format!("<Quiz id=\"{id}\" />\n"));
+        ast.value = NodeValue::HtmlInline(format!("<Quiz id=\"{id}\"></Quiz>\n"));
 
         Ok(node.children().collect())
     }

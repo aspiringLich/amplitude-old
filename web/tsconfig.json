@@ -10,6 +10,7 @@
         "skipLibCheck": true,
         "sourceMap": true,
         "baseUrl": ".",
+        "ignoreDeprecations": "5.0",
         "paths": {
             "$cmpt": ["./src/components/"],
             "$cmpt/*": ["./src/components/*"],

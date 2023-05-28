@@ -4,4 +4,6 @@
     export let data;
 </script>
 
-<Article {data} />
+{#if data.type == "article"}
+    <Article {data} />
+{/if}

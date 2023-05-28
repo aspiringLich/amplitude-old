@@ -31,5 +31,5 @@ impl Callback for Admonition {
     const MARKER: &'static str = "@!";
     const EXPECTED_TAG: ExpectedTag = ExpectedTag::BlockQuote;
     const OPTIONAL_KEYS: &'static [&'static str] =
-        &["note", "info", "warning", "success", "failiure"];
+        &["note", "info", "warning", "success", "failure"];
 }

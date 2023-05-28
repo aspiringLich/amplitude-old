@@ -1,7 +1,7 @@
 <script lang="ts">
     import Button from "$cmpt/Button.svelte";
     import { fetchApi } from "$lib/fetch";
-    import { getArticle, renderArticle } from "./article";
+    import { getArticle, renderArticle } from "./item";
     import { afterUpdate, onMount } from "svelte";
     import { ChevronLeft, ChevronRight } from "radix-icons-svelte";
     import Admonition from "./Admonition.svelte";
@@ -39,9 +39,9 @@
     onMount(try_init);
 
     async function init() {
-        fetchApi(`/api/quiz`, {
+        fetchApi("/api/item", {
             method: "POST",
-            body: { id, article: getArticle() },
+            body: { id: `${window.location.pathname}/${id}` },
         }).then((res) => {
             questions = (res as any).questions;
             answers = Array(questions.length);

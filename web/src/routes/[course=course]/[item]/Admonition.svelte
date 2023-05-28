@@ -17,7 +17,7 @@
         warning: { color: "yellow", icon: ExclamationTriangle },
         success: { color: "green", icon: CheckCircled },
         correct: { color: "green", icon: CheckCircled },
-        failiure: { color: "red", icon: CrossCircled },
+        failure: { color: "red", icon: CrossCircled },
         incorrect: { color: "red", icon: CrossCircled },
     };
     let item = data[type];
