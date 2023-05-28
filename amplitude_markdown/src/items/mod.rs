@@ -1,9 +1,11 @@
 use crate::items::utils::ErrorList;
 use crate::parse::context::ItemContext;
 use anyhow::Context;
+use tracing::debug;
 
 use crate::OsStrToString;
 use serde::{Deserialize, Serialize};
+use std::fmt;
 use std::fs;
 use std::path::Path;
 
@@ -23,6 +25,21 @@ pub enum ItemType {
     Project(project::Project),
 }
 
+impl fmt::Display for ItemType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Article(_) => "Article",
+                Self::Quiz(_) => "Quiz",
+                Self::Exercise(_) => "Exercise",
+                Self::Project(_) => "Project",
+            }
+        )
+    }
+}
+
 pub trait Item {
     fn parse_from_dir(
         dir: &Path,
@@ -31,7 +48,7 @@ pub trait Item {
     ) -> anyhow::Result<ItemType>;
 }
 
-pub fn parse_item(path: &Path, mut context: ItemContext) -> anyhow::Result<ItemType> {
+pub fn parse_item(path: &Path, mut context: ItemContext) -> anyhow::Result<()> {
     let mut errors = ErrorList::new("Could not parse as valid item", file!());
     macro parse_item($item:ty, $name:literal) {
         match <$item>::parse_from_dir(
@@ -41,7 +58,11 @@ pub fn parse_item(path: &Path, mut context: ItemContext) -> anyhow::Result<ItemT
         )
         .with_context(|| format!("While attempting to parse as `{}`", $name))
         {
-            Ok(item) => return Ok(item),
+            Ok(item) => {
+                // debug!("{:#?}", &item);
+                context.add_item(item);
+                return Ok(());
+            }
             Err(err) => errors.push(err),
         }
     }

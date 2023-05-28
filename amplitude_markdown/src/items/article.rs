@@ -7,10 +7,25 @@ use crate::parse::parse_md;
 
 use super::*;
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
+pub struct RawArticle {
+    pub title: String,
+}
+
+#[derive(Serialize, Debug)]
 pub struct Article {
     pub title: String,
+    pub body: String,
+}
+
+impl Article {
+    pub fn from_raw(raw: RawArticle, body: String) -> Self {
+        Self {
+            title: raw.title,
+            body,
+        }
+    }
 }
 
 impl Item for Article {
@@ -21,15 +36,12 @@ impl Item for Article {
     ) -> anyhow::Result<ItemType> {
         ensure!(contents.contains("article.md"), "article.md");
 
-        let (config, s): (Article, String) = parse_frontmatter(&dir.join("article.md"))
+        let (raw, s): (RawArticle, String) = parse_frontmatter(&dir.join("article.md"))
             .context("While reading article / parsing frontmatter header")?;
         let html = parse_md(&s, context).context("While parsing article markdown")?;
 
-        context
-            .write_article(&html)
-            .context("While writing article to disk")?;
-
-        Ok(ItemType::Article(config))
+        let article = Article::from_raw(raw, html);
+        Ok(ItemType::Article(article))
     }
 }
 

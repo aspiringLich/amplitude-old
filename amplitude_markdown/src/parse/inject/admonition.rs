@@ -9,14 +9,13 @@ impl Callback for Admonition {
         node: &'a AstNode<'a>,
         ctx: &mut ItemContext,
     ) -> CallbackRet<'a> {
-        let mut out = vec![];
-        html::format_document(node, ctx.markdown_options(), &mut out)
-            .context("failed to parse admonition")?;
-
-        anyhow::ensure!(args.len() == 1, "admonition must be provided with a type");
+        anyhow::ensure!(
+            args.len() == 1,
+            "admonition must be provided with a type, nothing more nothing less"
+        );
         let tag = args.keys().next().unwrap();
 
-        let s = String::from_utf8(out)
+        let s = parse_ast(&node, ctx.markdown_context())
             .context("failed to parse admonition output into valid string")?;
         let html = s
             .strip_prefix("<blockquote>")
@@ -24,7 +23,7 @@ impl Callback for Admonition {
             .context("expected blockquote tags in html")?;
         let mut data = node.data.borrow_mut();
         data.value =
-            NodeValue::HtmlInline(format!("<Admonition type=\"{tag}\">{html}</Admonition>\n",));
+            NodeValue::HtmlInline(format!("<Admonition type=\"{tag}\">{html}</Admonition>\n"));
 
         Ok(node.children().collect())
     }

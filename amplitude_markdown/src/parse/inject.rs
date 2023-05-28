@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use super::context::ItemContext;
 
+use crate::parse::parse_ast;
 use anyhow::Context;
 use comrak::{
     html,
@@ -71,7 +72,7 @@ impl<T: Callback> DynCallback for T {
     }
 }
 
-const CALLBACKS: &[&'static dyn DynCallback] = &[&admonition::Admonition];
+const CALLBACKS: &[&'static dyn DynCallback] = &[&admonition::Admonition, &quiz::Quiz];
 #[ctor::ctor]
 static MARKERS: HashMap<&'static str, &'static dyn DynCallback> = {
     let mut tags = HashMap::new();
@@ -231,9 +232,17 @@ pub(crate) fn inject<'a>(node: &'a AstNode<'a>, ctx: &mut ItemContext) -> anyhow
                 to_detach.push(node);
                 let expected = &info.expected_tag();
                 if expected.matches(n) {
-                    let mut ret = info
-                        .run_callback(args, n, ctx)
-                        .with_context(|| format!("while calling callback for tag `{text}`"))?;
+                    let mut ret = if let Some(id) = args.get("id") {
+                        let id = id.to_owned();
+                        ctx.scope(&id, |ref mut ctx| {
+                            info.run_callback(args, n, ctx)
+                                .with_context(|| format!("while calling callback for tag `{text}`"))
+                        })?
+                    } else {
+                        info.run_callback(args, n, ctx)
+                            .with_context(|| format!("while calling callback for tag `{text}`"))?
+                    };
+
                     to_detach.append(&mut ret);
                 } else {
                     anyhow::bail!(

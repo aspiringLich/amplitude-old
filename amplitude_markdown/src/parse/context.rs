@@ -1,10 +1,11 @@
 use std::{collections::HashMap, default::default, fs, path::PathBuf};
 
-use super::course::{RawCourseConfig, Track};
+use super::{course::{RawCourseConfig, Track}, parse_md, RawCourseData};
 use crate::items::ItemType;
 use amplitude_common::config::Config;
 use anyhow::Context;
 use comrak::{ComrakOptions, RefMap};
+use tracing::debug;
 
 #[derive(Debug)]
 pub struct MarkdownContext {
@@ -12,77 +13,28 @@ pub struct MarkdownContext {
     pub refs: RefMap,
 }
 
-/// Storing information about what weve parsed so far
-#[derive(Debug)]
-pub struct CourseParseContext {
-    pub id: String,
-    pub title: String,
-    pub description: String,
-    output_path: PathBuf,
-    markdown_context: MarkdownContext,
-    items: HashMap<String, ItemType>,
-    tracks: HashMap<String, Track>,
-}
-
-impl CourseParseContext {
-    pub fn new(
-        path: PathBuf,
-        markdown_context: MarkdownContext,
-        config: &Config,
-    ) -> anyhow::Result<Self> {
-        let course: RawCourseConfig =
-            toml::from_str(&fs::read_to_string(path.join("course.toml"))?)?;
-        let id = path
-            .file_name()
-            .context("Course path is not a directory")?
-            .to_string_lossy()
-            .to_string();
-
-        Ok(Self {
-            id,
-            title: course.title,
-            description: course.description,
-            output_path: config.parse.output_path.clone().into(),
-            markdown_context,
-            tracks: default(),
-            items: default(),
-        })
-    }
-
-    pub fn add_track(&mut self, id: String, track: Track) {
-        self.tracks.insert(id, track);
-    }
-}
-
 /// Sort of like `ParseContext` but scoped to something specific
 #[derive(Debug)]
 pub struct ItemContext<'a> {
-    context: &'a mut CourseParseContext,
+    context: &'a mut RawCourseData,
     id: String,
 }
 
 impl<'a> ItemContext<'a> {
+    /// Add an item to the context
+    pub fn add_item(&mut self, item: ItemType) {
+        debug!(
+            "{:24} ({:8} id: {})",
+            "Adding item to context",
+            item.to_string(),
+            &self.id
+        );
+        self.context.items.insert(self.id.clone(), item);
+    }
+
     /// Return the id
     pub fn id(&self) -> &str {
         &self.id
-    }
-
-    /// Return the `ItemType` of the item
-    #[must_use]
-    pub fn write_article(&self, html: &str) -> Result<(), std::io::Error> {
-        fs::create_dir_all(
-            self.context
-                .output_path
-                .join(&self.context.id)
-        )?;
-        fs::write(
-            self.context
-                .output_path
-                .join(&self.context.id)
-                .join(&self.id)
-                .with_extension("html"),
-            html,
-        )
     }
 
     /// Return the `MarkdownContext` used for parsing markdown
@@ -97,7 +49,7 @@ impl<'a> ItemContext<'a> {
 
     /// Create a new `ItemContext` from a `ParseContext` and an item id
     pub fn from(
-        context: &'a mut CourseParseContext,
+        context: &'a mut RawCourseData,
         track: &str,
         id: &str,
     ) -> anyhow::Result<Self> {
@@ -118,14 +70,33 @@ impl<'a> ItemContext<'a> {
         })
     }
 
-    /// Add another scope to the item id, used when passing the context from an
-    /// item to some child, e.g. a quiz in an article
-    pub fn add_scope(&'a mut self, scope: &str) -> Self {
-        let id = self.id.clone() + "/" + scope;
+    /// Scope this `ItemContext` to a something else
+    pub fn scope<F, T>(&mut self, scope: &str, f: F) -> T
+    where
+        F: FnOnce(&mut ItemContext) -> T,
+    {
+        let id = self.id.clone();
+        self.id = id.clone() + "/" + scope;
+        let out = f(self);
+        self.id = id;
 
-        Self {
-            context: self.context,
-            id,
-        }
+        return out;
+    }
+    
+    #[must_use]
+    pub fn parse_md(&mut self, p: &mut impl ParseMarkdown) -> anyhow::Result<()> {
+        p.parse_md(self)?;
+        Ok(())
+    }
+}
+
+pub trait ParseMarkdown {
+    fn parse_md(&mut self, ctx: &mut ItemContext) -> anyhow::Result<()>;
+}
+
+impl ParseMarkdown for String {
+    fn parse_md(&mut self, ctx: &mut ItemContext) -> anyhow::Result<()> {
+        *self = parse_md(self, ctx)?;
+        Ok(())
     }
 }

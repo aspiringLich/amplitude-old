@@ -1,10 +1,10 @@
-use std::{path::PathBuf};
+use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-use crate::items::{parse_item};
+use crate::items::parse_item;
 
-use super::{context::CourseParseContext, *};
+use super::*;
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -37,7 +37,7 @@ impl Track {
     }
 }
 
-pub fn parse_course(path: PathBuf, config: &Config) -> anyhow::Result<CourseParseContext> {
+pub fn parse_course(path: PathBuf, config: &Config) -> anyhow::Result<RawCourseData> {
     let options = ComrakOptions {
         extension: ComrakExtensionOptions {
             strikethrough: true,
@@ -72,7 +72,7 @@ pub fn parse_course(path: PathBuf, config: &Config) -> anyhow::Result<CoursePars
     .unwrap_or(RefMap::new());
 
     let md_ctx = MarkdownContext { options, refs };
-    let mut context = CourseParseContext::new(path.clone(), md_ctx, config)?;
+    let mut context = RawCourseData::new(path.clone(), md_ctx, config)?;
 
     for dir in fs::read_dir(&path)? {
         let dir = dir?;
@@ -98,7 +98,7 @@ fn strip_prefix(path: &Path) -> String {
     path.file_name().unwrap().to_str().unwrap()[3..].to_string()
 }
 
-pub fn parse_track(path: PathBuf, context: &mut CourseParseContext) -> anyhow::Result<()> {
+pub fn parse_track(path: PathBuf, context: &mut RawCourseData) -> anyhow::Result<()> {
     let track: RawTrack = toml::from_str(&fs::read_to_string(path.join("track.toml"))?)
         .context("While parsing `track.toml`")?;
     let track = Track::from_raw(track)?;

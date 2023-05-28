@@ -11,11 +11,12 @@ impl Item for Project {
     ) -> anyhow::Result<ItemType> {
         ensure!(
             contents.query("start", FileType::Code).next().is_some(),
+            "start.<code>",
             "Starting code"
         );
         ensure!(
             contents.query_type(FileType::Markdown).next().is_some(),
-            "Required file(s): `*.md` not found"
+            "*.md"
         );
 
         let project = Project;

@@ -1,3 +1,4 @@
+use crate::parse::context::ParseMarkdown;
 
 use super::*;
 
@@ -30,12 +31,34 @@ pub struct Quiz {
     pub questions: Vec<Question>,
 }
 
-impl Quiz {
-    pub fn from_raw(raw: QuizRaw, id: String) -> Self {
-        Self {
-            id,
-            questions: raw.questions,
+impl ParseMarkdown for Quiz {
+    fn parse_md(&mut self, ctx: &mut ItemContext) -> anyhow::Result<()> {
+        for question in &mut self.questions {
+            ctx.parse_md(&mut question.question)?;
+            for answer in &mut question.answers {
+                ctx.parse_md(&mut answer.text)?;
+                ctx.parse_md(&mut answer.response)?;
+            }
         }
+        Ok(())
+    }
+}
+
+impl Quiz {
+    fn from_raw(raw: QuizRaw, id: String, ctx: &mut ItemContext) -> anyhow::Result<Self> {
+        ctx.scope(&id.clone(), |ctx| {
+            let mut out = Self {
+                id,
+                questions: raw.questions,
+            };
+            ctx.parse_md(&mut out).context("While parsing markdown")?;
+            Ok(out)
+        })
+    }
+
+    pub fn from_str(s: &str, id: String, ctx: &mut ItemContext) -> anyhow::Result<Self> {
+        let raw: QuizRaw = toml::from_str(s).context("While parsing quiz toml")?;
+        Self::from_raw(raw, id, ctx)
     }
 }
 
@@ -43,7 +66,7 @@ impl Item for Quiz {
     fn parse_from_dir(
         dir: &Path,
         contents: DirContents,
-        _: &mut ItemContext,
+        ctx: &mut ItemContext,
     ) -> anyhow::Result<ItemType>
     where
         Self: Sized,
@@ -57,11 +80,11 @@ impl Item for Quiz {
             "Quiz directory should only contain `quiz.toml`"
         );
 
-        let quiz_raw: QuizRaw = toml::from_str(&fs::read_to_string(dir.join("quiz.toml"))?)
-            .context("While parsing quiz.toml")?;
         let id = dir.file_name().to_string();
-        let quiz = Quiz::from_raw(quiz_raw, id);
-        
+        let s =
+            std::fs::read_to_string(dir.join("quiz.toml")).context("While reading quiz.toml")?;
+        let quiz = Quiz::from_str(&s, id, ctx)?;
+
         Ok(ItemType::Quiz(quiz))
     }
 }

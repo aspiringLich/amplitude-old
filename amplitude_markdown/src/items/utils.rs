@@ -34,8 +34,7 @@ impl DirContents {
     }
 
     pub fn query_type(&self, typ: FileType) -> impl Iterator<Item = &DirItem> {
-        self.iter()
-            .filter(move |item| item.item_type == typ)
+        self.iter().filter(move |item| item.item_type == typ)
     }
 
     pub fn contains(&self, path: &str) -> bool {
