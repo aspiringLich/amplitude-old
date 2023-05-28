@@ -27,14 +27,15 @@ impl DerefMut for DirContents {
 }
 
 impl DirContents {
-    pub fn query<'a>(
-        &'a self,
-        name: &'a str,
-        typ: DirItemType,
-    ) -> impl Iterator<Item = &'a DirItem> {
+    pub fn query<'a>(&'a self, name: &'a str, typ: FileType) -> impl Iterator<Item = &'a DirItem> {
         self.iter()
             .filter(move |item| item.item_type == typ)
             .filter(move |item| item.name == name)
+    }
+
+    pub fn query_type(&self, typ: FileType) -> impl Iterator<Item = &DirItem> {
+        self.iter()
+            .filter(move |item| item.item_type == typ)
     }
 
     pub fn contains(&self, path: &str) -> bool {
@@ -44,7 +45,7 @@ impl DirContents {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum DirItemType {
+pub enum FileType {
     Code,
     Markdown,
     Toml,
@@ -52,16 +53,28 @@ pub enum DirItemType {
     Other,
 }
 
+impl Display for FileType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            FileType::Code => "<code_ext>",
+            FileType::Markdown => "md",
+            FileType::Toml => "toml",
+            FileType::Directory => "<directory>",
+            FileType::Other => "*",
+        })
+    }
+}
+
 #[ctor::ctor]
 static CODE_EXT: Vec<&'static str> = all::<Language>().map(|l| l.extension()).collect();
 
-impl DirItemType {
+impl FileType {
     pub fn from_ext(ext: &str) -> Self {
         match ext {
-            "md" => DirItemType::Markdown,
-            "toml" => DirItemType::Toml,
-            _ if CODE_EXT.contains(&ext) => DirItemType::Code,
-            _ => DirItemType::Other,
+            "md" => FileType::Markdown,
+            "toml" => FileType::Toml,
+            _ if CODE_EXT.contains(&ext) => FileType::Code,
+            _ => FileType::Other,
         }
     }
 }
@@ -69,7 +82,7 @@ impl DirItemType {
 pub struct DirItem {
     pub name: String,
     pub ext: String,
-    pub item_type: DirItemType,
+    pub item_type: FileType,
 }
 
 fn os_to_str(s: &std::ffi::OsStr) -> String {
@@ -86,9 +99,9 @@ pub fn get_dir_contents(path: &Path) -> anyhow::Result<DirContents> {
         let ext = os_to_str(path.extension().unwrap_or_default());
 
         let item_type = if path.is_dir() {
-            DirItemType::Directory
+            FileType::Directory
         } else {
-            DirItemType::from_ext(&ext)
+            FileType::from_ext(&ext)
         };
 
         items.push(DirItem {

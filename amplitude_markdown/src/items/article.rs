@@ -18,14 +18,8 @@ impl Item for Article {
         dir: &Path,
         contents: DirContents,
         context: &mut ItemContext,
-    ) -> anyhow::Result<ItemType>
-    where
-        Self: Sized,
-    {
-        anyhow::ensure!(
-            contents.contains("article.md"),
-            "Required item: `article.md` not found",
-        );
+    ) -> anyhow::Result<ItemType> {
+        ensure!(contents.contains("article.md"), "article.md");
 
         let (config, s): (Article, String) = parse_frontmatter(&dir.join("article.md"))
             .context("While reading article / parsing frontmatter header")?;
