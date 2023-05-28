@@ -7,25 +7,24 @@ use std::{
 use anyhow::Context;
 use serde::de::DeserializeOwned;
 
-use crate::parse::parse_md;
+use crate::{parse::parse_md, OsStrToString};
 
 use super::*;
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(deny_unknown_fields)]
-pub struct ArticleConfig {
+pub struct Article {
     pub title: String,
-    pub description: String,
 }
 
-impl Item for ArticleConfig {
-    fn parse_from_dir(dir: &Path, context: &mut ItemContext) -> anyhow::Result<Self>
+impl Item for Article {
+    fn parse_from_dir(dir: &Path, context: &mut ItemContext) -> anyhow::Result<ItemType>
     where
         Self: Sized,
     {
         let items = dir
             .read_dir()?
-            .filter_map(|e| e.ok().and_then(|p| p.file_name().to_str()))
+            .filter_map(|e| e.ok().map(|p| p.file_name().to_string()))
             .collect::<HashSet<_>>();
         anyhow::ensure!(
             items.contains("article.md"),
@@ -33,12 +32,15 @@ impl Item for ArticleConfig {
         );
         anyhow::ensure!(items.len() == 1, "Unexpected files / directories",);
 
-        let (config, s): (ArticleConfig, String) = parse_frontmatter(&dir.join("article.md"))
+        let (config, s): (Article, String) = parse_frontmatter(&dir.join("article.md"))
             .context("While reading article / parsing frontmatter header")?;
-        let html = parse_md(&config, &s, context).context("While parsing article markdown")?;
-        
-        context.add_article(config, &html);
-        Ok(config)
+        let html = parse_md(&s, context).context("While parsing article markdown")?;
+
+        context
+            .write_article(&html)
+            .context("While writing article to disk")?;
+
+        Ok(ItemType::Article(config))
     }
 }
 

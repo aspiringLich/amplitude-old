@@ -6,13 +6,13 @@ use rusqlite::Connection;
 
 use crate::database::Database;
 
-use amplitude_markdown::{parse::parse, state::ParseState};
+use amplitude_markdown::{parse::{parse, output::ParseData}};
 
 pub struct State {
     db: Mutex<Connection>,
     // breon this is not a nice name
     // why dont you think of something better
-    pub parse_state: ParseState,
+    pub parse_data: ParseData,
     pub language_config: Vec<LanguageConfig>,
     pub config: Config,
 }
@@ -37,7 +37,7 @@ impl State {
 
         Ok(Self {
             db: Mutex::new(db),
-            parse_state,
+            parse_data: parse_state,
             language_config: serde_json::from_str(&raw_lang_config)?,
             config,
         })

@@ -91,6 +91,7 @@ dependencies = [
  "serde",
  "toml",
  "tracing",
+ "tracing-subscriber",
  "ureq",
 ]
 

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use super::context::ItemContext;
-use crate::items::article::ArticleConfig;
+use crate::items::article::Article;
 use anyhow::Context;
 use comrak::{
     html,
@@ -18,7 +18,7 @@ type CallbackRet<'a> = anyhow::Result<Vec<&'a AstNode<'a>>>;
 
 trait DynCallback: Send + Sync + 'static {
     fn run_callback<'a>(
-        &mut self,
+        &self,
         args: CallbackArgs,
         node: &'a AstNode<'a>,
         ctx: &mut ItemContext,
@@ -32,7 +32,7 @@ trait DynCallback: Send + Sync + 'static {
 
 pub trait Callback: Send + Sync + 'static {
     fn run_callback<'a>(
-        &mut self,
+        &self,
         args: CallbackArgs,
         node: &'a AstNode<'a>,
         ctx: &mut ItemContext,
@@ -46,7 +46,7 @@ pub trait Callback: Send + Sync + 'static {
 
 impl<T: Callback> DynCallback for T {
     fn run_callback<'a>(
-        &mut self,
+        &self,
         args: CallbackArgs,
         node: &'a AstNode<'a>,
         ctx: &mut ItemContext,
@@ -84,7 +84,7 @@ static MARKERS: HashMap<&'static str, &'static dyn DynCallback> = {
 /// A list of tags that are expected to be found in the markdown to call the
 /// callback
 #[derive(Debug)]
-enum ExpectedTag {
+pub enum ExpectedTag {
     CodeBlock(Option<&'static str>),
     BlockQuote,
 }
@@ -150,7 +150,7 @@ fn display_node(node: &AstNode) -> String {
     .to_string()
 }
 
-fn parse_args(input: &str) -> HashMap<String, String> {
+fn parse_args(input: &str) -> anyhow::Result<HashMap<String, String>> {
     let mut out = HashMap::new();
 
     let words = input.split_whitespace().collect::<Vec<_>>();
@@ -158,21 +158,27 @@ fn parse_args(input: &str) -> HashMap<String, String> {
 
     while i < words.len() {
         if words[i] == "=" {
-            out[words[i - 1]] = words[i + 1].to_string();
+            out.insert(
+                words
+                    .get(i - 1)
+                    .context("`=` at beginning is not allowed")?
+                    .to_string(),
+                words
+                    .get(i + 1)
+                    .context("`=` at end is not allowed")?
+                    .to_string(),
+            );
             i += 2;
         } else {
-            out[words[i]] = "".to_string();
+            let (l, r) = words[i].split_once('=').unwrap_or((words[i], ""));
+            out.insert(l.to_string(), r.to_string());
             i += 1;
         }
     }
-    out
+    Ok(out)
 }
 
-pub(crate) fn inject<'a>(
-    config: &'a ArticleConfig,
-    node: &'a AstNode<'a>,
-    ctx: &'a mut ItemContext<'a>,
-) -> anyhow::Result<()> {
+pub(crate) fn inject<'a>(node: &'a AstNode<'a>, ctx: &mut ItemContext) -> anyhow::Result<()> {
     // variables were going to detach
     let mut to_detach = vec![];
     // dbg!(node);
@@ -196,7 +202,7 @@ pub(crate) fn inject<'a>(
                 .unwrap_or((text, ""));
 
             if let Some(info) = MARKERS.get(text) {
-                let args = parse_args(post);
+                let args = parse_args(post).context("While parsing arguments")?;
                 for key in info.mandatory_keys() {
                     if !args.contains_key(*key) {
                         anyhow::bail!(
@@ -250,23 +256,27 @@ pub(crate) fn inject<'a>(
 
 #[test]
 pub fn test_parse_args() {
-    let get = |s| {
-        parse_args(s)
-            .into_iter()
+    let test = |s, test: &[(&str, &str)]| {
+        let args = parse_args(s).unwrap();
+        let mut list = args
+            .iter()
             .map(|(a, b)| (a.as_str(), b.as_str()))
-            .collect::<Vec<_>>()
+            .collect::<Vec<_>>();
+        list.sort();
+        assert_eq!(list, test)
     };
-    assert_eq!(get("a b c"), [("a", ""), ("b", ""), ("c", "")]);
-    assert_eq!(get("a b=c"), [("a", ""), ("b", "c")]);
-    assert_eq!(
-        get("a b c d=e f=g h"),
-        [
+    test("a b c", &[("a", ""), ("b", ""), ("c", "")]);
+    test("a b=c", &[("a", ""), ("b", "c")]);
+
+    test(
+        "a b c d=e f = g h",
+        &[
             ("a", ""),
             ("b", ""),
             ("c", ""),
             ("d", "e"),
             ("f", "g"),
-            ("h", "")
-        ]
+            ("h", ""),
+        ],
     );
 }

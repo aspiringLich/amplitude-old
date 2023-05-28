@@ -9,7 +9,7 @@ struct CourseReq {
 pub fn attach(server: &mut Server<State>) {
     server.handled_stateful_route(Method::POST, "/api/article-list", |state, req| {
         let req: CourseReq = json(req)?;
-        let state = &state.parse_state;
+        let state = &state.parse_data;
 
         let course = state
             .courses
@@ -21,7 +21,7 @@ pub fn attach(server: &mut Server<State>) {
             .content(Content::JSON))
     });
     server.handled_stateful_route(Method::GET, "/api/course-list", |state, _req| {
-        let state = &state.parse_state;
+        let state = &state.parse_data;
 
         Ok(Response::new()
             .text(serde_json::to_string(&state.courses)?)

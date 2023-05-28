@@ -1,7 +1,7 @@
 use clap::Parser;
 use serde::Deserialize;
 
-#[derive(Parser, Default)]
+#[derive(Parser, Default, Deserialize, Debug)]
 pub struct Args {
     /// Whether or not to reclone the repo from github or to use the existing one
     #[arg(long, default_value_t = false)]
@@ -18,7 +18,7 @@ impl Args {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct ParseConfig {
     pub git_url: String,
@@ -26,7 +26,7 @@ pub struct ParseConfig {
     pub output_path: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct ServerConfig {
     pub host: String,
@@ -37,14 +37,18 @@ pub struct ServerConfig {
     pub db_path: String,
 }
 
-#[derive(Deserialize, Default)]
+#[derive(Deserialize, Default, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct AuthConfig {
     pub google_oauth: Option<GoogleOauth>,
     pub github_oauth: Option<GithubOauth>,
 }
 
-#[derive(Deserialize)]
+fn args() -> Args {
+    Args::parse()
+}
+
+#[derive(Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
     pub server: ServerConfig,
@@ -52,11 +56,11 @@ pub struct Config {
     #[serde(default)]
     pub auth: AuthConfig,
     pub parse: ParseConfig,
-    #[serde(skip)]
+    #[serde(default = "args")]
     pub args: Args,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Docker {
     pub tmp_folder: String,
@@ -64,7 +68,7 @@ pub struct Docker {
     pub timeout: u64,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct GoogleOauth {
     pub client_id: String,
@@ -72,7 +76,7 @@ pub struct GoogleOauth {
     pub external_url: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct GithubOauth {
     pub app_id: String,

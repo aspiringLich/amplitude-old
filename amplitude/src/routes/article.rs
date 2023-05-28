@@ -26,7 +26,7 @@ pub fn attach(server: &mut Server<State>) {
 
         let body =
             state
-                .parse_state
+                .parse_data
                 .read_article(&req.article)
                 .with_context(Status::NotFound, || {
                     trace!("/api/article: Article {} not found", req.article);
@@ -34,7 +34,7 @@ pub fn attach(server: &mut Server<State>) {
                 })?;
 
         let config = state
-            .parse_state
+            .parse_data
             .get_article_config(&req.article)
             .context(Status::NotFound, "Article config not found")?;
         let response = ArticleResponse { config, body };
@@ -52,7 +52,7 @@ pub fn attach(server: &mut Server<State>) {
             serde_json::from_str(&s).context(Status::BadRequest, "Bad Request")?;
 
         let config = state
-            .parse_state
+            .parse_data
             .get_article_config(&req.article)
             .context(Status::NotFound, "Article not found")?;
         let response = ArticleConfigResponse { config };

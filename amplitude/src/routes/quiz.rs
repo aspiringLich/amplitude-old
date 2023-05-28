@@ -13,7 +13,7 @@ pub fn attach(server: &mut Server<State>) {
         let req: QuizReq = serde_json::from_str(&s)?;
 
         let quiz = state
-            .parse_state
+            .parse_data
             .get_quiz(&req.article, &req.id)
             .with_context(Status::NotFound, || {
                 format!("Quiz not found! ({}/{})", &req.article, &req.id)

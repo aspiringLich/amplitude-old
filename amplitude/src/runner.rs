@@ -6,7 +6,7 @@ use std::{
 };
 
 use afire::internal::encoding::url;
-use amplitude_common::config::GetLang;
+use amplitude_common::{config::GetLang, lang::Language};
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
 

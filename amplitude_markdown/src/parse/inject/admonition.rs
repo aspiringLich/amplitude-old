@@ -4,7 +4,7 @@ pub struct Admonition;
 
 impl Callback for Admonition {
     fn run_callback<'a>(
-        &mut self,
+        &self,
         args: CallbackArgs,
         node: &'a AstNode<'a>,
         ctx: &mut ItemContext,
