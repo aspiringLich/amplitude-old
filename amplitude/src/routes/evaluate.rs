@@ -4,11 +4,7 @@ use amplitude_common::lang::Language;
 
 use super::*;
 
-use crate::{
-    error::HandledRoute,
-    runner,
-    state::State,
-};
+use crate::{error::HandledRoute, runner, state::State};
 
 #[derive(Deserialize)]
 struct EvaluateReq {

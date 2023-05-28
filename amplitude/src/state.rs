@@ -6,7 +6,7 @@ use rusqlite::Connection;
 
 use crate::database::Database;
 
-use amplitude_markdown::{parse::{parse, ParseData}};
+use amplitude_markdown::parse::{parse, ParseData};
 
 pub struct State {
     db: Mutex<Connection>,

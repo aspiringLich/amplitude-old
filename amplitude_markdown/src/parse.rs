@@ -118,7 +118,7 @@ fn parse_into_ast<'a>(
     this_refs.extend(ctx.refs.clone());
 
     let ast = comrak::parse_document_with_broken_link_callback(
-        &arena,
+        arena,
         input,
         &ctx.options,
         Some(&mut |link| {
@@ -138,7 +138,7 @@ pub(crate) fn parse_md(input: &str, ctx: &mut DataContext) -> anyhow::Result<Str
     // do things
     let arena = Arena::new();
     let node = parse_into_ast(input, ctx.markdown_context(), ctx.id(), &arena)?;
-    inject::inject(&node, ctx)?;
+    inject::inject(node, ctx)?;
     parse_ast(node, ctx.markdown_context())
 }
 
@@ -147,8 +147,8 @@ pub(crate) fn parse_ast<'a>(
     ctx: &MarkdownContext,
 ) -> anyhow::Result<String> {
     let mut cm = vec![];
-    comrak::format_html(&node, &ctx.options, &mut cm).context("while parsing AST to html")?;
-    Ok(String::from_utf8(cm).context("While converting html to string")?)
+    comrak::format_html(node, &ctx.options, &mut cm).context("while parsing AST to html")?;
+    String::from_utf8(cm).context("While converting html to string")
 }
 
 /// Storing information about what weve parsed so far
@@ -234,7 +234,6 @@ impl RawCourseData {
         })
     }
 
-    #[must_use]
     pub fn add_track(&mut self, course_id: String, track: Track) -> anyhow::Result<()> {
         self.tracks
             .get_mut(&course_id)

@@ -15,7 +15,7 @@ impl Callback for Admonition {
         );
         let tag = args.keys().next().unwrap();
 
-        let s = parse_ast(&node, ctx.markdown_context())
+        let s = parse_ast(node, ctx.markdown_context())
             .context("failed to parse admonition output into valid string")?;
         let html = s
             .strip_prefix("<blockquote>")

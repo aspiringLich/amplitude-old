@@ -1,4 +1,3 @@
-
 use crate::items::{self, ItemType};
 
 use super::*;
@@ -14,7 +13,7 @@ impl Callback for Quiz {
     ) -> CallbackRet<'a> {
         let id = &args["id"];
         // dbg!(node);
-        
+
         let mut ast = node.data.borrow_mut();
         let NodeValue::CodeBlock(ref code) = ast.value else { anyhow::bail!("Expected Code block") };
 

@@ -19,7 +19,6 @@ pub struct DataContext<'a> {
 
 impl<'a> DataContext<'a> {
     /// Add an item to the context
-    #[must_use]
     pub fn add_item(&mut self, item: ItemType, track_id: &str) -> anyhow::Result<()> {
         debug!(
             "{:24} ({:8} id: {})",
@@ -42,7 +41,7 @@ impl<'a> DataContext<'a> {
     }
 
     fn get_course_tracks(&mut self) -> anyhow::Result<&mut Vec<Track>> {
-        let course_id = self.id.split_once("/").map(|(a, _)| a).unwrap_or(&self.id);
+        let course_id = self.id.split_once('/').map(|(a, _)| a).unwrap_or(&self.id);
         let tracks = self
             .context
             .tracks
@@ -52,7 +51,6 @@ impl<'a> DataContext<'a> {
         Ok(tracks)
     }
 
-    #[must_use]
     pub fn add_track(&mut self, track: Track) -> anyhow::Result<()> {
         debug!("{:24} (id: {})", "Adding track to context", track.id);
         self.get_course_tracks()?.push(track);
@@ -81,10 +79,7 @@ impl<'a> DataContext<'a> {
         }
         let id = id.to_string();
 
-        Ok(Self {
-            context,
-            id: id.to_string(),
-        })
+        Ok(Self { context, id })
     }
 
     /// Scope this `ItemContext` to a something else
@@ -97,10 +92,9 @@ impl<'a> DataContext<'a> {
         let out = f(self);
         self.id = id;
 
-        return out;
+        out
     }
 
-    #[must_use]
     pub fn parse_md(&mut self, p: &mut impl ParseMarkdown) -> anyhow::Result<()> {
         p.parse_md(self)?;
         Ok(())

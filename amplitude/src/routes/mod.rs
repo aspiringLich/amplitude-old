@@ -22,7 +22,7 @@ pub fn attach(server: &mut Server<State>) {
     auth::attach(server);
     evaluate::attach(server);
     list::attach(server);
-    item::attach(server);    
+    item::attach(server);
 }
 
 pub fn json<T>(req: &Request) -> anyhow::Result<T>

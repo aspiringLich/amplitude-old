@@ -38,7 +38,7 @@ impl DirContents {
     }
 
     pub fn contains(&self, path: &str) -> bool {
-        let Some((name, ext)) = path.split_once(".") else { return false };
+        let Some((name, ext)) = path.split_once('.') else { return false };
         self.iter().any(|item| item.name == name && item.ext == ext)
     }
 }
@@ -142,7 +142,7 @@ where
     lines
         .iter()
         .enumerate()
-        .map(|(i, s)| f(i, i == lines.len() - 1) + &s)
+        .map(|(i, s)| f(i, i == lines.len() - 1) + s)
         .collect::<Vec<_>>()
         .join("\n")
         + "\n"
@@ -187,7 +187,7 @@ impl Display for ErrorList<anyhow::Error> {
                 .as_slice()
                 .windows(3)
                 .skip_while(|l| !l[1].contains(module_path!().split("::").next().unwrap()))
-                .take_while(|l| !l[0].contains(&self.stop))
+                .take_while(|l| !l[0].contains(self.stop))
                 .map(|l| l[1])
                 .collect::<Vec<_>>()
                 .join("\n");

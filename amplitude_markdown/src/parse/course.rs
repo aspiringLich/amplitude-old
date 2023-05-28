@@ -37,10 +37,7 @@ impl Track {
     }
 }
 
-pub fn parse_course(
-    path: PathBuf,
-    data: &mut RawCourseData,
-) -> anyhow::Result<()> {
+pub fn parse_course(path: PathBuf, data: &mut RawCourseData) -> anyhow::Result<()> {
     let arena = Arena::new();
     let refs = {
         let header = fs::read_to_string(path.join("header.md"))?;
