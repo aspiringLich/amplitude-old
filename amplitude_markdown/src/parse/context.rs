@@ -1,18 +1,10 @@
-use std::{
-    collections::{HashMap, HashSet},
-    default::default,
-    fs,
-    path::PathBuf,
-};
+use std::{collections::HashMap, default::default, fs, path::PathBuf};
 
 use super::course::{RawCourseConfig, Track};
-use crate::items::{article::Article, quiz::Quiz, ItemType};
+use crate::items::ItemType;
 use amplitude_common::config::Config;
 use anyhow::Context;
-use comrak::{
-    parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
-    ListStyleType, RefMap,
-};
+use comrak::{ComrakOptions, RefMap};
 
 #[derive(Debug)]
 pub struct MarkdownContext {
@@ -23,9 +15,9 @@ pub struct MarkdownContext {
 /// Storing information about what weve parsed so far
 #[derive(Debug)]
 pub struct CourseParseContext {
+    pub id: String,
     pub title: String,
     pub description: String,
-    path: PathBuf,
     output_path: PathBuf,
     markdown_context: MarkdownContext,
     items: HashMap<String, ItemType>,
@@ -40,11 +32,16 @@ impl CourseParseContext {
     ) -> anyhow::Result<Self> {
         let course: RawCourseConfig =
             toml::from_str(&fs::read_to_string(path.join("course.toml"))?)?;
+        let id = path
+            .file_name()
+            .context("Course path is not a directory")?
+            .to_string_lossy()
+            .to_string();
 
         Ok(Self {
+            id,
             title: course.title,
             description: course.description,
-            path,
             output_path: config.parse.output_path.clone().into(),
             markdown_context,
             tracks: default(),
@@ -73,9 +70,15 @@ impl<'a> ItemContext<'a> {
     /// Return the `ItemType` of the item
     #[must_use]
     pub fn write_article(&self, html: &str) -> Result<(), std::io::Error> {
+        fs::create_dir_all(
+            self.context
+                .output_path
+                .join(&self.context.id)
+        )?;
         fs::write(
             self.context
                 .output_path
+                .join(&self.context.id)
                 .join(&self.id)
                 .with_extension("html"),
             html,

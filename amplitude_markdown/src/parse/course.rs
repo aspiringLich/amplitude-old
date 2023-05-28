@@ -1,8 +1,8 @@
-use std::{collections::HashSet, path::PathBuf};
+use std::{path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::items::{article::Article, parse_item, quiz::Quiz};
+use crate::items::{parse_item};
 
 use super::{context::CourseParseContext, *};
 

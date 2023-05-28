@@ -5,12 +5,11 @@ mod link_concat;
 pub mod output;
 
 use crate::{
-    items::article::Article,
-    parse::{context::CourseParseContext, course::parse_course},
+    parse::{course::parse_course},
     OsStrToString,
 };
 use amplitude_common::config::{Config, ParseConfig};
-use anyhow::{ensure, Context};
+use anyhow::{Context};
 use comrak::{
     parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
     ListStyleType, RefMap,
@@ -18,7 +17,7 @@ use comrak::{
 use git2::build::RepoBuilder;
 use link_concat::link_concat_callback;
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{HashMap},
     default::default,
     fs,
     path::Path,
@@ -63,6 +62,17 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
         );
     }
 
+    // delete everything in the folder
+    for item in fs::read_dir(&config.parse.output_path)? {
+        let item = item?;
+        let path = item.path();
+        if path.is_dir() {
+            fs::remove_dir_all(path)?;
+        } else {
+            fs::remove_file(path)?;
+        }
+    }
+    
     info!("Parsing articles...");
 
     let mut courses = HashMap::new();

@@ -7,8 +7,8 @@ pub struct ParseData {}
 impl ParseData {
     /// Create a new `ParseData` from the given `courses`.
     pub fn from_courses(
-        courses: HashMap<String, CourseParseContext>,
-        config: &Config,
+        _courses: HashMap<String, CourseParseContext>,
+        _config: &Config,
     ) -> anyhow::Result<Self> {
         Ok(Self {})
     }

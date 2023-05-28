@@ -1,7 +1,7 @@
 use crate::items::utils::ErrorList;
 use crate::parse::context::ItemContext;
 use anyhow::Context;
-use anyhow::Error;
+
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -35,37 +35,4 @@ pub fn parse_item(path: &Path, mut context: ItemContext) -> anyhow::Result<ItemT
     parse_item!(article::Article, "Article");
 
     anyhow::bail!(errors)
-
-    // anyhow::bail!(errors
-    //     .into_iter()
-    //     .map(|err| {
-    //         let s = err.backtrace().to_string();
-    //         let mut backtrace = s
-    //             .lines()
-    //             .skip_while(|l| !l.contains("amplitude_markdown"))
-    //             .take_while(|l| !l.contains(std::file!()))
-    //             .enumerate()
-    //             .filter_map(|(i, s)| {
-    //                 (i % 2 == 1)
-    //                     .then(|| format!("    {}: {}", i / 2, s.trim().strip_prefix("at ").unwrap()))
-    //             })
-    //             .collect::<Vec<_>>()
-    //             .join("\n");
-
-    //         if backtrace.is_empty() {
-    //             backtrace = "backtrace disabled".to_string()
-    //         }
-
-    //         let chain = err
-    //             .chain()
-    //             .skip(1)
-    //             .enumerate()
-    //             .map(|(i, e)| format!("    {i}: {e}"))
-    //             .collect::<Vec<_>>()
-    //             .join("\n");
-
-    //         format!("{err}\n\nCaused By:\n{chain}\nBacktrace:\n{backtrace}",)
-    //     })
-    //     .collect::<Vec<_>>()
-    //     .join("\n"));
 }

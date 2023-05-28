@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use super::context::ItemContext;
-use crate::items::article::Article;
+
 use anyhow::Context;
 use comrak::{
     html,
@@ -241,9 +241,10 @@ pub(crate) fn inject<'a>(node: &'a AstNode<'a>, ctx: &mut ItemContext) -> anyhow
                         display_node(n)
                     );
                 }
-            } else {
-                anyhow::bail!("Unknown tag `{text}`");
             }
+            // else {
+            //     anyhow::bail!("Unknown tag `{text}`");
+            // }
         }
     }
 
