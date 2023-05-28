@@ -1,7 +1,6 @@
 use crate::items::utils::ErrorList;
-use crate::parse::context::ItemContext;
+use crate::parse::context::DataContext;
 use anyhow::Context;
-use tracing::debug;
 
 use crate::OsStrToString;
 use serde::{Deserialize, Serialize};
@@ -44,11 +43,11 @@ pub trait Item {
     fn parse_from_dir(
         dir: &Path,
         contents: DirContents,
-        context: &mut ItemContext,
+        context: &mut DataContext,
     ) -> anyhow::Result<ItemType>;
 }
 
-pub fn parse_item(path: &Path, mut context: ItemContext) -> anyhow::Result<()> {
+pub fn parse_item(path: &Path, mut context: &mut DataContext, track_id: &str) -> anyhow::Result<()> {
     let mut errors = ErrorList::new("Could not parse as valid item", file!());
     macro parse_item($item:ty, $name:literal) {
         match <$item>::parse_from_dir(
@@ -60,7 +59,7 @@ pub fn parse_item(path: &Path, mut context: ItemContext) -> anyhow::Result<()> {
         {
             Ok(item) => {
                 // debug!("{:#?}", &item);
-                context.add_item(item);
+                context.add_item(item, track_id);
                 return Ok(());
             }
             Err(err) => errors.push(err),

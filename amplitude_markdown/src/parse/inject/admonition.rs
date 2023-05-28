@@ -7,7 +7,7 @@ impl Callback for Admonition {
         &self,
         args: CallbackArgs,
         node: &'a AstNode<'a>,
-        ctx: &mut ItemContext,
+        ctx: &mut DataContext,
     ) -> CallbackRet<'a> {
         anyhow::ensure!(
             args.len() == 1,

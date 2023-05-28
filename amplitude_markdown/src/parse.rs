@@ -3,21 +3,26 @@ pub mod course;
 mod inject;
 mod link_concat;
 
-use crate::{parse::course::parse_course, OsStrToString, items::ItemType};
+use crate::{items::ItemType, parse::course::parse_course, OsStrToString};
 use amplitude_common::config::{Config, ParseConfig};
 use anyhow::Context;
 use comrak::{
-    parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions,
-    ListStyleType, RefMap, nodes::AstNode,
+    nodes::AstNode, parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions,
+    ComrakRenderOptions, ListStyleType, RefMap,
 };
 use git2::build::RepoBuilder;
 use link_concat::link_concat_callback;
-use std::{collections::HashMap, default::default, fs, path::{Path, PathBuf}};
+use std::{
+    collections::HashMap,
+    default::default,
+    fs,
+    path::{Path, PathBuf},
+};
 use tracing::{info, warn};
 
 use self::{
-    context::{ItemContext, MarkdownContext},
-    course::{Track, RawCourseConfig},
+    context::{DataContext, MarkdownContext},
+    course::{CourseConfig, Track},
 };
 
 /// Clones the articles repo
@@ -53,20 +58,36 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
         );
     }
 
-    // // delete everything in the folder
-    // for item in fs::read_dir(&config.parse.output_path)? {
-    //     let item = item?;
-    //     let path = item.path();
-    //     if path.is_dir() {
-    //         fs::remove_dir_all(path)?;
-    //     } else {
-    //         fs::remove_file(path)?;
-    //     }
-    // }
+    let options = ComrakOptions {
+        extension: ComrakExtensionOptions {
+            strikethrough: true,
+            tagfilter: true,
+            table: true,
+            autolink: true,
+            tasklist: true,
+            superscript: true,
+            header_ids: None,
+            footnotes: true,
+            description_lists: true,
+            front_matter_delimiter: Some("---".to_string()),
+        },
+        parse: default(),
+        render: ComrakRenderOptions {
+            github_pre_lang: false,
+            full_info_string: true,
+            unsafe_: true,
+            hardbreaks: false,
+            width: 0,
+            escape: false,
+            list_style: ListStyleType::default(),
+            sourcepos: false,
+        },
+    };
+    let md_ctx = MarkdownContext { options, refs: RefMap::new() };
 
     info!("Parsing articles...");
 
-    let mut courses = HashMap::new();
+    let mut data = RawCourseData::new(md_ctx).context("While creating `RawCourseData`")?;
     for item in fs::read_dir(&config.parse.clone_path)? {
         let item = item?;
         let path = item.path();
@@ -76,23 +97,27 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
                 continue;
             }
 
-            let context = parse_course(path, config)
+            parse_course(path, config, &mut data)
                 .with_context(|| format!("While parsing course `{name}`"))?;
-            courses.insert(name, context);
         }
     }
-    let data = ParseData::from_raw(courses).context("While generating `ParseData`")?;
+    let data = ParseData::from_raw(data).context("While generating `ParseData`")?;
 
     dbg!(&data);
 
     Ok(data)
 }
 
-fn parse_into_ast<'a>(input: &'a str, ctx: &MarkdownContext, id: &str, arena: &'a Arena<AstNode<'a>>) -> anyhow::Result<&'a AstNode<'a>> {
+fn parse_into_ast<'a>(
+    input: &'a str,
+    ctx: &MarkdownContext,
+    id: &str,
+    arena: &'a Arena<AstNode<'a>>,
+) -> anyhow::Result<&'a AstNode<'a>> {
     // get the refs
     let mut this_refs = parse_document_refs(&Arena::new(), input);
     this_refs.extend(ctx.refs.clone());
-    
+
     let ast = comrak::parse_document_with_broken_link_callback(
         &arena,
         input,
@@ -110,7 +135,7 @@ fn parse_into_ast<'a>(input: &'a str, ctx: &MarkdownContext, id: &str, arena: &'
 
 /// Parse the input `md` and return the output `html`.
 /// Has full access to `ItemContext`
-pub(crate) fn parse_md(input: &str, ctx: &mut ItemContext) -> anyhow::Result<String> {
+pub(crate) fn parse_md(input: &str, ctx: &mut DataContext) -> anyhow::Result<String> {
     // do things
     let arena = Arena::new();
     let node = parse_into_ast(input, ctx.markdown_context(), ctx.id(), &arena)?;
@@ -123,18 +148,14 @@ pub(crate) fn parse_ast<'a>(
     ctx: &MarkdownContext,
 ) -> anyhow::Result<String> {
     let mut cm = vec![];
-    comrak::format_html(&node, &ctx.options, &mut cm)
-        .context("while parsing AST to html")?;
+    comrak::format_html(&node, &ctx.options, &mut cm).context("while parsing AST to html")?;
     Ok(String::from_utf8(cm).context("While converting html to string")?)
 }
 
 /// Storing information about what weve parsed so far
 #[derive(Debug)]
 pub struct RawCourseData {
-    pub id: String,
-    pub title: String,
-    pub description: String,
-    output_path: PathBuf,
+    pub course_data: HashMap<String, CourseConfig>,
     markdown_context: MarkdownContext,
     items: HashMap<String, ItemType>,
     tracks: HashMap<String, Track>,
@@ -143,42 +164,41 @@ pub struct RawCourseData {
 /// Storing information about what weve parsed so far
 #[derive(Debug)]
 pub struct ParseData {
-    pub courses: HashMap<String, RawCourseData>,
-    pub markdown_context: MarkdownContext,
+    pub course_data: HashMap<String, CourseConfig>,
+    pub items: HashMap<String, ItemType>,
+    pub tracks: HashMap<String, Track>,
 }
 
 impl ParseData {
-    pub fn from_raw(raw: HashMap<String, RawCourseData>) -> anyhow::Result<Self> {
-        for (id, course) in &raw {
-            dbg!(course);
-            if course.tracks.is_empty() {
-                warn!("Course `{}` has no tracks", id);
-            }
+    pub fn from_raw(data: RawCourseData) -> anyhow::Result<Self> {
+        for (id, item) in &data.items {
+            
         }
-        
-        todo!()
+
+        Ok(Self {
+            course_data: data.course_data,
+            items: data.items,
+            tracks: data.tracks,
+        })
     }
 }
 
 impl RawCourseData {
-    pub fn new(
-        path: PathBuf,
-        markdown_context: MarkdownContext,
-        config: &Config,
-    ) -> anyhow::Result<Self> {
-        let course: RawCourseConfig =
-            toml::from_str(&fs::read_to_string(path.join("course.toml"))?)?;
-        let id = path
-            .file_name()
-            .context("Course path is not a directory")?
-            .to_string_lossy()
-            .to_string();
+    pub fn new(markdown_context: MarkdownContext) -> anyhow::Result<Self> {
+        // let course: RawCourseConfig =
+        //     toml::from_str(&fs::read_to_string(path.join("course.toml"))?)?;
+        // let id = path
+        //     .file_name()
+        //     .context("Course path is not a directory")?
+        //     .to_string_lossy()
+        //     .to_string();
 
         Ok(Self {
-            id,
-            title: course.title,
-            description: course.description,
-            output_path: config.parse.output_path.clone().into(),
+            // id,
+            // title: course.title,
+            // description: course.description,
+            // output_path: config.parse.output_path.clone().into(),
+            course_data: default(),
             markdown_context,
             tracks: default(),
             items: default(),

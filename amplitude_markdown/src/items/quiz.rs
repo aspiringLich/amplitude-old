@@ -32,7 +32,7 @@ pub struct Quiz {
 }
 
 impl ParseMarkdown for Quiz {
-    fn parse_md(&mut self, ctx: &mut ItemContext) -> anyhow::Result<()> {
+    fn parse_md(&mut self, ctx: &mut DataContext) -> anyhow::Result<()> {
         for question in &mut self.questions {
             ctx.parse_md(&mut question.question)?;
             for answer in &mut question.answers {
@@ -45,7 +45,7 @@ impl ParseMarkdown for Quiz {
 }
 
 impl Quiz {
-    fn from_raw(raw: QuizRaw, id: String, ctx: &mut ItemContext) -> anyhow::Result<Self> {
+    fn from_raw(raw: QuizRaw, id: String, ctx: &mut DataContext) -> anyhow::Result<Self> {
         ctx.scope(&id.clone(), |ctx| {
             let mut out = Self {
                 id,
@@ -56,7 +56,7 @@ impl Quiz {
         })
     }
 
-    pub fn from_str(s: &str, id: String, ctx: &mut ItemContext) -> anyhow::Result<Self> {
+    pub fn from_str(s: &str, id: String, ctx: &mut DataContext) -> anyhow::Result<Self> {
         let raw: QuizRaw = toml::from_str(s).context("While parsing quiz toml")?;
         Self::from_raw(raw, id, ctx)
     }
@@ -66,7 +66,7 @@ impl Item for Quiz {
     fn parse_from_dir(
         dir: &Path,
         contents: DirContents,
-        ctx: &mut ItemContext,
+        ctx: &mut DataContext,
     ) -> anyhow::Result<ItemType>
     where
         Self: Sized,

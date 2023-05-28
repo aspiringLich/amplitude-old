@@ -1,6 +1,6 @@
 use std::{collections::HashMap, default::default, fs, path::PathBuf};
 
-use super::{course::{RawCourseConfig, Track}, parse_md, RawCourseData};
+use super::{course::Track, parse_md, RawCourseData};
 use crate::items::ItemType;
 use amplitude_common::config::Config;
 use anyhow::Context;
@@ -15,14 +15,15 @@ pub struct MarkdownContext {
 
 /// Sort of like `ParseContext` but scoped to something specific
 #[derive(Debug)]
-pub struct ItemContext<'a> {
+pub struct DataContext<'a> {
     context: &'a mut RawCourseData,
     id: String,
 }
 
-impl<'a> ItemContext<'a> {
+impl<'a> DataContext<'a> {
     /// Add an item to the context
-    pub fn add_item(&mut self, item: ItemType) {
+    #[must_use]
+    pub fn add_item(&mut self, item: ItemType, track_id: &str) -> anyhow::Result<()> {
         debug!(
             "{:24} ({:8} id: {})",
             "Adding item to context",
@@ -30,6 +31,21 @@ impl<'a> ItemContext<'a> {
             &self.id
         );
         self.context.items.insert(self.id.clone(), item);
+        if !track_id.is_empty() {
+            self.context
+                .tracks
+                .get_mut(track_id)
+                .with_context(|| format!("Track `{track_id}` not found"))?
+                .items
+                .push(self.id.clone());
+        }
+
+        Ok(())
+    }
+
+    pub fn add_track(&mut self, track: Track, track_id: String) {
+        debug!("{:24} (id: {})", "Adding track to context", track_id);
+        self.context.tracks.insert(track_id, track);
     }
 
     /// Return the id
@@ -48,21 +64,11 @@ impl<'a> ItemContext<'a> {
     }
 
     /// Create a new `ItemContext` from a `ParseContext` and an item id
-    pub fn from(
-        context: &'a mut RawCourseData,
-        track: &str,
-        id: &str,
-    ) -> anyhow::Result<Self> {
+    pub fn new(context: &'a mut RawCourseData, id: &str) -> anyhow::Result<Self> {
         if context.items.contains_key(id) {
             anyhow::bail!("Duplicate item id: {}", id);
         }
         let id = id.to_string();
-        context
-            .tracks
-            .get_mut(track)
-            .context("Track does not exist")?
-            .items
-            .push(id.clone());
 
         Ok(Self {
             context,
@@ -73,7 +79,7 @@ impl<'a> ItemContext<'a> {
     /// Scope this `ItemContext` to a something else
     pub fn scope<F, T>(&mut self, scope: &str, f: F) -> T
     where
-        F: FnOnce(&mut ItemContext) -> T,
+        F: FnOnce(&mut DataContext) -> T,
     {
         let id = self.id.clone();
         self.id = id.clone() + "/" + scope;
@@ -82,7 +88,7 @@ impl<'a> ItemContext<'a> {
 
         return out;
     }
-    
+
     #[must_use]
     pub fn parse_md(&mut self, p: &mut impl ParseMarkdown) -> anyhow::Result<()> {
         p.parse_md(self)?;
@@ -91,11 +97,11 @@ impl<'a> ItemContext<'a> {
 }
 
 pub trait ParseMarkdown {
-    fn parse_md(&mut self, ctx: &mut ItemContext) -> anyhow::Result<()>;
+    fn parse_md(&mut self, ctx: &mut DataContext) -> anyhow::Result<()>;
 }
 
 impl ParseMarkdown for String {
-    fn parse_md(&mut self, ctx: &mut ItemContext) -> anyhow::Result<()> {
+    fn parse_md(&mut self, ctx: &mut DataContext) -> anyhow::Result<()> {
         *self = parse_md(self, ctx)?;
         Ok(())
     }

@@ -7,7 +7,7 @@ impl Item for Project {
     fn parse_from_dir(
         _dir: &Path,
         contents: DirContents,
-        _context: &mut ItemContext,
+        _context: &mut DataContext,
     ) -> anyhow::Result<ItemType> {
         ensure!(
             contents.query("start", FileType::Code).next().is_some(),

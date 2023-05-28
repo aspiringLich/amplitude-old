@@ -11,7 +11,7 @@ impl Callback for Quiz {
         &self,
         args: CallbackArgs,
         node: &'a AstNode<'a>,
-        ctx: &mut ItemContext,
+        ctx: &mut DataContext,
     ) -> CallbackRet<'a> {
         let id = &args["id"];
         // dbg!(node);
@@ -20,7 +20,7 @@ impl Callback for Quiz {
         let NodeValue::CodeBlock(ref code) = ast.value else { anyhow::bail!("Expected Code block") };
 
         let quiz = items::quiz::Quiz::from_str(&code.literal, id.clone(), ctx)?;
-        ctx.add_item(ItemType::Quiz(quiz));
+        ctx.add_item(ItemType::Quiz(quiz), "");
 
         ast.value = NodeValue::HtmlInline(format!("<Quiz id=\"{id}\" />\n"));
 

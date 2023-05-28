@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use super::context::ItemContext;
+use super::context::DataContext;
 
 use crate::parse::parse_ast;
 use anyhow::Context;
@@ -22,7 +22,7 @@ trait DynCallback: Send + Sync + 'static {
         &self,
         args: CallbackArgs,
         node: &'a AstNode<'a>,
-        ctx: &mut ItemContext,
+        ctx: &mut DataContext,
     ) -> CallbackRet<'a>;
 
     fn marker(&self) -> &'static str;
@@ -36,7 +36,7 @@ pub trait Callback: Send + Sync + 'static {
         &self,
         args: CallbackArgs,
         node: &'a AstNode<'a>,
-        ctx: &mut ItemContext,
+        ctx: &mut DataContext,
     ) -> CallbackRet<'a>;
 
     const MARKER: &'static str;
@@ -50,7 +50,7 @@ impl<T: Callback> DynCallback for T {
         &self,
         args: CallbackArgs,
         node: &'a AstNode<'a>,
-        ctx: &mut ItemContext,
+        ctx: &mut DataContext,
     ) -> CallbackRet<'a> {
         self.run_callback(args, node, ctx)
     }
@@ -179,7 +179,7 @@ fn parse_args(input: &str) -> anyhow::Result<HashMap<String, String>> {
     Ok(out)
 }
 
-pub(crate) fn inject<'a>(node: &'a AstNode<'a>, ctx: &mut ItemContext) -> anyhow::Result<()> {
+pub(crate) fn inject<'a>(node: &'a AstNode<'a>, ctx: &mut DataContext) -> anyhow::Result<()> {
     // variables were going to detach
     let mut to_detach = vec![];
     // dbg!(node);

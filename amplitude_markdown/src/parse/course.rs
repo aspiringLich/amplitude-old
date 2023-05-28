@@ -1,14 +1,15 @@
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
+use tracing_subscriber::registry::Data;
 
 use crate::items::parse_item;
 
 use super::*;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(deny_unknown_fields)]
-pub struct RawCourseConfig {
+pub struct CourseConfig {
     pub title: String,
     pub description: String,
 }
@@ -22,14 +23,16 @@ pub struct RawTrack {
 
 #[derive(Serialize, Debug)]
 pub struct Track {
+    pub id: String,
     pub title: String,
     pub description: String,
     pub items: Vec<String>,
 }
 
 impl Track {
-    pub fn from_raw(raw: RawTrack) -> anyhow::Result<Self> {
+    pub fn from_raw(raw: RawTrack, id: String) -> anyhow::Result<Self> {
         Ok(Self {
+            id,
             title: raw.title,
             description: raw.description,
             items: Vec::new(),
@@ -37,43 +40,20 @@ impl Track {
     }
 }
 
-pub fn parse_course(path: PathBuf, config: &Config) -> anyhow::Result<RawCourseData> {
-    let options = ComrakOptions {
-        extension: ComrakExtensionOptions {
-            strikethrough: true,
-            tagfilter: true,
-            table: true,
-            autolink: true,
-            tasklist: true,
-            superscript: true,
-            header_ids: None,
-            footnotes: true,
-            description_lists: true,
-            front_matter_delimiter: Some("---".to_string()),
-        },
-        parse: default(),
-        render: ComrakRenderOptions {
-            github_pre_lang: false,
-            full_info_string: true,
-            unsafe_: true,
-            hardbreaks: false,
-            width: 0,
-            escape: false,
-            list_style: ListStyleType::default(),
-            sourcepos: false,
-        },
-    };
+pub fn parse_course(
+    path: PathBuf,
+    config: &Config,
+    data: &mut RawCourseData,
+) -> anyhow::Result<()> {
     let arena = Arena::new();
-
     let refs = {
         let header = fs::read_to_string(path.join("header.md"))?;
         Some(parse_document_refs(&arena, &header))
     }
     .unwrap_or(RefMap::new());
+    data.markdown_context.refs = refs;
 
-    let md_ctx = MarkdownContext { options, refs };
-    let mut context = RawCourseData::new(path.clone(), md_ctx, config)?;
-
+    let course_id = path.file_name().to_string();
     for dir in fs::read_dir(&path)? {
         let dir = dir?;
         let path = dir.path();
@@ -83,28 +63,30 @@ pub fn parse_course(path: PathBuf, config: &Config) -> anyhow::Result<RawCourseD
         }
 
         let file_name = dir.file_name();
-        let file_name = file_name.to_str().unwrap();
-        if file_name.starts_with('.') {
+        let track_id = file_name.to_str().unwrap();
+        if track_id.starts_with('.') {
             continue;
         }
-        parse_track(path, &mut context)
-            .with_context(|| format!("While parsing track {file_name}"))?;
+
+        let mut ctx = DataContext::new(data, &course_id)?;
+
+        parse_track(path, &mut ctx).with_context(|| format!("While parsing track {track_id}"))?;
     }
 
-    Ok(context)
+    Ok(())
 }
 
 fn strip_prefix(path: &Path) -> String {
     path.file_name().unwrap().to_str().unwrap()[3..].to_string()
 }
 
-pub fn parse_track(path: PathBuf, context: &mut RawCourseData) -> anyhow::Result<()> {
+pub fn parse_track(path: PathBuf, ctx: &mut DataContext) -> anyhow::Result<()> {
     let track: RawTrack = toml::from_str(&fs::read_to_string(path.join("track.toml"))?)
         .context("While parsing `track.toml`")?;
-    let track = Track::from_raw(track)?;
-    // skip first 3 characters ("00-item" -> "item")
     let track_id = strip_prefix(&path);
-    context.add_track(track_id.clone(), track);
+    let track = Track::from_raw(track, track_id.clone())?;
+
+    ctx.add_track(track, track_id.clone());
 
     for item in fs::read_dir(&path)? {
         let item = item?;
@@ -120,8 +102,10 @@ pub fn parse_track(path: PathBuf, context: &mut RawCourseData) -> anyhow::Result
 
         let id = strip_prefix(&path);
 
-        parse_item(&path, ItemContext::from(context, &track_id, &id)?)
-            .with_context(|| format!("While parsing item at path `{}`", path.to_string_lossy()))?;
+        ctx.scope(&id, |ctx| {
+            parse_item(&path, ctx, &track_id)
+                .with_context(|| format!("While parsing item at path `{}`", path.to_string_lossy()))
+        })?
     }
 
     Ok(())

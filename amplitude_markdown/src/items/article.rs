@@ -32,7 +32,7 @@ impl Item for Article {
     fn parse_from_dir(
         dir: &Path,
         contents: DirContents,
-        context: &mut ItemContext,
+        context: &mut DataContext,
     ) -> anyhow::Result<ItemType> {
         ensure!(contents.contains("article.md"), "article.md");
 

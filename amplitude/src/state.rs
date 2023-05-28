@@ -6,12 +6,10 @@ use rusqlite::Connection;
 
 use crate::database::Database;
 
-use amplitude_markdown::{parse::{parse, output::ParseData}};
+use amplitude_markdown::{parse::{parse, ParseData}};
 
 pub struct State {
     db: Mutex<Connection>,
-    // breon this is not a nice name
-    // why dont you think of something better
     pub parse_data: ParseData,
     pub language_config: Vec<LanguageConfig>,
     pub config: Config,

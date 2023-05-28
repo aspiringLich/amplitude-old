@@ -8,7 +8,7 @@ impl Item for Exercise {
     fn parse_from_dir(
         _dir: &Path,
         contents: DirContents,
-        _context: &mut ItemContext,
+        _context: &mut DataContext,
     ) -> anyhow::Result<ItemType> {
         ensure!(
             contents.query("gen", FileType::Code).next().is_some(),
