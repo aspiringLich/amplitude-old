@@ -69,7 +69,7 @@ impl<T: Callback> DynCallback for T {
     }
 }
 
-const CALLBACKS: &[&'static dyn DynCallback] = &[&admonition::Admonition, &quiz::Quiz];
+const CALLBACKS: &[&'static dyn DynCallback] = &[&admonition::Admonition, &quiz::Quiz, &code::Code];
 #[ctor::ctor]
 static MARKERS: HashMap<&'static str, &'static dyn DynCallback> = {
     let mut tags = HashMap::new();
@@ -210,15 +210,17 @@ pub(crate) fn inject<'a>(node: &'a AstNode<'a>, ctx: &mut DataContext) -> anyhow
                         );
                     }
                 }
-                for arg in &args {
-                    if !info.mandatory_keys().contains(&arg.0.as_str())
-                        && !info.optional_keys().contains(&arg.0.as_str())
-                    {
-                        anyhow::bail!(
-                            "Unknown key `{key}` in tag `{text}`",
-                            key = arg.0,
-                            text = text
-                        );
+                if !info.optional_keys().contains(&"*") {
+                    for arg in &args {
+                        if !info.mandatory_keys().contains(&arg.0.as_str())
+                            && !info.optional_keys().contains(&arg.0.as_str())
+                        {
+                            anyhow::bail!(
+                                "Unknown key `{key}` in tag `{text}`",
+                                key = arg.0,
+                                text = text
+                            );
+                        }
                     }
                 }
 
