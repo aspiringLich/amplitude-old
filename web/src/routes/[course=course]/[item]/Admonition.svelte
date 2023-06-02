@@ -11,14 +11,14 @@
     export let type: string;
     export let darken: number = 0;
 
-    let data = {
-        note: { color: "purple", icon: File },
-        info: { color: "blue", icon: InfoCircled },
-        warning: { color: "yellow", icon: ExclamationTriangle },
-        success: { color: "green", icon: CheckCircled },
-        correct: { color: "green", icon: CheckCircled },
-        failure: { color: "red", icon: CrossCircled },
-        incorrect: { color: "red", icon: CrossCircled },
+    const data = {
+        note: { color: "secondary", icon: File },
+        info: { color: "primary", icon: InfoCircled },
+        warning: { color: "warning", icon: ExclamationTriangle },
+        success: { color: "success", icon: CheckCircled },
+        correct: { color: "success", icon: CheckCircled },
+        failure: { color: "error", icon: CrossCircled },
+        incorrect: { color: "error", icon: CrossCircled },
     };
     let item = data[type];
     if (!item) throw new Error(`Unknown admonition type: ${type}`);

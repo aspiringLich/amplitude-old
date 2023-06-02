@@ -5,12 +5,13 @@
     import "@skeletonlabs/skeleton/styles/skeleton.css";
     import "../themes/base.postcss";
     import "../themes/cool.postcss";
+    
+    import hljs from 'highlight.js';
+    import { storeHighlightJs } from '@skeletonlabs/skeleton';
+    import 'highlight.js/styles/agate.css';
+
+    storeHighlightJs.set(hljs);
 </script>
 
 <slot />
 
-<style lang="scss" global>
-    // @import "$styles/global";
-    // @import "$styles/styles";
-    // @import "$styles/variables";
-</style>

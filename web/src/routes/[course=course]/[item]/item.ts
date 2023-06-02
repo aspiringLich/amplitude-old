@@ -9,17 +9,14 @@ import {
     noop,
     SvelteComponent,
 } from "svelte/internal";
-import Quiz from "./Quiz.svelte";
-import Code from "./Code.svelte";
-import Admonition from "./Admonition.svelte";
 // import svelte from "svelte/compiler"
 
 // https://github.com/sveltejs/svelte/issues/2588
-function createSlots(slots) {
+function createSlots(slots: { [name: string]: any }) {
     const svelteSlots = {};
 
-    for (const slotName in slots) {
-        svelteSlots[slotName] = [createSlotFn(slots[slotName])];
+    for (const [slotName, slot] of Object.entries(slots)) {
+        if (slot) svelteSlots[slotName] = [createSlotFn(slots[slotName])];
     }
 
     function createSlotFn([ele, props = {}]) {
@@ -62,7 +59,11 @@ function createSlots(slots) {
 export function renderComponent(
     doc: HTMLElement,
     query: string,
-    type: ComponentType
+    type: ComponentType,
+    manipulate: (
+        props: { [name: string]: any },
+        slots: { [name: string]: any },
+    ) => void = () => {}
 ) {
     doc.querySelectorAll(query).forEach((target) => {
         let props = {};
@@ -71,10 +72,15 @@ export function renderComponent(
         }
 
         if (target.childElementCount) {
-            props["$$slots"] = createSlots({
+            let slots = {
                 default: [...target.children, { $$scope: {} }],
-            });
+            };
+            manipulate(props, slots);
+
+            props["$$slots"] = createSlots(slots);
             props["$$scope"] = {};
+        } else {
+            manipulate(props, {})
         }
 
         try {
@@ -95,8 +101,19 @@ export function getArticle() {
     return window.location.pathname.split("/")[2];
 }
 
+import Quiz from "./Quiz.svelte";
+import Admonition from "./Admonition.svelte";
+import Code from "./Code.svelte";
+
 export function renderArticle(body: HTMLElement) {
-    renderComponent(body, "pre:not(.component)", Code);
+    renderComponent(body, "pre:not(.component)", Code, (props, slots) => {
+        // console.log(slots);
+        let language = slots.default[0].classList[0]?.replace("language-", "") ?? "plaintext";
+        
+        props.code = slots.default[0].innerHTML;
+        props.language = language;
+        slots.default = null;
+    });
     renderComponent(body, "admonition", Admonition);
     renderComponent(body, "quiz", Quiz);
 

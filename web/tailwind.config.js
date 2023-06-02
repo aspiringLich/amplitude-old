@@ -13,13 +13,13 @@ export default {
         ),
     ],
     theme: {
-        extend: {
-            red: colors.rose,
-            yellow: colors.amber,
-            green: colors.lime,
-            blue: colors.cyan,
-            purple: colors.purple,
-        },
+        // extend: {
+        //     red: colors.rose,
+        //     yellow: colors.amber,
+        //     green: colors.lime,
+        //     blue: colors.cyan,
+        //     purple: colors.purple,
+        // },
     },
     plugins: [
         // 3. Append the Skeleton plugin to the end of this list
