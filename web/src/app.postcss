@@ -1,8 +1,4 @@
 /* Write your global styles here, in PostCSS syntax */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @font-face {
     font-family: "Noto Sans";
     src: url("$assets/fonts/NotoSans-Regular.ttf");
@@ -18,9 +14,9 @@
     src: url("$assets/fonts/JetBrainsMonoNL-Regular.ttf");
 }
 
-html {
+body {
     font-family: "Noto Sans";
-    background-color: var(--bg);
+    background-color: #fdfdfd !important;
 }
 
 p {
@@ -61,3 +57,4 @@ blockquote {
     overflow: hidden;
     background-color: var(--fg);
 }
+

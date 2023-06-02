@@ -31,7 +31,7 @@
         on:mouseleave={() => (copy_button = false)}
     >
         <div class="container">
-            <pre class="component" bind:this={pre_element}><slot /></pre>
+            <pre class="code" bind:this={pre_element}><slot /></pre>
         </div>
         {#if copy_button}
             <button class="hljs copy" on:click={copy}>
@@ -47,7 +47,6 @@
         bottom: 5px;
         right: 5px;
         display: flex;
-        justify-content: end;
         padding: 0;
         border: none;
         
@@ -96,7 +95,7 @@
         :global(code) {
             font-family: "Jet Brains Mono";
             line-height: 1.1em;
-            font-size: 0.85em;
+            font-size: 1.0em;
         }
     }
 

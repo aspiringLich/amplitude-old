@@ -1,5 +1,7 @@
+import colors from "tailwindcss/colors";
+
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
     // 1. Apply the dark mode class setting:
     darkMode: "class",
     content: [
@@ -11,7 +13,13 @@ module.exports = {
         ),
     ],
     theme: {
-        extend: {},
+        extend: {
+            red: colors.rose,
+            yellow: colors.amber,
+            green: colors.lime,
+            blue: colors.cyan,
+            purple: colors.purple,
+        },
     },
     plugins: [
         // 3. Append the Skeleton plugin to the end of this list
