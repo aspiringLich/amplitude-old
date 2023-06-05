@@ -3,16 +3,15 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
     import { Copy, Check } from "radix-icons-svelte";
+    import { storeHighlightJs } from "@skeletonlabs/skeleton";
+    import { clipboard } from "@skeletonlabs/skeleton";
+    import { fade } from "svelte/transition";
 
     // Event Handler
     const dispatch = createEventDispatcher();
 
     // Types
     import type { CssClasses } from "@skeletonlabs/skeleton";
-
-    import { storeHighlightJs } from "@skeletonlabs/skeleton";
-    import { clipboard } from "@skeletonlabs/skeleton";
-    import { fade } from "svelte/transition";
 
     // Props
     /** Sets a language alias for Highlight.js syntax highlighting. */
@@ -41,8 +40,10 @@
 
     // Base Classes
     const cBase = "overflow-scroll shadow";
-    const cHeader = "text-xs text-white/50 uppercase p-2 pl-4 pb-0";
-    const cPre = "break-all p-4 pt-0 mt-4 overflow-x-auto";
+    const cHeader = "text-xs text-white/50 uppercase p-2 pl-4";
+    const cPre = "break-all p-4 pt-0 overflow-x-auto";
+    const classesBase = `${cBase} ${background} ${blur} ${text} 
+        ${color} ${rounded} ${shadow} ${$$props.class ?? ""}`;
 
     // Local
     let formatted = false;
@@ -96,8 +97,7 @@
     }
 
     // Reactive
-    const classesBase = `${cBase} ${background} ${blur} ${text} ${color} 
-    ${rounded} ${shadow} ${$$props.class ?? ""}`;
+    $: txt = language == "plaintext" || language == "txt";
 </script>
 
 {#if language && code}
@@ -123,7 +123,7 @@
             </button>
         {/if}
         <!-- Header -->
-        {#if language != "plaintext" && language != "txt"}
+        {#if !txt}
             <header class="codeblock-header {cHeader}">
                 <!-- Language -->
                 <span class="codeblock-language">
@@ -132,7 +132,7 @@
             </header>
         {/if}
         <!-- Pre/Code -->
-        <pre class="codeblock-pre {cPre}"><code
+        <pre class="codeblock-pre {cPre}" class:mt-4={txt}><code
                 class="codeblock-code language-{language} lineNumbers"
                 >{#if formatted}{@html displayCode}{:else}{code.trim()}{/if}</code
             ></pre>

@@ -1,24 +1,15 @@
 <script lang="ts">
-    import Button from "$cmpt/Button.svelte";
     import { fetchApi } from "$lib/fetch";
-    import { getArticle, renderArticle } from "./item";
+    import { renderArticle } from "./item";
     import { afterUpdate, onMount } from "svelte";
     import { ChevronLeft, ChevronRight } from "radix-icons-svelte";
     import Admonition from "./Admonition.svelte";
 
+    // Props
     export let id: string;
 
-    let observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-                init();
-                observer.disconnect();
-                observer = undefined;
-            }
-        });
-    });
-
-    let questions: {
+    // Types
+    type Questions = {
         question: string;
         answers: {
             text: string;
@@ -26,28 +17,39 @@
             correct: boolean;
         }[];
     }[];
-    let answers: { correct: boolean; num: number }[];
+    type Answers = { correct: boolean; num: number }[];
+
+    // Intersection Observer
+    let observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                fetchApi("/api/item", {
+                    method: "POST",
+                    body: { id: `${window.location.pathname}/${id}` },
+                }).then((res) => {
+                    questions = (res as any).questions;
+                    answers = Array(questions.length);
+                    n = 0;
+                });
+                observer.disconnect();
+                observer = undefined;
+            }
+        });
+    });
+
+    // Local
+    let questions: Questions;
+    let answers: Answers;
 
     let container: HTMLElement;
     let n = -1;
     let prev_n = n;
 
-    function try_init() {
-        if (observer) observer.observe(container);
-    }
+    let selected: number;
 
+    // initialization
+    const try_init = () => observer && observer.observe(container);
     onMount(try_init);
-
-    async function init() {
-        fetchApi("/api/item", {
-            method: "POST",
-            body: { id: `${window.location.pathname}/${id}` },
-        }).then((res) => {
-            questions = (res as any).questions;
-            answers = Array(questions.length);
-            n = 0;
-        });
-    }
 
     afterUpdate(() => {
         // only run when n is changed
@@ -57,12 +59,12 @@
         renderArticle(container);
     });
 
+    // Button funcs
     const gen_deselect = (i: number) => {
         return () => {
             if (selected == i) selected = undefined;
         };
     };
-
     const submit = () => {
         if (selected === undefined) return;
         answers[n] = {
@@ -70,46 +72,47 @@
             num: selected,
         };
     };
-
     const inc = () => (selected = answers[++n]?.num);
     const dec = () => (selected = answers[--n]?.num);
-
-    let selected: number;
 </script>
 
 <svelte:window on:scroll={try_init} />
 
 <blockquote class="container" bind:this={container}>
+    <div class="buttons">
+        <button on:click={dec} disabled={n <= 0}>
+            <ChevronLeft />
+        </button>
+        <button
+            on:click={submit}
+            disabled={selected === undefined || answers[n] !== undefined}
+        >
+            Submit
+        </button>
+        <button
+            on:click={inc}
+            disabled={!questions || n >= questions.length - 1}
+        >
+            <ChevronRight />
+        </button>
+    </div>
     {#if n == -1}
         <h1>Loading...</h1>
     {:else}
         {@const answered = answers[n] !== undefined}
-        <div class="buttons">
-            <Button onclick={dec} enabled={n > 0}>
-                <ChevronLeft />
-            </Button>
-            <Button
-                onclick={submit}
-                enabled={selected !== undefined && answers[n] === undefined}
-            >
-                Submit
-            </Button>
-            <Button onclick={inc} enabled={n < questions.length - 1}>
-                <ChevronRight />
-            </Button>
-        </div>
         <div class="question">
             {@html questions[n].question}
 
             {#each questions[n].answers as answer, i}
                 <blockquote
-                    class="choice"
+                    class="choice flex pl-3"
                     class:selected={i == selected}
                     class:correct={answered && answer.correct}
                     class:incorrect={answered && !answer.correct}
                 >
                     <input
                         type="radio"
+                        class="mr-3"
                         value={i}
                         id={i.toString()}
                         name={id}
@@ -117,7 +120,7 @@
                         bind:group={selected}
                         on:click={gen_deselect(i)}
                     />
-                    <label for={i.toString()}>
+                    <label class="w-max" for={i.toString()}>
                         {@html answer.text}
                     </label>
                 </blockquote>
@@ -125,101 +128,10 @@
 
             {#if answered}
                 {@const answer = questions[n].answers[answers[n].num]}
-                <Admonition
-                    type={answer.correct ? "correct" : "incorrect"}
-                    darken={1}
-                >
+                <Admonition type={answer.correct ? "correct" : "incorrect"}>
                     {@html answer.response}
                 </Admonition>
             {/if}
         </div>
     {/if}
 </blockquote>
-
-<style lang="scss">
-    $c-padding: 0.5em;
-    $i-size: 1em;
-
-    @mixin border($color) {
-        border: calc($i-size / 2) solid var($color);
-    }
-
-    @mixin input($unchecked, $checked) {
-        input {
-            @include border($unchecked);
-        }
-
-        &.selected input {
-            @include border($checked);
-        }
-    }
-
-    .choice {
-        display: flex;
-        align-items: center;
-        flex-direction: row;
-
-        width: 100%;
-        margin: 1em 0;
-        padding-left: $c-padding;
-
-        transition: background-color 0.2s linear;
-
-        &.selected {
-            background-color: var(--blue-700);
-        }
-
-        input:checked {
-            @include border(--blue-100);
-        }
-
-        &.incorrect {
-            background-color: var(--red-700);
-            @include input(--red-700, --red-100);
-        }
-
-        &.correct {
-            background-color: var(--green-700);
-            @include input(--green-700, --green-100);
-        }
-    }
-
-    input {
-        appearance: none;
-
-        border-radius: 50%;
-        width: $i-size;
-        height: $i-size;
-
-        transition: 0.1s all linear;
-        margin-right: $c-padding;
-        margin-left: 0;
-        position: relative;
-
-        border: 2px solid var(--gray-100);
-    }
-
-    label {
-        flex-grow: 99;
-    }
-
-    .buttons {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 1em;
-        width: 100%;
-    }
-
-    .question {
-        width: 100%;
-    }
-
-    .container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-    }
-</style>

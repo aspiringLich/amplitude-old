@@ -16,12 +16,11 @@
 
 body {
     font-family: "Noto Sans";
-    background-color: #fdfdfd !important;
+    background-color: #fdfdfd;
 }
 
 p {
-    line-height: 1.7;
-    color: #333;
+    @apply my-2 leading-7
 }
 
 h1,
@@ -31,8 +30,8 @@ h4,
 h5,
 h6 {
     font-family: "Fira Code";
-    font-weight: 800;
     line-height: 1.5;
+    @apply my-2 font-bold
 }
 
 code:not(.nglobal) {
@@ -42,19 +41,17 @@ code:not(.nglobal) {
 }
 
 :not(pre) > code:not(.nglobal) {
-    background-color: var(--fg);
+    background-color: rgb(var(--color-surface-500) / 0.1);
     padding: 0.2em 0.4em;
     border-radius: 0.3em;
 }
 
 blockquote {
     margin: 0;
-    padding: 1em 1.5em;
 
     box-sizing: border-box;
-    border-radius: var(--border-radius);
     width: 100%;
     overflow: hidden;
-    background-color: var(--fg);
+    @apply bg-slate-500/10 rounded-container-token m-0 py-4 px-6
 }
 
