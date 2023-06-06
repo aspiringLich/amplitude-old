@@ -7,6 +7,7 @@
     let body: HTMLElement;
     let article: HTMLElement;
     let padding = 1000;
+    let init = false;
 
     onMount(() => {
         renderArticle(body);
@@ -19,7 +20,7 @@
             }
         }
 
-        article.classList.add("show");
+        init = true;
         padding = 50;
     });
 </script>
@@ -34,8 +35,8 @@
     </style>
 </noscript>
 
-<div class="article" bind:this={article}>
-    <div class="container body" bind:this={body}>
+<div class="article" class:show={init} bind:this={article}>
+    <div class="max-w-3xl px-5 m-auto body" bind:this={body}>
         <h1>{@html data.title}</h1>
         {@html data.body}
     </div>
@@ -54,17 +55,11 @@
         transform: translateY(-20px);
         transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
 
-        &:global(.show) {
+        &.show {
             transform: translateY(0);
             visibility: visible;
             opacity: 1;
         }
-    }
-
-    .container {
-        margin: auto;
-        margin-top: 16px;
-        max-width: 740px;
     }
 
     .body {

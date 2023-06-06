@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { Pane, Splitpanes } from 'svelte-splitpanes';
     import Article from "./Article.svelte";
 
     export let data;

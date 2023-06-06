@@ -86,6 +86,7 @@
             </button>
             <button
                 type="button"
+                class="border-0"
                 on:click={submit}
                 disabled={selected === undefined || answers[n] !== undefined}
             >
@@ -93,6 +94,7 @@
             </button>
             <button
                 type="button"
+                class="border-0"
                 on:click={inc}
                 disabled={!questions || n >= questions.length - 1}
             >
@@ -142,7 +144,7 @@
 
 <style lang="postcss">
     .choice {
-        @apply transition-colors duration-500 mt-4;
+        @apply transition-colors duration-500 mt-4 bg-surface-200;
 
         & input {
             @apply appearance-none w-4 h-4;
@@ -153,28 +155,28 @@
     }
 
     .choice.selected {
-        @apply bg-cyan-100;
+        @apply bg-secondary-100;
 
         & input {
-            @apply border-cyan-500;
+            @apply border-secondary-500;
             border-width: 0.51rem;
         }
     }
 
     .choice.correct {
-        @apply bg-lime-100;
+        @apply bg-success-100;
 
         & input {
-            @apply border-lime-500;
+            @apply border-success-500;
             border-width: 0.51rem;
         }
     }
 
     .choice.incorrect {
-        @apply bg-rose-100;
+        @apply bg-error-100;
 
         & input {
-            @apply border-rose-500;
+            @apply border-error-500;
             border-width: 0.51rem;
         }
     }

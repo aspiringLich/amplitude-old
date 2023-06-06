@@ -10,8 +10,6 @@ export const load = async ({ params, fetch }): Promise<Item> => {
         },
         fetch,
     });
-    // renderComponent(doc.body, "pre", (await import(`./Code.svelte`)).default);
-    // renderComponent(doc.body, "admonition", (await import(`./Admonition.svelte`)).default);
 
     return response;
 };

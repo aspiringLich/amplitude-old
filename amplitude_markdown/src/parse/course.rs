@@ -1,6 +1,9 @@
 use super::*;
 
-use crate::items::parse_item;
+use crate::items::{
+    article::{Article, RawArticle},
+    parse_item,
+};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -48,10 +51,24 @@ pub fn parse_course(path: PathBuf, data: &mut RawCourseData) -> anyhow::Result<(
 
     let course_id = path.file_name().to_string();
 
+    // insert course info
     let course: CourseConfig = toml::from_str(&fs::read_to_string(path.join("course.toml"))?)?;
-    data.course_data.insert(course_id.clone(), course);
-
+    data.course_data.insert(course_id.clone(), course.clone());
     data.tracks.insert(course_id.clone(), Vec::new());
+
+    // get index as item
+    let md = parse_md(
+        &fs::read_to_string(path.join("index.md"))?,
+        &mut DataContext::new(data, &course_id)?,
+    )?;
+    let index = Article::from_raw(
+        RawArticle {
+            title: course.title.clone(),
+        },
+        md,
+    );
+    data.items
+        .insert(course_id.clone() + "-index", ItemType::Article(index));
 
     for dir in fs::read_dir(&path)? {
         let dir = dir?;
