@@ -16,6 +16,7 @@ export default {
     ],
     theme: {
         extend: {},
+        backgroundOpacity: "66%",
     },
     plugins: [
         // 3. Append the Skeleton plugin to the end of this list

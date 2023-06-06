@@ -44,14 +44,14 @@
 <div class="admonition my-4">
     <div
         class="title rounded-t w-full text-white font-extrabold flex items-center"
-        style:background-color={colors[color_type][title_color] + "aa"}
+        style:background-color={colors[color_type][title_color]}
     >
         <svelte:component this={icon} size={18} class="m-1.5" />
         <span>{title_text}</span>
     </div>
     <blockquote
         class="body rounded-t-none"
-        style:background-color={colors[color_type][body_color] + "a0"}
+        style:background-color={colors[color_type][body_color]}
     >
         <slot />
     </blockquote>

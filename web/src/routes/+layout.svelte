@@ -2,7 +2,7 @@
     // import "@skeletonlabs/skeleton/themes/theme-skeleton.css";
     import "@skeletonlabs/skeleton/styles/skeleton.css";
     import "../themes/base.postcss";
-    import "../themes/cool.postcss";
+    import "../themes/colors.postcss";
     import "../app.postcss";
     
     import hljs from 'highlight.js';

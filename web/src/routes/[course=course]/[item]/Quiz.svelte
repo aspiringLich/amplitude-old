@@ -79,22 +79,26 @@
 <svelte:window on:scroll={try_init} />
 
 <blockquote class="container" bind:this={container}>
-    <div class="buttons">
-        <button on:click={dec} disabled={n <= 0}>
-            <ChevronLeft />
-        </button>
-        <button
-            on:click={submit}
-            disabled={selected === undefined || answers[n] !== undefined}
-        >
-            Submit
-        </button>
-        <button
-            on:click={inc}
-            disabled={!questions || n >= questions.length - 1}
-        >
-            <ChevronRight />
-        </button>
+    <div class="flex items-center justify-center">
+        <div class="buttons btn-group variant-filled-primary">
+            <button on:click={dec} disabled={n <= 0}>
+                <ChevronLeft />
+            </button>
+            <button
+                type="button"
+                on:click={submit}
+                disabled={selected === undefined || answers[n] !== undefined}
+            >
+                Submit
+            </button>
+            <button
+                type="button"
+                on:click={inc}
+                disabled={!questions || n >= questions.length - 1}
+            >
+                <ChevronRight />
+            </button>
+        </div>
     </div>
     {#if n == -1}
         <h1>Loading...</h1>
@@ -105,7 +109,7 @@
 
             {#each questions[n].answers as answer, i}
                 <blockquote
-                    class="choice flex pl-3"
+                    class="choice flex items-center pl-3"
                     class:selected={i == selected}
                     class:correct={answered && answer.correct}
                     class:incorrect={answered && !answer.correct}
@@ -120,7 +124,7 @@
                         bind:group={selected}
                         on:click={gen_deselect(i)}
                     />
-                    <label class="w-max" for={i.toString()}>
+                    <label class="flex-1" for={i.toString()}>
                         {@html answer.text}
                     </label>
                 </blockquote>
@@ -135,3 +139,43 @@
         </div>
     {/if}
 </blockquote>
+
+<style lang="postcss">
+    .choice {
+        @apply transition-colors duration-500 mt-4;
+
+        & input {
+            @apply appearance-none w-4 h-4;
+            @apply duration-200;
+
+            @apply rounded-full border-4 border-surface-300;
+        }
+    }
+
+    .choice.selected {
+        @apply bg-cyan-100;
+
+        & input {
+            @apply border-cyan-500;
+            border-width: 0.51rem;
+        }
+    }
+
+    .choice.correct {
+        @apply bg-lime-100;
+
+        & input {
+            @apply border-lime-500;
+            border-width: 0.51rem;
+        }
+    }
+
+    .choice.incorrect {
+        @apply bg-rose-100;
+
+        & input {
+            @apply border-rose-500;
+            border-width: 0.51rem;
+        }
+    }
+</style>
