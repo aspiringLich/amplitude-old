@@ -1,12 +1,21 @@
-use enum_iterator::Sequence;
+use std::str::FromStr;
 
-#[derive(Sequence, Debug)]
+use enum_iterator::Sequence;
+use serde::Serialize;
+
+#[derive(Sequence, Debug, Serialize, PartialEq, Hash, Eq)]
 pub enum Language {
+    #[serde(rename = "c")]
     C,
+    #[serde(rename = "cpp")]
     Cpp,
+    #[serde(rename = "js")]
     JavaScript,
+    #[serde(rename = "py")]
     Python,
+    #[serde(rename = "rs")]
     Rust,
+    #[serde(rename = "java")]
     Java,
 }
 
@@ -32,16 +41,20 @@ impl Language {
             Self::Java => "java",
         }
     }
+}
 
-    pub fn from_str(s: &str) -> Option<Self> {
-        Some(match s.to_ascii_lowercase().as_str() {
+impl FromStr for Language {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s.to_ascii_lowercase().as_str() {
             "c" => Language::C,
             "c++" | "cpp" => Language::Cpp,
-            "javascript" => Language::JavaScript,
-            "python" => Language::Python,
-            "rust" => Language::Rust,
+            "javascript" | "js" => Language::JavaScript,
+            "python" | "py" => Language::Python,
+            "rust" | "rs" => Language::Rust,
             "java" => Language::Java,
-            _ => return None,
+            _ => return Err(format!("Could not identify `{s}`")),
         })
     }
 }

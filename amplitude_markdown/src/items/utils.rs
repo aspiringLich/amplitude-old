@@ -2,7 +2,7 @@ use std::{
     error::Error,
     fmt::{self, Debug, Display},
     ops::{Deref, DerefMut},
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 use amplitude_common::lang::Language;
@@ -84,6 +84,12 @@ pub struct DirItem {
     pub item_type: FileType,
 }
 
+impl DirItem {
+    pub fn path(&self, base: &Path) -> PathBuf {
+        base.join(&self.name).with_extension(&self.ext)
+    }
+}
+
 fn os_to_str(s: &std::ffi::OsStr) -> String {
     s.to_str().unwrap().to_string()
 }
@@ -133,16 +139,22 @@ impl<T: Display + Debug> ErrorList<T> {
     }
 }
 
-fn indent<F>(mut f: F, s: impl Display) -> String
-where
-    F: FnMut(usize, bool) -> String,
-{
+fn indent(s: impl Display, first: impl Display, mid: impl Display, last: impl Display) -> String {
     let s = s.to_string();
     let lines = s.lines().collect::<Vec<_>>();
     lines
         .iter()
         .enumerate()
-        .map(|(i, s)| f(i, i == lines.len() - 1) + s)
+        .map(|(i, s)| {
+            let before = if i == 0 {
+                first.to_string()
+            } else if i < lines.len() - 1 {
+                mid.to_string()
+            } else {
+                last.to_string()
+            };
+            before + s
+        })
         .collect::<Vec<_>>()
         .join("\n")
         + "\n"
@@ -152,21 +164,14 @@ impl Display for ErrorList<anyhow::Error> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}:", self.initial)?;
 
-        let indent_n = |i, s| {
+        let indent_n = |i, n: usize, s| {
             indent(
-                |n: usize, last| {
-                    if n == 0 {
-                        format!("{i}: ")
-                    } else if last {
-                        "└  ".to_string()
-                    } else {
-                        "│  ".to_string()
-                    }
-                },
                 s,
+                format!("{}{i}: ", " ".repeat(n)),
+                format!("{}│  ", " ".repeat(n)),
+                format!("{}└  ", " ".repeat(n)),
             )
         };
-        // let indent = |s| indent(|_, _| "│ ".to_string(), s);
 
         for (i, err) in self.errors.iter().enumerate() {
             let mut out = String::new();
@@ -176,7 +181,8 @@ impl Display for ErrorList<anyhow::Error> {
             if chain.len() > 1 {
                 out += "\nCaused By:\n";
                 for (i, err) in chain.into_iter().skip(1).enumerate() {
-                    out += &format!("   {}", indent_n(i, err.to_string()));
+                    let err = err.to_string();
+                    out += &indent_n(i, 3, err);
                 }
             }
 
@@ -193,7 +199,7 @@ impl Display for ErrorList<anyhow::Error> {
                 .join("\n");
             out += &backtrace;
 
-            write!(f, "\n{}", indent_n(i, out))?;
+            write!(f, "\n{}", indent_n(i, 0, out))?;
         }
 
         Ok(())

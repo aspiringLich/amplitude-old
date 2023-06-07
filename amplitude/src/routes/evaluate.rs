@@ -1,4 +1,4 @@
-use std::borrow::Borrow;
+use std::{borrow::Borrow, str::FromStr};
 
 use amplitude_common::lang::Language;
 
