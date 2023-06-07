@@ -1,4 +1,14 @@
+use std::collections::HashMap;
+
 use super::*;
+
+pub struct FunctionConfig {
+    
+}
+
+pub struct ExcerciseConfig {
+    functions: HashMap<String, FunctionConfig>,
+}
 
 #[derive(Debug, Serialize)]
 pub struct Exercise;
@@ -19,8 +29,13 @@ impl Item for Exercise {
             "start.<code>",
             "Starting code"
         );
+        ensure!(contents.contains("instructions.md"), "instructions.md");
 
         let exercise = Exercise;
         Ok(ItemType::Exercise(exercise))
     }
+}
+
+mod tests {
+    
 }

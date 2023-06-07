@@ -1,6 +1,6 @@
 import type { EntryGenerator, RouteParams } from "./$types";
 import { fetchApi, fetchItemList } from "$lib/fetch";
-import type { Item } from "./item";
+import type { Item } from "../../../lib/item";
 
 export const load = async ({ params, fetch }): Promise<Item> => {
     let response: Item = await fetchApi("/api/item", {

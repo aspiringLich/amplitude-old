@@ -101,9 +101,9 @@ export function getArticle() {
     return window.location.pathname.split("/")[2];
 }
 
-import Quiz from "./Quiz.svelte";
-import Admonition from "./Admonition.svelte";
-import Code from "./Code.svelte";
+import Quiz from "$cmpt/Quiz.svelte";
+import Code from "$cmpt/Code.svelte";
+import Admonition from "$cmpt/Admonition.svelte";
 
 export function renderArticle(body: HTMLElement) {
     renderComponent(body, "pre:not(.component)", Code, (props, slots) => {
