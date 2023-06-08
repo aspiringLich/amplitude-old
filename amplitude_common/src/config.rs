@@ -1,3 +1,5 @@
+use std::{fs, collections::HashMap};
+
 use clap::Parser;
 use serde::Deserialize;
 
@@ -59,12 +61,18 @@ pub struct Config {
     pub args: Args,
 }
 
+fn language_config() -> HashMap<String, LanguageConfig> {
+    toml::from_str(fs::read_to_string("./langs/languages.toml").unwrap().as_str()).unwrap()
+}
+
 #[derive(Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Docker {
     pub tmp_folder: String,
     pub command: String,
     pub timeout: u64,
+    #[serde(default = "language_config")]
+    pub language_config: HashMap<String, LanguageConfig>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -82,7 +90,7 @@ pub struct GithubOauth {
     pub app_secret: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct LanguageConfig {
@@ -90,14 +98,4 @@ pub struct LanguageConfig {
     pub path: String,
     pub image_name: String,
     pub source_path: String,
-}
-
-pub trait GetLang {
-    fn get_lang(&self, lang: &str) -> Option<&LanguageConfig>;
-}
-
-impl GetLang for Vec<LanguageConfig> {
-    fn get_lang(&self, lang: &str) -> Option<&LanguageConfig> {
-        self.iter().find(|x| x.name == lang)
-    }
 }

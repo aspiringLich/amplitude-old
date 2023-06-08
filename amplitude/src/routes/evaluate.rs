@@ -1,6 +1,5 @@
 use std::{borrow::Borrow, str::FromStr};
 
-use amplitude_common::config::GetLang;
 use amplitude_runner::{lang::Language, runner};
 
 use super::*;
@@ -22,8 +21,9 @@ pub fn attach(server: &mut Server<State>) {
         let lang = Language::from_str(&body.lang)
             .context(Status::InternalServerError, "Invalid language")?;
         let res = runner::run(
-            app.language_config
-                .get_lang(lang.image())
+            app.config
+                .docker
+                .language_config.get(lang.image())
                 .context(Status::BadRequest, "Invalid language")?,
             &app.config.docker,
             &body.code,

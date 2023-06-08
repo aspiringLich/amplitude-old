@@ -25,7 +25,7 @@ pub fn url_encode(url: &str) -> String {
     out
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RunOutput {
     pub stdout: String,
     pub stderr: String,
@@ -55,7 +55,7 @@ pub fn run(lang: &LanguageConfig, cfg: &Docker, src: &str, args: &str) -> anyhow
             "-v",
             &format!(
                 "{}:/runner/{}",
-                code_file.path().to_string_lossy(),
+                code_file.path().to_str().unwrap(),
                 lang.source_path
             ),
             "-e",
@@ -77,4 +77,33 @@ pub fn run(lang: &LanguageConfig, cfg: &Docker, src: &str, args: &str) -> anyhow
         runtime: time.elapsed(),
         exit_code: run.status.code().unwrap(),
     })
+}
+
+#[cfg(test)]
+mod test {
+    use std::env;
+
+    use amplitude_common::config::{Args, Config};
+
+    use super::*;
+
+    #[test]
+    fn test_runner() -> anyhow::Result<()> {
+        env::set_current_dir("../")?;
+        let args = Args::parse();
+        let mut config: Config =
+            toml::from_str::<Config>(&fs::read_to_string( &args.config)?)?;
+        config.args = args;
+
+        let output = run(
+            &config.docker.language_config.get("python").expect("Python not found"),
+            &config.docker,
+            "print('Hello, World!')",
+            "",
+        )?;
+        dbg!(&output);
+        assert!(output.stdout == "Hello, World!\n");
+
+        Ok(())
+    }
 }

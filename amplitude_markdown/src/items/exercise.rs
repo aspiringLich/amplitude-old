@@ -81,8 +81,8 @@ impl Item for Exercise {
         ctx: &mut DataContext,
     ) -> anyhow::Result<ItemType> {
         ensure!(
-            contents.query("gen", FileType::Code).next().is_some(),
-            "gen.<code>",
+            contents.query("test", FileType::Code).next().is_some(),
+            "test.<code>",
             "Test case generator"
         );
         ensure!(

@@ -1,0 +1,23 @@
+[rust]
+image_name = "rust-runner"
+source_path = "src/main.rs"
+
+[python]
+image_name = "python-runner"
+source_path = "main.py"
+
+[js]
+image_name = "js-runner"
+source_path = "main.js"
+
+[c]
+image_name = "c-runner"
+source_path = "src/main.c"
+
+[cpp]
+image_name = "cpp-runner"
+source_path = "src/main.cpp"
+
+[java]
+image_name = "java-runner"
+source_path = "Main.java"

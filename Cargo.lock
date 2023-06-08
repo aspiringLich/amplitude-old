@@ -72,6 +72,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "serde",
+ "toml",
 ]
 
 [[package]]
@@ -105,6 +106,7 @@ dependencies = [
  "handlebars",
  "serde",
  "tempfile",
+ "toml",
 ]
 
 [[package]]

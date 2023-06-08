@@ -23,7 +23,7 @@ impl Language {
     pub fn image(&self) -> &'static str {
         match self {
             Self::C => "c",
-            Self::Cpp => "c++",
+            Self::Cpp => "cpp",
             Self::JavaScript => "javascript",
             Self::Python => "python",
             Self::Rust => "rust",
