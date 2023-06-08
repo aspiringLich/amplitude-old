@@ -1,13 +1,10 @@
 use std::{
     io::Write,
     process::{Command, Stdio},
-    sync::Arc,
     time::{Duration, Instant},
 };
 
-use crate::lang::Language;
-use amplitude_common::config::{GetLang, LanguageConfig, Docker};
-use anyhow::Context;
+use amplitude_common::config::{Docker, LanguageConfig};
 use serde::{Deserialize, Serialize};
 
 pub fn url_encode(url: &str) -> String {
@@ -36,7 +33,7 @@ pub struct RunOutput {
     pub exit_code: i32,
 }
 
-pub fn run(lang: LanguageConfig, cfg: Docker, src: &str, args: &str) -> anyhow::Result<RunOutput> {
+pub fn run(lang: &LanguageConfig, cfg: &Docker, src: &str, args: &str) -> anyhow::Result<RunOutput> {
     let mut code_file = tempfile::NamedTempFile::new_in(&cfg.tmp_folder).unwrap();
     code_file.write_all(src.as_bytes()).unwrap();
 
