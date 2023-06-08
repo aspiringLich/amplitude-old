@@ -92,10 +92,7 @@ pub struct GithubOauth {
 
 #[derive(Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
-#[serde(rename_all = "camelCase")]
 pub struct LanguageConfig {
-    pub name: String,
-    pub path: String,
     pub image_name: String,
     pub source_path: String,
 }

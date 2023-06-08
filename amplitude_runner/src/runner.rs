@@ -81,7 +81,7 @@ pub fn run(lang: &LanguageConfig, cfg: &Docker, src: &str, args: &str) -> anyhow
 
 #[cfg(test)]
 mod test {
-    use std::env;
+    use std::{env, fs};
 
     use amplitude_common::config::{Args, Config};
 

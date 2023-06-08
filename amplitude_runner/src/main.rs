@@ -6,7 +6,7 @@ use std::fs;
 use std::path::Path;
 use std::process::{self, Command};
 
-use serde::Deserialize;
+use amplitude_common::config::LanguageConfig;
 
 fn main() {
     if env::current_dir().unwrap().file_name().unwrap() == "amplitude_runner" {
@@ -33,24 +33,13 @@ fn main() {
     }
 }
 
-
 fn load_langs<T: AsRef<Path>>(file: T) -> Vec<(String, String, String)> {
-    #[derive(Deserialize)]
-    struct Lang {
-        image_name: String,
-        // source_path: String,
-    }
-
-    let langs: HashMap<String, Lang> =
-        toml::from_str(&fs::read_to_string(file).unwrap()).expect("Error parsing langs/languages.toml");
+    let langs: HashMap<String, LanguageConfig> = toml::from_str(&fs::read_to_string(file).unwrap())
+        .expect("Error parsing langs/languages.toml");
     let mut out = Vec::new();
 
     for (path, lang) in langs {
-        out.push((
-            path.clone(),
-            path,
-            lang.image_name,
-        ));
+        out.push((path.clone(), path, lang.image_name));
     }
 
     out
