@@ -6,12 +6,12 @@ use serde::{Deserialize, Serialize};
 #[serde(untagged)]
 #[serde(into = "String", try_from = "String")]
 pub enum VariableType {
-    Integer,
-    Float,
+    Number,
     String,
     Boolean,
     Array(Box<VariableType>),
     Struct(HashMap<String, VariableType>),
+    Tuple(Vec<VariableType>),
 }
 
 impl From<VariableType> for String {
@@ -23,8 +23,7 @@ impl From<VariableType> for String {
 impl<'a> From<&'a VariableType> for String {
     fn from(value: &'a VariableType) -> Self {
         match value {
-            VariableType::Integer => "int".to_string(),
-            VariableType::Float => "float".to_string(),
+            VariableType::Number => "number".to_string(),
             VariableType::String => "string".to_string(),
             VariableType::Boolean => "bool".to_string(),
             VariableType::Array(ty) => format!("{}[]", ty),
@@ -34,6 +33,13 @@ impl<'a> From<&'a VariableType> for String {
                     out += &format!("{}: {},", name, ty);
                 }
                 format!("{{{}}}", out)
+            }
+            VariableType::Tuple(fields) => {
+                let mut out = String::new();
+                for ty in fields {
+                    out += &format!("{},", ty);
+                }
+                format!("({})", out)
             }
         }
     }
@@ -87,10 +93,31 @@ impl<'a> TryFrom<&'a str> for VariableType {
                 map.insert(ident.to_string(), VariableType::try_from(ty)?);
             }
             Ok(VariableType::Struct(map))
+        }
+        // tuple
+        else if s.starts_with("(") {
+            anyhow::ensure!(
+                s.ends_with(")"),
+                "Expected ending `)` when starting with `(`"
+            );
+            let s = &s[1..s.len() - 1];
+            let mut vec = Vec::new();
+            
+            let mut iter = s.split(',').peekable();
+            while let Some(ty) = iter.next() {
+                if ty.trim().is_empty() {
+                    if iter.peek().is_some() {
+                        anyhow::bail!("Found empty tuple field");
+                    } else {
+                        break;
+                    }
+                }
+                vec.push(VariableType::try_from(ty)?);
+            }
+            Ok(VariableType::Tuple(vec))
         } else {
             match s {
-                "int" => Ok(VariableType::Integer),
-                "float" => Ok(VariableType::Float),
+                "number" => Ok(VariableType::Number),
                 "string" => Ok(VariableType::String),
                 "bool" => Ok(VariableType::Boolean),
                 _ => anyhow::bail!("Could not interpret type"),
@@ -113,8 +140,7 @@ mod test {
 
     #[test]
     fn test_variable_type() -> anyhow::Result<()> {
-        let int = || VariableType::try_from("int").unwrap();
-        let float = || VariableType::try_from("float").unwrap();
+        let num = || VariableType::try_from("number").unwrap();
         let string = || VariableType::try_from("string").unwrap();
         let bool = || VariableType::try_from("bool").unwrap();
         let array = |t| VariableType::Array(Box::new(t));
@@ -127,9 +153,9 @@ mod test {
                     .collect(),
             )
         };
+        let tuple = |fields: &[VariableType]| VariableType::Tuple(fields.to_vec());
 
-        assert_eq!(int(), VariableType::Integer);
-        assert_eq!(float(), VariableType::Float);
+        assert_eq!(num(), VariableType::Number);
         assert_eq!(string(), VariableType::String);
         assert_eq!(bool(), VariableType::Boolean);
 
@@ -139,29 +165,34 @@ mod test {
                 t
             );
         };
-        test("int[]", array(int()));
-        test("  float[]  ", array(float()));
+        test("number[]", array(num()));
+        test("  number[]  ", array(num()));
         test("bool[]  ", array(bool()));
         test("    \nstring[]", array(string()));
-        test("int[][]", array(array(int())));
+        test("number[][]", array(array(num())));
 
         test("{}", class(&[]));
         test("  {   }   ", class(&[]));
-        test("  { test:   int,  }   ", class(&[("test", int())]));
+        test("  { test:   number,  }   ", class(&[("test", num())]));
         test(
-            "  { test:   int,  test2: float,  }   ",
-            class(&[("test", int()), ("test2", float())]),
+            "  { test:   number,  test2: string,  }   ",
+            class(&[("test", num()), ("test2", string())]),
         );
         test(
-            "{ 1: {1: {1: {1: int}}}, 2: {}}",
+            "{ 1: {1: {1: {1: number}}}, 2: {}}",
             class(&[
                 (
                     "1",
-                    class(&[("1", class(&[("1", class(&[("1", int())]))]))]),
+                    class(&[("1", class(&[("1", class(&[("1", num())]))]))]),
                 ),
                 ("2", class(&[])),
             ]),
         );
+
+        test("()", tuple(&[]));
+        test("(number,)", tuple(&[num()]));
+        test("(number, string,)", tuple(&[num(), string()]));
+        test("(number, string)", tuple(&[num(), string()]));
 
         Ok(())
     }

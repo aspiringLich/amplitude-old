@@ -1,0 +1,40 @@
+import random
+
+random.seed({{seed}})
+
+{{content}}
+
+class Ctx:
+    _context = []
+    hidden = False
+    
+    from random import randint, random, randrange, randbytes
+    
+    def push(self):
+        self._context.append({})
+    
+    def input(self, index, value):
+        self._context[-1].index.input = value
+        
+    def output(self, value):
+        self._context[-1].output = value
+
+contexts = {}
+
+{{#each function}}
+ctx = Ctx()
+contexts.{{this}} = ctx
+
+for i in range({{visible_cases}}):
+    ctx.push()
+    gen_{{this}}(ctx)
+
+ctx.hidden = True
+for i in range({{hidden_cases}}):
+    ctx.push()
+    gen_{{this}}(ctx)
+{{/each}}
+
+import json
+
+print(json.dumps(contexts))
