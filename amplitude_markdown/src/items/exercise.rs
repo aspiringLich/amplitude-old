@@ -1,32 +1,58 @@
 use std::{collections::HashMap, str::FromStr};
 
-use amplitude_common::lang::Language;
+use amplitude_runner::lang::Language;
 
-use crate::var_types::VariableType;
+use crate::parse::parse_md;
+use amplitude_runner::var_type::VariableType;
 
 use super::*;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct FunctionConfig {
     inputs: Vec<VariableType>,
     output: VariableType,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct ExerciseConfig {
+    title: String,
+    #[serde(default)]
+    instructions: String,
     #[serde(flatten)]
     functions: HashMap<String, FunctionConfig>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
+#[serde(into = "ExcerciseSerialize")]
 pub struct Exercise {
     config: ExerciseConfig,
     code: HashMap<Language, String>,
 }
 
+impl Into<ExcerciseSerialize> for Exercise {
+    fn into(self) -> ExcerciseSerialize {
+        ExcerciseSerialize {
+            title: self.config.title,
+            instructions: self.config.instructions,
+            code: self.code,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ExcerciseSerialize {
+    title: String,
+    instructions: String,
+    code: HashMap<Language, String>,
+}
+
 impl Exercise {
-    pub fn from_raw(contents: &DirContents, path: &Path) -> anyhow::Result<Self> {
+    pub fn from_raw(
+        contents: &DirContents,
+        path: &Path,
+        ctx: &mut DataContext,
+    ) -> anyhow::Result<Self> {
         let config =
             &fs::read_to_string(path.join("config.toml")).context("While reading `config.toml`")?;
 
@@ -40,11 +66,11 @@ impl Exercise {
                 )
             })
             .collect();
+        let mut config: ExerciseConfig =
+            toml::from_str(config).context("While parsing `config.toml`")?;
+        config.instructions = parse_md(&fs::read_to_string(path.join("instructions.md"))?, ctx)?;
 
-        Ok(Self {
-            config: toml::from_str(config).context("While parsing `config.toml`")?,
-            code,
-        })
+        Ok(Self { config, code })
     }
 }
 
@@ -52,7 +78,7 @@ impl Item for Exercise {
     fn parse_from_dir(
         dir: &Path,
         contents: DirContents,
-        _context: &mut DataContext,
+        ctx: &mut DataContext,
     ) -> anyhow::Result<ItemType> {
         ensure!(
             contents.query("gen", FileType::Code).next().is_some(),
@@ -67,9 +93,7 @@ impl Item for Exercise {
         ensure!(contents.contains("instructions.md"), "instructions.md");
         ensure!(contents.contains("config.toml"), "config.toml");
 
-        let exercise = Exercise::from_raw(&contents, dir)?;
+        let exercise = Exercise::from_raw(&contents, dir, ctx)?;
         Ok(ItemType::Exercise(exercise))
     }
 }
-
-mod tests {}

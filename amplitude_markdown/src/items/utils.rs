@@ -5,7 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use amplitude_common::lang::Language;
+use amplitude_runner::lang::Language;
 use enum_iterator::all;
 
 pub struct DirContents {

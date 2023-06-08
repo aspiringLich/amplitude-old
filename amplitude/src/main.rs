@@ -19,7 +19,6 @@ mod error;
 mod logger;
 mod misc;
 mod routes;
-mod runner;
 mod session;
 mod state;
 

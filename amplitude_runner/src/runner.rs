@@ -5,12 +5,28 @@ use std::{
     time::{Duration, Instant},
 };
 
-use afire::internal::encoding::url;
-use amplitude_common::{config::GetLang, lang::Language};
+use crate::lang::Language;
+use amplitude_common::config::{GetLang, LanguageConfig, Docker};
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
 
-use crate::state::State;
+pub fn url_encode(url: &str) -> String {
+    const ALLOWED_CHARS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+                                   abcdefghijklmnopqrstuvwxyz\
+                                   0123456789-._~";
+
+    let mut out = String::with_capacity(url.len());
+
+    for i in url.chars() {
+        if i.is_ascii() && ALLOWED_CHARS.contains(&(i as u8)) {
+            out.push(i);
+            continue;
+        }
+        out.push_str(&format!("%{:02X}", i as u8));
+    }
+
+    out
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct RunOutput {
@@ -20,16 +36,9 @@ pub struct RunOutput {
     pub exit_code: i32,
 }
 
-pub fn run(app: Arc<State>, lang: Language, src: &str, args: &str) -> anyhow::Result<RunOutput> {
-    let cfg = &app.config.docker;
-
+pub fn run(lang: LanguageConfig, cfg: Docker, src: &str, args: &str) -> anyhow::Result<RunOutput> {
     let mut code_file = tempfile::NamedTempFile::new_in(&cfg.tmp_folder).unwrap();
     code_file.write_all(src.as_bytes()).unwrap();
-
-    let lang = app
-        .language_config
-        .get_lang(lang.image())
-        .context("Language not loaded")?;
 
     let time = Instant::now();
     let run = Command::new(&cfg.command)
@@ -55,7 +64,7 @@ pub fn run(app: Arc<State>, lang: Language, src: &str, args: &str) -> anyhow::Re
             "-e",
             &format!("TIMEOUT={}", &cfg.timeout),
             "-e",
-            &format!("ARGS={}", url::encode(args)),
+            &format!("ARGS={}", url_encode(args)),
             &lang.image_name,
         ])
         .stdout(Stdio::piped())

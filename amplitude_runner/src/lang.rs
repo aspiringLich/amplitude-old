@@ -3,7 +3,7 @@ use std::str::FromStr;
 use enum_iterator::Sequence;
 use serde::Serialize;
 
-#[derive(Sequence, Debug, Serialize, PartialEq, Hash, Eq)]
+#[derive(Sequence, Debug, Serialize, PartialEq, Hash, Eq, Clone, Copy)]
 pub enum Language {
     #[serde(rename = "c")]
     C,

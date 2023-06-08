@@ -8,6 +8,8 @@ name = "amplitude_markdown"
 
 [dependencies]
 amplitude_common = { path = "../amplitude_common" }
+amplitude_runner = { path = "../amplitude_runner" }
+
 tracing = "0.1.37"
 tracing-subscriber = "0.3.17"
 anyhow = { version = "1.0.70", features = ["backtrace"] }

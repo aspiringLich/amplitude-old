@@ -42,6 +42,7 @@ impl fmt::Display for ItemType {
 }
 
 pub trait Item {
+    /// Parse an item given a directory
     fn parse_from_dir(
         dir: &Path,
         contents: DirContents,
