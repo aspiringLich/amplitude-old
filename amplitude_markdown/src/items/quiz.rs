@@ -71,9 +71,9 @@ impl Item for Quiz {
     where
         Self: Sized,
     {
-        anyhow::ensure!(
+        ensure!(
             contents.contains("quiz.toml"),
-            "Required item: `quiz.toml` not found"
+            "quiz.toml"
         );
         anyhow::ensure!(
             contents.len() == 1,

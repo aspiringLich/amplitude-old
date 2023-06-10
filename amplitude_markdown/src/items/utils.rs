@@ -41,6 +41,34 @@ impl DirContents {
         let Some((name, ext)) = path.split_once('.') else { return false };
         self.iter().any(|item| item.name == name && item.ext == ext)
     }
+
+    pub fn new<P: AsRef<Path>>(dir: P) -> anyhow::Result<Self> {
+        let mut items = Vec::new();
+        for entry in dir.as_ref().read_dir()? {
+            let entry = entry.unwrap();
+            let path = entry.path();
+
+            let name = os_to_str(path.file_stem().unwrap());
+            let ext = os_to_str(path.extension().unwrap_or_default());
+
+            let item_type = if path.is_dir() {
+                items.extend(Self::new(&path)?.drain(..).map(|p| DirItem {
+                    name: format!("{}/{}", name, p.name),
+                    ..p
+                }));
+                FileType::Directory
+            } else {
+                FileType::from_ext(&ext)
+            };
+
+            items.push(DirItem {
+                name,
+                ext,
+                item_type,
+            });
+        }
+        Ok(DirContents { contents: items })
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -92,30 +120,6 @@ impl DirItem {
 
 fn os_to_str(s: &std::ffi::OsStr) -> String {
     s.to_str().unwrap().to_string()
-}
-
-pub fn get_dir_contents(path: &Path) -> anyhow::Result<DirContents> {
-    let mut items = Vec::new();
-    for entry in path.read_dir()? {
-        let entry = entry.unwrap();
-        let path = entry.path();
-
-        let name = os_to_str(path.file_stem().unwrap());
-        let ext = os_to_str(path.extension().unwrap_or_default());
-
-        let item_type = if path.is_dir() {
-            FileType::Directory
-        } else {
-            FileType::from_ext(&ext)
-        };
-
-        items.push(DirItem {
-            name,
-            ext,
-            item_type,
-        });
-    }
-    Ok(DirContents { contents: items })
 }
 
 #[derive(Default, Debug)]
@@ -192,7 +196,7 @@ impl Display for ErrorList<anyhow::Error> {
             let backtrace = lines
                 .as_slice()
                 .windows(3)
-                .skip_while(|l| !l[1].contains(module_path!().split("::").next().unwrap()))
+                .skip_while(|l: &&[&str]| !l[1].contains(": amplitude"))
                 .take_while(|l| !l[0].contains(self.stop))
                 .map(|l| l[1])
                 .collect::<Vec<_>>()

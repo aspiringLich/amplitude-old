@@ -5,7 +5,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use amplitude_common::config::{DockerConfig, LanguageConfig};
+use amplitude_common::config::{LanguageConfig, DockerConfig};
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
 
@@ -53,6 +53,8 @@ pub fn run(
         fs::write(&path, content).context("While writing file")?;
     }
 
+    let time = Instant::now();
+
     let v = [&lang.source_path]
         .into_iter()
         .chain(other_files.keys())
@@ -64,8 +66,6 @@ pub fn run(
             )
         })
         .collect::<Vec<_>>();
-
-    let time = Instant::now();
 
     // tried to use bollard instead of using a command but that was even worse
     let run = Command::new(&cfg.command)

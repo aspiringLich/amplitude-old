@@ -52,12 +52,15 @@ impl Exercise {
         contents: &DirContents,
         path: &Path,
         ctx: &mut DataContext,
+        id: &str,
     ) -> anyhow::Result<Self> {
         let config =
             &fs::read_to_string(path.join("config.toml")).context("While reading `config.toml`")?;
+        let mut config: ExerciseConfig =
+            toml::from_str(config).context("While parsing `config.toml`")?;
 
         let code = contents
-            .query("start", FileType::Code)
+            .query(id, FileType::Code)
             .map(|item| {
                 (
                     Language::from_str(&item.ext)
@@ -66,8 +69,6 @@ impl Exercise {
                 )
             })
             .collect();
-        let mut config: ExerciseConfig =
-            toml::from_str(config).context("While parsing `config.toml`")?;
         config.instructions = parse_md(&fs::read_to_string(path.join("instructions.md"))?, ctx)?;
 
         Ok(Self { config, code })
@@ -80,20 +81,30 @@ impl Item for Exercise {
         contents: DirContents,
         ctx: &mut DataContext,
     ) -> anyhow::Result<ItemType> {
-        ensure!(
-            contents.query("test", FileType::Code).next().is_some(),
-            "test.<code>",
-            "Test case generator"
-        );
-        ensure!(
-            contents.query("start", FileType::Code).next().is_some(),
-            "start.<code>",
-            "Starting code"
-        );
         ensure!(contents.contains("instructions.md"), "instructions.md");
         ensure!(contents.contains("config.toml"), "config.toml");
+        ensure!(
+            contents.query("src", FileType::Directory).next().is_some(),
+            "src/",
+            "Source directory"
+        );
+        
+        let id = ctx.id().rsplit('/').next().unwrap().to_string();
+        ensure!(
+            contents
+                .query(&("src/".to_string() + &id), FileType::Code)
+                .next()
+                .is_some(),
+            format!("src/{}.<code>", id),
+            "Starting code"
+        );
+        ensure!(
+            contents.query("src/generator", FileType::Code).next().is_some(),
+            "src/generator.<code>",
+            "Test Case generator"
+        );
 
-        let exercise = Exercise::from_raw(&contents, dir, ctx)?;
+        let exercise = Exercise::from_raw(&contents, dir, ctx, &id)?;
         Ok(ItemType::Exercise(exercise))
     }
 }

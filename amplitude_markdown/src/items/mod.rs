@@ -59,7 +59,7 @@ pub fn parse_item(
     macro parse_item($item:ty, $name:literal) {
         match <$item>::parse_from_dir(
             path,
-            get_dir_contents(path).context("While reading dir")?,
+            DirContents::new(path).context("While getting dir contents")?,
             &mut context,
         )
         .with_context(|| format!("While attempting to parse as `{}`", $name))
@@ -84,7 +84,7 @@ pub fn parse_item(
 }
 
 macro ensure{
-    ($cond:expr, $file:literal) => {
+    ($cond:expr, $file:expr) => {
         if !$cond {
             anyhow::bail!(
                 "Required file(s): `{}` not found",
@@ -92,7 +92,7 @@ macro ensure{
             );
         }
     },
-    ($cond:expr, $file:literal, $ctx:literal) => {
+    ($cond:expr, $file:expr, $ctx:expr) => {
         if !$cond {
             anyhow::bail!(
                 "Required file(s): `{}` ({}) not found",
