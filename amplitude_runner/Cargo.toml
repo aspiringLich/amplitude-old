@@ -14,3 +14,6 @@ serde = { version = "1.0.158", features = ["derive"] }
 tempfile = "3.5.0"
 handlebars = "4.3.7"
 toml = "0.7.3"
+bollard = "0.14.0"
+futures = "0.3"
+tokio = { version = "1.28.2", features = ["macros"] }

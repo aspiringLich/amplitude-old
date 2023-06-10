@@ -53,7 +53,7 @@ fn args() -> Args {
 #[serde(deny_unknown_fields)]
 pub struct Config {
     pub server: ServerConfig,
-    pub docker: Docker,
+    pub docker: DockerConfig,
     #[serde(default)]
     pub auth: AuthConfig,
     pub parse: ParseConfig,
@@ -67,7 +67,7 @@ fn language_config() -> HashMap<String, LanguageConfig> {
 
 #[derive(Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
-pub struct Docker {
+pub struct DockerConfig {
     pub tmp_folder: String,
     pub command: String,
     pub timeout: u64,
