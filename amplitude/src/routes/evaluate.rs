@@ -1,4 +1,4 @@
-use std::{borrow::Borrow, str::FromStr};
+use std::{borrow::Borrow, collections::HashMap, str::FromStr};
 
 use amplitude_runner::{lang::Language, runner};
 
@@ -23,10 +23,12 @@ pub fn attach(server: &mut Server<State>) {
         let res = runner::run(
             app.config
                 .docker
-                .language_config.get(lang.image())
+                .language_config
+                .get(lang.image())
                 .context(Status::BadRequest, "Invalid language")?,
             &app.config.docker,
             &body.code,
+            HashMap::new(),
             &body.args,
         )
         .context(Status::InternalServerError, "Failed to run code")?;

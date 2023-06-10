@@ -1,21 +1,12 @@
 use std::{
-    default::default,
-    // default::default,
-    io::{self, Write},
+    collections::HashMap,
+    fs,
     process::{Command, Stdio},
     time::{Duration, Instant},
 };
 
 use amplitude_common::config::{DockerConfig, LanguageConfig};
 use anyhow::Context;
-use bollard::{
-    container::{self, ListContainersOptions, WaitContainerOptions, AttachContainerOptions, StartContainerOptions, UpdateContainerOptions, CreateContainerOptions, AttachContainerResults},
-    service::{ContainerCreateResponse, RestartPolicy},
-    Docker,
-};
-use futures::StreamExt;
-// use anyhow::Context;
-// use bollard::{container::StartContainerOptions, Docker};
 use serde::{Deserialize, Serialize};
 
 pub fn url_encode(url: &str) -> String {
@@ -44,162 +35,77 @@ pub struct RunOutput {
     pub exit_code: i32,
 }
 
-async fn docker(
-    lang: &LanguageConfig,
-    cfg: &DockerConfig,
-) -> anyhow::Result<(
-    ContainerCreateResponse,
-    Docker,
-    AttachContainerResults,
-)> {
-    let docker =
-        Docker::connect_with_local_defaults().context("while attempting to connect to docker")?;
-
-    let create = docker
-        .create_container(
-            None::<CreateContainerOptions<&str>>,
-            container::Config {
-                image: Some(lang.image_name.clone()),
-                env: Some(vec![format!("TIMEOUT={}", &cfg.timeout)]),
-                stop_timeout: Some(cfg.timeout as i64),
-                
-                // cmd: Some(vec!["tail", "-f", "/dev/null"]),
-                ..default()
-            },
-        )
-        .await
-        .context("While creating container")?;
-
-    docker
-        .update_container::<&str>(
-            &lang.image_name,
-            UpdateContainerOptions {
-                memory: Some(128 * 1024 * 1024),
-                memory_swap: Some(128 * 1024 * 1024),
-                pids_limit: Some(512),
-                restart_policy: Some(RestartPolicy {
-                    name: Some(bollard::service::RestartPolicyNameEnum::NO),
-                    maximum_retry_count: None,
-                }),
-                ..default()
-            },
-        )
-        .await
-        .context("While updating container")?;
-
-    let attach = docker
-        .attach_container(
-            &lang.image_name,
-            Some(AttachContainerOptions::<&str> {
-                stream: Some(true),
-                stdout: Some(true),
-                stderr: Some(true),
-                logs: Some(true),
-                ..default()
-            }),
-        )
-        .await
-        .context("While attaching container")?;
-
-    docker
-        .start_container(
-            &lang.image_name,
-            None::<StartContainerOptions<&str>>,
-        )
-        .await
-        .context("While starting container")?;
-
-    Ok((create, docker, attach))
-}
-
-pub async fn run(
+pub fn run(
     lang: &LanguageConfig,
     cfg: &DockerConfig,
     src: &str,
+    other_files: HashMap<String, &[u8]>,
     args: &str,
 ) -> anyhow::Result<RunOutput> {
-    let mut code_file =
-        tempfile::NamedTempFile::new_in(&cfg.tmp_folder).context("While creating temp dir")?;
-    code_file
-        .write_all(src.as_bytes())
-        .context("While writing code to file")?;
+    let tempdir = tempfile::tempdir_in(&cfg.tmp_folder).context("While creating temp dir")?;
+    let code_path = tempdir.path().join(&lang.source_path);
+    fs::create_dir_all(code_path.parent().unwrap()).context("While creating temp dir")?;
+    fs::write(&code_path, src).context("While writing source code")?;
+
+    for (path, content) in &other_files {
+        let path = tempdir.path().join(path);
+        fs::create_dir_all(path.parent().unwrap()).context("While creating temp dir")?;
+        fs::write(&path, content).context("While writing file")?;
+    }
+
+    let v = [&lang.source_path]
+        .into_iter()
+        .chain(other_files.keys())
+        .map(|path| {
+            format!(
+                "{}:/runner/{}",
+                tempdir.path().join(&path).to_string_lossy(),
+                &path
+            )
+        })
+        .collect::<Vec<_>>();
 
     let time = Instant::now();
 
-    let (create, docker, mut attach) = docker(lang, cfg)
-        .await
-        .context("While initializing container")?;
-    // panic!("{:#?}", &create);
+    // tried to use bollard instead of using a command but that was even worse
+    let run = Command::new(&cfg.command)
+        .args(
+            [
+                "run",
+                "--rm",
+                "--cap-drop=ALL",
+                "--security-opt=no-new-privileges",
+                "--net",
+                "none",
+                "--memory",
+                "128m",
+                "--memory-swap",
+                "128m",
+                "--pids-limit",
+                "512",
+                "-e",
+                &format!("TIMEOUT={}", &cfg.timeout),
+                "-e",
+                &format!("ARGS={}", url_encode(args)),
+                "-v",
+            ]
+            .into_iter()
+            .chain(v.iter().map(|x| x.as_str()).intersperse("-v"))
+            .chain([lang.image_name.as_str()]),
+        )
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap()
+        .wait_with_output()
+        .unwrap();
 
-    let mut stdout = io::stdout().lock();
-
-    // pipe docker attach output into stdout
-    while let Some(Ok(output)) = attach.output.next().await {
-        stdout.write_all(output.into_bytes().as_ref())?;
-
-    }
-
-    // for _ in 0..2 {
-    //     dbg!(
-    //         docker
-    //             .list_containers(None::<ListContainersOptions<&str>>)
-    //             .await
-    //     );
-    //     tokio::time::sleep(Duration::from_secs_f32(1.0)).await;
-    // }
-    
-    let mut stream = docker.wait_container(
-        &lang.image_name,
-        None::<WaitContainerOptions<&str>>,
-    );
-    // panic!();
-
-    dbg!(stream.next().await);
-    todo!()
-
-    // Ok(RunOutput {
-    //     stdout: String::from_utf8_lossy(&run.stdout).to_string(),
-    //     stderr: String::from_utf8_lossy(&run.stderr).to_string(),
-    //     runtime: time.elapsed(),
-    //     exit_code: run.status.code().unwrap(),
-    // })
-
-    // futures::executor::block_on(docker.start_container(
-    //     &lang.image_name,
-    //     None::<StartContainerOptions<&'static str>>,
-    // )).context("While starting container")?;
-    // let run = Command::new(&cfg.command)
-    //     .args([
-    //         "run",
-    //         "--rm",
-    //         "--cap-drop=ALL",
-    //         "--security-opt=no-new-privileges",
-    //         "--net",
-    //         "none",
-    //         "--memory",
-    //         "128m",
-    //         "--memory-swap",
-    //         "256m",
-    //         "--pids-limit",
-    //         "512",
-    //         "-v",
-    //         &format!(
-    //             "{}:/runner/{}",
-    //             code_file.path().to_str().unwrap(),
-    //             lang.source_path
-    //         ),
-    //         "-e",
-    //         &format!("TIMEOUT={}", &cfg.timeout),
-    //         "-e",
-    //         &format!("ARGS={}", url_encode(args)),
-    //         &lang.image_name,
-    //     ])
-    //     .stdout(Stdio::piped())
-    //     .stderr(Stdio::piped())
-    //     .spawn()
-    //     .unwrap()
-    //     .wait_with_output()
-    //     .unwrap();
+    Ok(RunOutput {
+        stdout: String::from_utf8_lossy(&run.stdout).to_string(),
+        stderr: String::from_utf8_lossy(&run.stderr).to_string(),
+        runtime: time.elapsed(),
+        exit_code: run.status.code().unwrap(),
+    })
 }
 
 #[cfg(test)]
@@ -210,8 +116,8 @@ mod test {
 
     use super::*;
 
-    #[tokio::test]
-    async fn test_runner() -> anyhow::Result<()> {
+    #[test]
+    fn test_runner() -> anyhow::Result<()> {
         env::set_current_dir("../")?;
         let args = Args::parse();
         let mut config: Config = toml::from_str::<Config>(&fs::read_to_string(&args.config)?)?;
@@ -224,13 +130,19 @@ mod test {
                 .get("python")
                 .expect("Python not found"),
             &config.docker,
-            "print('Hello, World!')",
+            "
+print('Hello, World!')
+
+file = open('file.txt', 'r')
+print(file.read())
+file.close()
+",
+            HashMap::from_iter([("file.txt".to_string(), "File contents".as_bytes())]),
             "",
         )
-        .await
         .unwrap();
         dbg!(&output);
-        assert!(output.stdout == "Hello, World!\n");
+        assert!(output.stdout == "Hello, World!\nFile contents\n");
 
         Ok(())
     }
