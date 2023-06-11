@@ -10,14 +10,12 @@ port = 8080
 threads = 16
 # How long until a request times out (in seconds)
 req_duration = 5
-# The path to the database file
-db_path = "./data.db"
 
 # Docker configuration
 [docker]
-tmp_folder = ""
 # command to use for docker
 command = "docker"
+# timeout on running files
 timeout = 0
 
 # Article parsing configuration

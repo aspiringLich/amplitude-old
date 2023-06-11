@@ -105,6 +105,7 @@ dependencies = [
  "enum-iterator",
  "handlebars",
  "serde",
+ "serde_json",
  "tempfile",
  "toml",
 ]

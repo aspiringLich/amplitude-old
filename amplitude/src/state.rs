@@ -6,6 +6,7 @@ use rusqlite::Connection;
 
 use crate::database::Database;
 
+use amplitude_common::path;
 use amplitude_markdown::parse::{parse, ParseData};
 
 pub struct State {
@@ -25,7 +26,7 @@ impl State {
             fs::create_dir_all(tmp_folder)?;
         }
 
-        let mut db = Connection::open(&config.server.db_path)?;
+        let mut db = Connection::open(&path::DATABASE)?;
         db.init()?;
 
         let parse_state = parse(&config)?;

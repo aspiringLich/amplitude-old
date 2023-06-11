@@ -1,0 +1,38 @@
+from contextlib import redirect_stdout
+from io import StringIO
+import json
+import traceback
+
+import {{code_file}}
+
+outputs = {}
+
+{{#each tests}}
+assert hasattr({{../code_file}}, "{{@key}}"), "Could not find `{{@key}}` in `{{../code_file}}.py`"
+outputs["{{@key}}"] = []
+output = outputs["{{@key}}"]
+
+{{#each this}}
+with redirect_stdout(StringIO()) as stdout:
+    {{#unless hidden}}print("RUNNING TEST CASE {{@index}}"){{/unless}}
+    try:
+        output.append({
+            "type": "output", 
+            "value": {{~@../key}}(
+                {{~#each inputs~}}
+                {{this}}{{#unless @last}},{{/unless}}
+                {{~/each~}}
+        )})
+    except Exception:
+        {{#if hidden}}
+        output.append({"type": "exception", "traceback": ""})
+        {{else}}
+        traceback = traceback.format_exc()
+        print(traceback)
+        output.append({"type": "exception", "traceback": traceback})
+        {{/if}}
+    {{#unless hidden}}print(stdout.getvalue()){{/unless}}
+{{/each}}
+{{/each}}
+
+print(json.dumps(outputs))

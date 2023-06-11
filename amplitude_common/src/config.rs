@@ -34,8 +34,6 @@ pub struct ServerConfig {
     pub port: u16,
     pub threads: usize,
     pub req_duration: u64,
-
-    pub db_path: String,
 }
 
 #[derive(Deserialize, Default, Debug)]

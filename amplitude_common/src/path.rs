@@ -7,10 +7,8 @@ macro def_static($name:ident, $str:literal) {
     pub static $name: StaticPath = StaticPath($str);
 }
 
-def_static!(INPUT, "courses");
-def_static!(RENDERED, "rendered");
-def_static!(TEMPLATE, "web/templates");
-def_static!(STATIC, "web/static");
+def_static!(DATABASE, "./data.db");
+def_static!(LANGUAGES, "./languages");
 
 /// A struct that represents a path, which can be initialized statically.
 #[derive(Clone, Default)]
