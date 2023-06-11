@@ -8,4 +8,6 @@ WORKDIR /runner
 
 ADD --chown=runner run.sh .
 
+RUN pip install --upgrade pip && pip install toml
+
 ENTRYPOINT ["bash", "./run.sh"]

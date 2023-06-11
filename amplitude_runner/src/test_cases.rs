@@ -1,14 +1,21 @@
 use serde::{Serialize, Deserialize};
 
-use crate::var_type::VariableType;
+use crate::lang::Language;
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
-pub struct Field {
-    pub name: String,
-    pub ty: VariableType,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TestCases {
+    #[serde(flatten)]
+    pub cases: Vec<TestCase>,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
-pub struct DynStruct {
-    pub fields: Vec<Field>,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TestCase {
+    
 }
+
+pub struct TestCaseConfig {
+    pub hidden_cases: u32,
+    pub visible_cases: u32,
+    pub seed: i64,
+}
+

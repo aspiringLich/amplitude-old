@@ -1,3 +1,4 @@
+import json
 import random
 
 random.seed({{seed}})
@@ -7,32 +8,47 @@ random.seed({{seed}})
 class Ctx:
     _context = []
     hidden = False
-    
+    hidden_cases = {{hidden_cases}}
+    visible_cases = {{visible_cases}}
+
     from random import randint, random, randrange
-    
-    def push(self):
-        self._context.append({})
-    
-    def input(self, index, value):
-        self._context[-1].index.input = value
-        
+
+    def inputs(self, inputs):
+        has = hasattr(self._context[-1], "output")
+        assert not has, "inputs() method has been called more than once"
+        self._context[-1]["inputs"] = inputs
+
     def output(self, value):
-        self._context[-1].output = value
+        has = hasattr(self._context[-1], "output")
+        assert not has, "output() method has been called more than once"
+        self._context[-1]["output"] = value
+
 
 contexts = {}
 
-{{#each function}}
-ctx = Ctx()
-contexts.{{this}} = ctx
+def test_func(fn_name):
+    def push(ctx):
+        ctx._context.append({"params": [], "params_out": []})
+    
+    try: gen = globals()["gen_" + fn_name]
+    except KeyError: raise KeyError(f"Could not find function `gen_{fn_name}`")
+    
+    ctx = Ctx()
 
-for i in range({{visible_cases}}):
-    ctx.push()
-    gen_{{this}}(ctx)
+    for i in range({{hidden_cases}}):
+        push(ctx)
+        gen(ctx)
 
-ctx.hidden = True
-for i in range({{hidden_cases}}):
-    ctx.push()
-    gen_{{this}}(ctx)
+    ctx.hidden = True
+
+    for i in range({{visible_cases}}):
+        push(ctx)
+        gen(ctx)
+
+    contexts[fn_name] = ctx._context
+
+{{#each functions}}
+test_func("{{this}}")
 {{/each}}
 
-print(contexts)
+print(json.dumps(contexts))
