@@ -28,12 +28,13 @@ pub struct FunctionConfig {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ExerciseConfig {
     title: String,
+    #[serde(default)]
     test: TestCaseConfig,
     #[serde(skip)]
     pub instructions: String,
-    #[serde(flatten)]
     pub(crate) functions: HashMap<String, FunctionConfig>,
 }
 
@@ -67,14 +68,24 @@ pub struct ExcerciseSerialize {
     code: HashMap<Language, String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestCases {
-    #[serde(flatten)]
-    pub cases: HashMap<String, TestCase>,
+const fn bool_is_false(b: &bool) -> bool {
+    *b == false
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestCase {}
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct TestCase {
+    pub inputs: Vec<serde_json::Value>,
+    pub output: serde_json::Value,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "bool_is_false")]
+    pub hidden: bool,
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct TestCases {
+    #[serde(flatten)]
+    pub tests: HashMap<String, Vec<TestCase>>,
+}
 
 const fn hidden_cases_default() -> u32 {
     5
@@ -93,6 +104,19 @@ pub struct TestCaseConfig {
     pub visible_cases: u32,
     #[serde(skip)]
     pub seed: i64,
+    #[serde(default)]
+    pub tests: TestCases,
+}
+
+impl Default for TestCaseConfig {
+    fn default() -> Self {
+        Self {
+            hidden_cases: hidden_cases_default(),
+            visible_cases: visible_cases_default(),
+            seed: 0,
+            tests: TestCases::default(),
+        }
+    }
 }
 
 #[cfg(windows)]
@@ -100,21 +124,12 @@ const LINE_ENDING: &'static str = "\r\n";
 #[cfg(not(windows))]
 const LINE_ENDING: &'static str = "\n";
 
-pub fn runner_template(lang: &Language, content: &str) -> anyhow::Result<String> {
+pub fn runner_template(lang: &Language, cfg: &TestCaseConfig) -> anyhow::Result<String> {
     let template_file = fs::read_to_string(&path::LANGUAGES.join(lang.image()).join("runner.hbs"))
         .context("While trying to read template file")?;
 
-    let indent: String = content
-        .lines()
-        .fold(String::new(), |acc, line| acc + LINE_ENDING + "    " + line);
-
     let out = Handlebars::new()
-        .render(
-            &template_file,
-            &json!({
-                "content": indent,
-            }),
-        )
+        .render(&template_file, &cfg)
         .context("While rendering template")?;
     Ok(out)
 }

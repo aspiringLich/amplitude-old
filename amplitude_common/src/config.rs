@@ -3,6 +3,8 @@ use std::{fs, collections::HashMap};
 use clap::Parser;
 use serde::Deserialize;
 
+use crate::path;
+
 #[derive(Parser, Default, Deserialize, Debug)]
 pub struct Args {
     /// Whether or not to reclone the repo from github or to use the existing one
@@ -60,7 +62,7 @@ pub struct Config {
 }
 
 fn language_config() -> HashMap<String, LanguageConfig> {
-    toml::from_str(fs::read_to_string("./langs/languages.toml").unwrap().as_str()).unwrap()
+    toml::from_str(fs::read_to_string(path::LANGUAGES.join("languages.toml")).unwrap().as_str()).unwrap()
 }
 
 #[derive(Deserialize, Debug)]

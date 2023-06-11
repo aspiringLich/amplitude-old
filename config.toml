@@ -17,6 +17,8 @@ req_duration = 5
 command = "docker"
 # timeout on running files
 timeout = 0
+# where to store temporary files
+tmp_folder = ""
 
 # Article parsing configuration
 [parse]

@@ -6,7 +6,8 @@ use serde::{Deserialize, Serialize};
 #[serde(untagged)]
 #[serde(into = "String", try_from = "String")]
 pub enum VariableType {
-    Number,
+    Int,
+    Float,
     String,
     Boolean,
     Array(Box<VariableType>),
@@ -23,7 +24,8 @@ impl From<VariableType> for String {
 impl<'a> From<&'a VariableType> for String {
     fn from(value: &'a VariableType) -> Self {
         match value {
-            VariableType::Number => "number".to_string(),
+            VariableType::Int => "int".to_string(),
+            VariableType::Float => "float".to_string(),
             VariableType::String => "string".to_string(),
             VariableType::Boolean => "bool".to_string(),
             VariableType::Array(ty) => format!("{}[]", ty),
@@ -117,7 +119,8 @@ impl<'a> TryFrom<&'a str> for VariableType {
             Ok(VariableType::Tuple(vec))
         } else {
             match s {
-                "number" => Ok(VariableType::Number),
+                "int" => Ok(VariableType::Int),
+                "float" => Ok(VariableType::Float),
                 "string" => Ok(VariableType::String),
                 "bool" => Ok(VariableType::Boolean),
                 _ => anyhow::bail!("Could not interpret type"),
@@ -140,7 +143,8 @@ mod test {
 
     #[test]
     fn test_variable_type() -> anyhow::Result<()> {
-        let num = || VariableType::try_from("number").unwrap();
+        let int = || VariableType::try_from("int").unwrap();
+        let float = || VariableType::try_from("float").unwrap();
         let string = || VariableType::try_from("string").unwrap();
         let bool = || VariableType::try_from("bool").unwrap();
         let array = |t| VariableType::Array(Box::new(t));
@@ -155,7 +159,8 @@ mod test {
         };
         let tuple = |fields: &[VariableType]| VariableType::Tuple(fields.to_vec());
 
-        assert_eq!(num(), VariableType::Number);
+        assert_eq!(int(), VariableType::Int);
+        assert_eq!(float(), VariableType::Float);
         assert_eq!(string(), VariableType::String);
         assert_eq!(bool(), VariableType::Boolean);
 
@@ -165,34 +170,34 @@ mod test {
                 t
             );
         };
-        test("number[]", array(num()));
-        test("  number[]  ", array(num()));
+        test("int[]", array(int()));
+        test("  int[]  ", array(int()));
         test("bool[]  ", array(bool()));
         test("    \nstring[]", array(string()));
-        test("number[][]", array(array(num())));
+        test("int[][]", array(array(int())));
 
         test("{}", class(&[]));
         test("  {   }   ", class(&[]));
-        test("  { test:   number,  }   ", class(&[("test", num())]));
+        test("  { test:   int,  }   ", class(&[("test", int())]));
         test(
-            "  { test:   number,  test2: string,  }   ",
-            class(&[("test", num()), ("test2", string())]),
+            "  { test:   int,  test2: string,  }   ",
+            class(&[("test", int()), ("test2", string())]),
         );
         test(
-            "{ 1: {1: {1: {1: number}}}, 2: {}}",
+            "{ 1: {1: {1: {1: int}}}, 2: {}}",
             class(&[
                 (
                     "1",
-                    class(&[("1", class(&[("1", class(&[("1", num())]))]))]),
+                    class(&[("1", class(&[("1", class(&[("1", int())]))]))]),
                 ),
                 ("2", class(&[])),
             ]),
         );
 
         test("()", tuple(&[]));
-        test("(number,)", tuple(&[num()]));
-        test("(number, string,)", tuple(&[num(), string()]));
-        test("(number, string)", tuple(&[num(), string()]));
+        test("(int,)", tuple(&[int()]));
+        test("(int, string,)", tuple(&[int(), string()]));
+        test("(int, string)", tuple(&[int(), string()]));
 
         Ok(())
     }

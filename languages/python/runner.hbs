@@ -18,7 +18,7 @@ with redirect_stdout(StringIO()) as stdout:
     try:
         output.append({
             "type": "output", 
-            "value": {{~@../key}}(
+            "value": {{../../code_file}}.{{@../key}}(
                 {{~#each inputs~}}
                 {{this}}{{#unless @last}},{{/unless}}
                 {{~/each~}}
@@ -35,4 +35,5 @@ with redirect_stdout(StringIO()) as stdout:
 {{/each}}
 {{/each}}
 
+print("... {{hidden_cases}} more hidden test cases")
 print(json.dumps(outputs))
