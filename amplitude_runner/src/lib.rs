@@ -17,7 +17,14 @@ use std::{
 };
 
 pub fn rebuild_images() {
-    if env::current_dir().unwrap().file_name().unwrap() != "amplitude" {
+    if env::current_dir()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .file_name()
+        .unwrap()
+        == "amplitude"
+    {
         env::set_current_dir("../").unwrap();
     }
     scope_dir(&path::LANGUAGES, || {
@@ -25,7 +32,6 @@ pub fn rebuild_images() {
             toml::from_str(&fs::read_to_string("languages.toml").unwrap()).unwrap();
 
         for (lang, cfg) in langs {
-            
             scope_dir(lang, || {
                 let run = Command::new("docker")
                     .args(["build", "-t", &cfg.image_name, "."])
