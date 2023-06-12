@@ -1,10 +1,10 @@
 #![feature(default_free_fn)]
 #![feature(iter_intersperse)]
 
-pub mod lang;
-pub mod var_type;
-pub mod runner;
 pub mod exercise;
+pub mod lang;
+pub mod runner;
+pub mod var_type;
 
 use amplitude_common::{config::LanguageConfig, path};
 use std::{
@@ -21,13 +21,14 @@ pub fn rebuild_images() {
     env::set_current_dir(&path::LANGUAGES).unwrap();
 
     let base_dir = env::current_dir().unwrap();
-    let langs = load_langs("languages.toml");
+    let langs: HashMap<String, LanguageConfig> =
+        toml::from_str(&fs::read_to_string("languages.toml").unwrap()).unwrap();
 
-    for i in langs {
-        env::set_current_dir(base_dir.join(i.1)).unwrap();
+    for (lang, cfg) in langs {
+        env::set_current_dir(base_dir.join(lang)).unwrap();
 
         let run = Command::new("docker")
-            .args(["build", "-t", &i.2, "."])
+            .args(["build", "-t", &cfg.image_name, "."])
             .status()
             .unwrap();
 
@@ -35,16 +36,4 @@ pub fn rebuild_images() {
             process::exit(-1);
         }
     }
-}
-
-fn load_langs<T: AsRef<Path>>(file: T) -> Vec<(String, String, String)> {
-    let langs: HashMap<String, LanguageConfig> = toml::from_str(&fs::read_to_string(file).unwrap())
-        .expect("Error parsing languages/languages.toml");
-    let mut out = Vec::new();
-
-    for (path, lang) in langs {
-        out.push((path.clone(), path, lang.image_name));
-    }
-
-    out
 }

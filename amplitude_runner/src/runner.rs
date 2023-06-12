@@ -53,7 +53,7 @@ pub fn run(
             .spawn()
             .unwrap()
             .wait_with_output()
-            .context("While running `docker pull`")?;
+            .context("While running `docker images`")?;
         if out
             .stdout
             .lines()
@@ -141,6 +141,12 @@ mod test {
 
     #[test]
     fn test_runner() -> anyhow::Result<()> {
+        #[cfg(not(target_os = "linux"))]
+        {
+            eprintln!("Skipping test because it only works on linux");
+            return Ok(());
+        }
+        
         env::set_current_dir("../")?;
         let args = Args::parse();
         let mut config: Config = toml::from_str::<Config>(&fs::read_to_string(&args.config)?)?;
