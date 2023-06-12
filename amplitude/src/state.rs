@@ -1,7 +1,7 @@
 use std::{fs, path::PathBuf};
 
 use amplitude_common::config::{Args, Config};
-use parking_lot::{Mutex, MutexGuard};
+use parking_lot::{Mutex, MutexGuard, RwLock, RwLockReadGuard};
 use rusqlite::Connection;
 
 use crate::database::Database;
@@ -11,11 +11,15 @@ use amplitude_markdown::parse::{parse, ParseData};
 
 pub struct State {
     db: Mutex<Connection>,
-    pub parse_data: ParseData,
+    pub parse_data: RwLock<ParseData>,
     pub config: Config,
 }
 
 impl State {
+    pub fn parse_data(&self) -> RwLockReadGuard<ParseData> {
+        self.parse_data.read()
+    }
+    
     pub fn new() -> anyhow::Result<Self> {
         let args = Args::parse();
         let mut config = toml::from_str::<Config>(&fs::read_to_string(&args.config)?)?;
@@ -29,11 +33,11 @@ impl State {
         let mut db = Connection::open(&path::DATABASE)?;
         db.init()?;
 
-        let parse_state = parse(&config)?;
+        let parse_data = parse(&config)?;
 
         Ok(Self {
             db: Mutex::new(db),
-            parse_data: parse_state,
+            parse_data: RwLock::new(parse_data),
             config,
         })
     }

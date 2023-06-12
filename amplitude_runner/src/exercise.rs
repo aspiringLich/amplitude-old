@@ -53,7 +53,7 @@ pub struct Exercise {
     runners: HashMap<Language, String>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(tag = "type")]
 pub enum TestResult {
     #[serde(rename = "correct")]
@@ -64,7 +64,7 @@ pub enum TestResult {
     Exception { traceback: String, stdout: String },
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct TestResults {
     pub visible: Vec<TestResult>,
     pub hidden: bool,
@@ -84,7 +84,7 @@ impl Exercise {
         }
     }
 
-    pub fn test_code(
+    pub fn run_tests(
         &self,
         lang: &Language,
         content: &str,
@@ -94,8 +94,8 @@ impl Exercise {
         #[derive(Debug, Deserialize)]
         #[serde(tag = "type")]
         enum TestOutput {
-            #[serde(rename = "output")]
-            Output {
+            #[serde(rename = "answer")]
+            Answer {
                 value: serde_json::Value,
                 stdout: String,
             },
@@ -112,7 +112,7 @@ impl Exercise {
                     lang.image()
                 )
             })?,
-            HashMap::from_iter([(id.to_string(), content.as_bytes())]),
+            HashMap::from_iter([(id.to_string() + ".py", content.as_bytes())]),
             "",
         )
         .context("While running generator")?;
@@ -133,7 +133,7 @@ impl Exercise {
                 .into_iter()
                 .enumerate()
                 .map(|(i, t)| match t {
-                    TestOutput::Output { value, stdout } => {
+                    TestOutput::Answer { value, stdout } => {
                         let stdout = stdout.to_string();
                         match value == &tests[i].output {
                             true => TestResult::Correct { stdout },
@@ -152,7 +152,7 @@ impl Exercise {
                 })
                 .collect();
             let hidden = hidden.into_iter().enumerate().all(|(i, t)| match t {
-                TestOutput::Output { value, .. } => {
+                TestOutput::Answer { value, .. } => {
                     &tests[i + fn_config.visible_cases as usize].output == value
                 }
                 TestOutput::Exception { .. } => false,
@@ -300,6 +300,86 @@ mod test {
     use amplitude_common::config_and_set_path;
 
     use super::*;
+    
+    #[test]
+    fn test_simple_langs() {
+        test_simple(
+            &Language::Python,
+            "def test(x):\n    return x - 1\n",
+        ).unwrap();
+    }
+
+    fn test_simple(lang: &Language, code: &str) -> anyhow::Result<()> {
+        let cfg = config_and_set_path().unwrap();
+
+        let config = ExerciseConfig {
+            title: "test".to_string(),
+            instructions: "test".to_string(),
+            functions: HashMap::from_iter([(
+                "test".to_string(),
+                FunctionConfig {
+                    inputs: vec![VariableType::Int],
+                    output: VariableType::Int,
+                    seed: 0,
+                    hidden_cases: 2,
+                    visible_cases: 2,
+                    tests: vec![
+                        TestCase {
+                            inputs: vec![json!(1)],
+                            output: json!(0),
+                            hidden: false,
+                        },
+                        TestCase {
+                            inputs: vec![json!(3)],
+                            output: json!(2),
+                            hidden: false,
+                        },
+                        TestCase {
+                            inputs: vec![json!(4)],
+                            output: json!(3),
+                            hidden: true,
+                        },
+                        TestCase {
+                            inputs: vec![json!(5)],
+                            output: json!(4),
+                            hidden: true,
+                        },
+                    ],
+                },
+            )]),
+        };
+
+        let exercise = Exercise {
+            runners: HashMap::from_iter([(
+                lang.clone(),
+                runner_template(lang, &config, "test").unwrap(),
+            )]),
+            config,
+            code: HashMap::new(),
+        };
+        let result = exercise.run_tests(
+            lang,
+            code,
+            "test",
+            &cfg,
+        )?;
+        anyhow::ensure!(
+            result["test"]
+                == TestResults {
+                    visible: vec![
+                        TestResult::Correct {
+                            stdout: "".to_string()
+                        },
+                        TestResult::Correct {
+                            stdout: "".to_string()
+                        }
+                    ],
+                    hidden: true,
+                    passed: true
+                }
+        );
+        Ok(())
+    }
 
     #[test]
     fn test_generate() {

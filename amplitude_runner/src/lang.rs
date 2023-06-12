@@ -1,19 +1,22 @@
 use std::{error, fmt, str::FromStr};
 
 use enum_iterator::Sequence;
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
-#[derive(Sequence, Debug, Serialize, PartialEq, Hash, Eq, Clone, Copy)]
+#[derive(Sequence, Debug, Serialize, Deserialize, PartialEq, Hash, Eq, Clone, Copy)]
 pub enum Language {
     #[serde(rename = "c")]
     C,
     #[serde(rename = "cpp")]
     Cpp,
-    #[serde(rename = "js")]
+    #[serde(rename = "javascript")]
+    #[serde(alias = "js")]
     JavaScript,
-    #[serde(rename = "py")]
+    #[serde(rename = "python")]
+    #[serde(alias = "py")]
     Python,
-    #[serde(rename = "rs")]
+    #[serde(rename = "rust")]
+    #[serde(alias = "rs")]
     Rust,
     #[serde(rename = "java")]
     Java,

@@ -11,9 +11,9 @@ pub fn config_and_set_path() -> anyhow::Result<config::Config> {
     // uhhh i have no idea why i need this, i assume some random rust test fuckery,
     // but this might break
     dbg!(env::current_dir()?);
-    let binding = env::current_dir()?;
-    
-    let dir = binding.file_name().unwrap().to_string_lossy();
+
+    let binding = env::current_dir()?.to_path_buf();
+    let dir = binding.file_stem().unwrap().to_string_lossy();
     if !dir.starts_with("amplitude") {
         panic!("Boi where da hell are you runnin this from, the folder name doesn't start with `amplitude`")
     } else if dir != "amplitude" {

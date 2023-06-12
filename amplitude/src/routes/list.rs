@@ -9,9 +9,9 @@ struct CourseReq {
 pub fn attach(server: &mut Server<State>) {
     server.handled_stateful_route(Method::POST, "/api/list", |state, req| {
         let req: CourseReq = json(req)?;
-        let state = &state.parse_data;
-
-        let tree = state
+        
+        let parse_data = state.parse_data();
+        let tree = parse_data
             .tree
             .get(&req.course)
             .context(Status::NotFound, "Course not found")?;
@@ -21,10 +21,8 @@ pub fn attach(server: &mut Server<State>) {
             .content(Content::JSON))
     });
     server.handled_stateful_route(Method::GET, "/api/list", |state, _req| {
-        let state = &state.parse_data;
-
         Ok(Response::new()
-            .text(serde_json::to_string(&state.tree)?)
+            .text(serde_json::to_string(&state.parse_data().tree)?)
             .header("Access-Control-Allow-Origin", "*")
             .content(Content::JSON))
     });

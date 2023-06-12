@@ -10,9 +10,9 @@ pub fn attach(server: &mut Server<State>) {
         let mut req: ItemReq = json(req)?;
         req.id = req.id.strip_prefix('/').unwrap_or(&req.id).to_string();
         req.id = req.id.strip_suffix('/').unwrap_or(&req.id).to_string();
-        let state = &state.parse_data;
 
-        let item = state
+        let parse_data = state.parse_data();
+        let item = parse_data
             .items
             .get(&req.id)
             .with_context(Status::NotFound, || format!("Item `{}` not found", req.id))?;

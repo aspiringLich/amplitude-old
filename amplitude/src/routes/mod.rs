@@ -1,4 +1,4 @@
-use crate::error::{HandledRoute, StatusContext};
+use crate::error::{HandledRoute, StatusContext, error};
 use crate::state::State;
 
 use afire::prelude::*;
@@ -8,7 +8,7 @@ use serde::Deserialize;
 use tracing::trace;
 
 mod auth;
-mod evaluate;
+mod test;
 mod item;
 mod list;
 
@@ -20,7 +20,7 @@ pub fn attach(server: &mut Server<State>) {
     });
 
     auth::attach(server);
-    evaluate::attach(server);
+    test::attach(server);
     list::attach(server);
     item::attach(server);
 }

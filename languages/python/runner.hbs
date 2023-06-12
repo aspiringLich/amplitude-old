@@ -27,7 +27,7 @@ for [fn, suite] in tests.items():
     assert hasattr({{code_file}}, fn), f"Could not find `{fn}` in `{{code_file}}.py`"
     outputs[fn] = []
     output = outputs[fn]
-    fn = getattr(exercise, fn)
+    fn = getattr({{code_file}}, fn)
     for i, test in enumerate(suite):
         with redirect_stdout(StringIO()) as stdout:
             try:

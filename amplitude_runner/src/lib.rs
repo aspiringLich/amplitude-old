@@ -25,6 +25,7 @@ pub fn rebuild_images() {
             toml::from_str(&fs::read_to_string("languages.toml").unwrap()).unwrap();
 
         for (lang, cfg) in langs {
+            
             scope_dir(lang, || {
                 let run = Command::new("docker")
                     .args(["build", "-t", &cfg.image_name, "."])
