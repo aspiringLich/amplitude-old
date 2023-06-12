@@ -36,6 +36,8 @@ pub struct ExerciseConfig {
     #[serde(skip)]
     pub instructions: String,
     pub(crate) functions: HashMap<String, FunctionConfig>,
+    tests: TestCases,
+    runner: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -157,3 +159,5 @@ pub fn generator_template(
         .context("While rendering template")?;
     Ok(out)
 }
+
+pub fn generate() {}

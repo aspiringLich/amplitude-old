@@ -1,11 +1,12 @@
 use std::{
     collections::HashMap,
     fs,
+    io::BufRead,
     process::{Command, Stdio},
     time::{Duration, Instant},
 };
 
-use amplitude_common::config::{LanguageConfig, DockerConfig};
+use amplitude_common::config::{DockerConfig, LanguageConfig};
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
 
@@ -42,6 +43,28 @@ pub fn run(
     other_files: HashMap<String, &[u8]>,
     args: &str,
 ) -> anyhow::Result<RunOutput> {
+    // test that the docker image exists
+    #[cfg(debug_assertions)]
+    {
+        let out = Command::new(&cfg.command)
+            .arg("images")
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap()
+            .wait_with_output()
+            .context("While running `docker pull`")?;
+        if out
+            .stdout
+            .lines()
+            .filter_map(|x| x.ok())
+            .all(|x| !x.starts_with(&lang.image_name))
+        {
+            eprintln!("Image {} not found, rebuilding everything!", &lang.image_name);
+            crate::rebuild_images();
+        }
+    }
+
     let tempdir = tempfile::tempdir_in(&cfg.tmp_folder).context("While creating temp dir")?;
     let code_path = tempdir.path().join(&lang.source_path);
     fs::create_dir_all(code_path.parent().unwrap()).context("While creating temp dir")?;
