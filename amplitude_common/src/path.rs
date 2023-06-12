@@ -1,5 +1,7 @@
 use std::{
+    env,
     fmt::Display,
+    io,
     path::{Path, PathBuf},
 };
 
@@ -13,6 +15,12 @@ def_static!(LANGUAGES, "./languages");
 /// A struct that represents a path, which can be initialized statically.
 #[derive(Clone, Default)]
 pub struct StaticPath(&'static str);
+
+pub fn scope_dir<P: AsRef<Path>, F: FnOnce() -> ()>(path: P, f: F) -> io::Result<()> {
+    env::set_current_dir(path)?;
+    f();
+    env::set_current_dir("..")
+}
 
 impl Display for StaticPath {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

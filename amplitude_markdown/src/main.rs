@@ -1,6 +1,6 @@
 use std::{env, fs};
 
-use amplitude_common::config::Config;
+use amplitude_common::{config::Config, config_and_set_path};
 use amplitude_markdown::parse::parse;
 use tracing::metadata::LevelFilter;
 use tracing_subscriber::{
@@ -14,10 +14,7 @@ fn main() -> anyhow::Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    if env::current_dir()?.ends_with("amplitude_markdown") {
-        env::set_current_dir("../")?;
-    }
-    let config = toml::from_str::<Config>(&fs::read_to_string("config.toml")?)?;
+    let config = config_and_set_path()?;
     parse(&config)?;
 
     Ok(())
