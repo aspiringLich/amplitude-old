@@ -16,7 +16,11 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Build
-        run: cargo build
+        run: |
+          export RUST_BACKTRACE=1
+          cargo build
 
       - name: Test
-        run: cargo test
+        run: |
+          export RUST_BACKTRACE=1
+          cargo test

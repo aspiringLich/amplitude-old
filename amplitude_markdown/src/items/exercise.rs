@@ -3,10 +3,10 @@ use super::*;
 use crate::parse::parse_md;
 pub use amplitude_runner::exercise::Exercise;
 use amplitude_runner::{
-    exercise::{generate, ExerciseConfig},
+    exercise::{generate, runner_template, ExerciseConfig},
     lang::Language,
 };
-use std::str::FromStr;
+use std::{str::FromStr, collections::{HashMap, hash_map::DefaultHasher}, hash::{Hash, Hasher}};
 
 impl Item for Exercise {
     fn parse_from_dir(
@@ -24,11 +24,12 @@ impl Item for Exercise {
         );
 
         let id = ctx.id().rsplit('/').next().unwrap().to_string();
+        let binding = "src/".to_string() + &id;
+        let mut starting_code = contents
+            .query(&binding, FileType::Code)
+            .peekable();
         ensure!(
-            contents
-                .query(&("src/".to_string() + &id), FileType::Code)
-                .next()
-                .is_some(),
+            starting_code.peek().is_some(),
             format!("src/{}.<code>", id),
             "Starting code"
         );
@@ -49,6 +50,16 @@ impl Item for Exercise {
             &fs::read_to_string(dir.join("config.toml")).context("While reading `config.toml`")?;
         let mut config: ExerciseConfig =
             toml::from_str(config).context("While parsing `config.toml`")?;
+        
+        let mut hasher = DefaultHasher::new();
+        id.hash(&mut hasher);
+        // set seed of function configs
+        for (func, cfg) in config.functions.iter_mut() {
+            let mut h = hasher.clone();
+            func.hash(&mut h);
+            cfg.seed = h.finish();
+        }
+        
 
         let code = contents
             .query(&id, FileType::Code)
@@ -72,7 +83,15 @@ impl Item for Exercise {
             .context("While reading test case generator file")?;
 
         generate(&lang, &cfg, &content, &mut config).context("While generating test cases")?;
+        
+        let mut runner = HashMap::new();
+        
+        for lang in starting_code.filter_map(|i| Language::from_str(&i.ext).ok()) {
+            let ret = runner_template(&lang, &config, &id).context("While generating runner template")?;
+            dbg!(&config);
+            runner.insert(lang, ret);
+        }
 
-        Ok(ItemType::Exercise(Exercise::new(config, code)))
+        Ok(ItemType::Exercise(Exercise::new(config, code, runner)))
     }
 }

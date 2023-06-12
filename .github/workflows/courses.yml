@@ -10,4 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Test
-        run: cargo r -p amplitude_markdown
+        run: |
+          export RUST_BACKTRACE=1
+          cargo r -p amplitude_markdown

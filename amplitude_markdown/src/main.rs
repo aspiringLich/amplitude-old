@@ -1,6 +1,4 @@
-use std::{env, fs};
-
-use amplitude_common::{config::Config, config_and_set_path};
+use amplitude_common::config_and_set_path;
 use amplitude_markdown::parse::parse;
 use tracing::metadata::LevelFilter;
 use tracing_subscriber::{

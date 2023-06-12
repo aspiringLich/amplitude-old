@@ -5,35 +5,43 @@ import traceback
 
 import {{code_file}}
 
+tests = {
+{{~#each functions~}}
+"{{@key}}": [
+{{~#each tests~}}
+{
+"inputs": [
+    {{~#each inputs~}}
+    {{this}}{{#unless @last}},{{/unless}}
+    {{~/each~}}],{{#if hidden}}
+"hidden": True,{{/if}}
+}{{#unless @last}},{{/unless}}
+{{~/each~}}
+]{{#unless @last}},{{/unless}}
+{{~/each~}}
+}
+
 outputs = {}
 
-{{#each tests}}
-assert hasattr({{../code_file}}, "{{@key}}"), "Could not find `{{@key}}` in `{{../code_file}}.py`"
-outputs["{{@key}}"] = []
-output = outputs["{{@key}}"]
+for [fn, suite] in tests.items():
+    assert hasattr({{code_file}}, fn), f"Could not find `{fn}` in `{{code_file}}.py`"
+    outputs[fn] = []
+    output = outputs[fn]
+    fn = getattr(exercise, fn)
+    for i, test in enumerate(suite):
+        with redirect_stdout(StringIO()) as stdout:
+            try:
+                out = fn(*test["inputs"])
+                output.append({ 
+                    "type": "answer",
+                    "value": out,
+                    "stdout": stdout.getvalue()
+                })
+            except Exception:
+                output.append({
+                    "type": "exception",
+                    "traceback": traceback.format_exc(),
+                    "stdout": stdout.getvalue()
+                })
 
-{{#each this}}
-with redirect_stdout(StringIO()) as stdout:
-    {{#unless hidden}}print("RUNNING TEST CASE {{@index}}"){{/unless}}
-    try:
-        output.append({
-            "type": "output", 
-            "value": {{../../code_file}}.{{@../key}}(
-                {{~#each inputs~}}
-                {{this}}{{#unless @last}},{{/unless}}
-                {{~/each~}}
-        )})
-    except Exception:
-        {{#if hidden}}
-        output.append({"type": "exception", "traceback": ""})
-        {{else}}
-        traceback = traceback.format_exc()
-        print(traceback)
-        output.append({"type": "exception", "traceback": traceback})
-        {{/if}}
-    {{#unless hidden}}print(stdout.getvalue()){{/unless}}
-{{/each}}
-{{/each}}
-
-print("... {{hidden_cases}} more hidden test cases")
 print(json.dumps(outputs))
