@@ -14,7 +14,7 @@ use std::{
 };
 
 pub fn rebuild_images() {
-    if env::current_dir().unwrap().file_name().unwrap() == "amplitude_runner" {
+    if env::current_dir().unwrap().file_name().unwrap() != "amplitude" {
         env::set_current_dir("../").unwrap();
     }
     env::set_current_dir(&path::LANGUAGES).unwrap();

@@ -68,7 +68,8 @@ impl Item for Exercise {
         .context("While parsing markdown for `instructions.md`")?;
 
         let lang = Language::from_str(&generator[0].ext)?;
-        let content = fs::read_to_string(generator[0].path(dir))?;
+        let content = fs::read_to_string(generator[0].path(dir))
+            .context("While reading test case generator file")?;
 
         generate(&lang, &cfg, &content, &mut config).context("While generating test cases")?;
 
