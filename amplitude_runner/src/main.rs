@@ -1,4 +1,5 @@
+use amplitude_runner::rebuild_images;
 
 fn main() {
-    crate::main()
+    rebuild_images()
 }
