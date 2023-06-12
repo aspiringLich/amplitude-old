@@ -48,6 +48,7 @@ pub fn run(
     {
         let out = Command::new(&cfg.command)
             .arg("images")
+            .arg(&lang.image_name)
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()
@@ -57,11 +58,12 @@ pub fn run(
         if out
             .stdout
             .lines()
+            .skip(1)
             .filter_map(|x| x.ok())
             .all(|x| !x.starts_with(&lang.image_name))
         {
-            eprintln!("Image {} not found, rebuilding everything!", &lang.image_name);
-            crate::rebuild_images();
+            eprintln!("Image {} not found! try running `cargo r -p amplitude_runner` to rebuild docker images", &lang.image_name);
+            std::process::exit(-1);
         }
     }
 

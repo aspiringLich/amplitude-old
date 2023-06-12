@@ -23,4 +23,5 @@ jobs:
       - name: Test
         run: |
           export RUST_BACKTRACE=1
+          cargo r -p amplitude_runner
           cargo test
