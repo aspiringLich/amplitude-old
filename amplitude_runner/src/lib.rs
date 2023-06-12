@@ -10,7 +10,6 @@ use amplitude_common::{config::LanguageConfig, path};
 use std::{
     collections::HashMap,
     env, fs,
-    path::Path,
     process::{self, Command},
 };
 

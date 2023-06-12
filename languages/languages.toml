@@ -6,7 +6,7 @@ source_path = "src/main.rs"
 image_name = "python-runner"
 source_path = "main.py"
 
-[js]
+[javascript]
 image_name = "js-runner"
 source_path = "main.js"
 

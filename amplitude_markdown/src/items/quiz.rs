@@ -67,6 +67,7 @@ impl Item for Quiz {
         dir: &Path,
         contents: DirContents,
         ctx: &mut DataContext,
+        _: &Config,
     ) -> anyhow::Result<ItemType>
     where
         Self: Sized,

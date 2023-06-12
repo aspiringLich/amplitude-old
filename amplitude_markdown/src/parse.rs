@@ -96,7 +96,7 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
                 continue;
             }
 
-            parse_course(path, &mut data)
+            parse_course(path, &mut data, config)
                 .with_context(|| format!("While parsing course `{name}`"))?;
         }
     }

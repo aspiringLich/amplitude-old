@@ -1,5 +1,6 @@
 use crate::items::utils::ErrorList;
 use crate::parse::context::DataContext;
+use amplitude_common::config::Config;
 use anyhow::Context;
 
 use crate::OsStrToString;
@@ -47,6 +48,7 @@ pub trait Item {
         dir: &Path,
         contents: DirContents,
         context: &mut DataContext,
+        cfg: &Config,
     ) -> anyhow::Result<ItemType>;
 }
 
@@ -54,6 +56,7 @@ pub fn parse_item(
     path: &Path,
     mut context: &mut DataContext,
     track_id: &str,
+    cfg: &Config,
 ) -> anyhow::Result<()> {
     let mut errors = ErrorList::new("Could not parse as valid item", file!());
     macro parse_item($item:ty, $name:literal) {
@@ -61,6 +64,7 @@ pub fn parse_item(
             path,
             DirContents::new(path).context("While getting dir contents")?,
             &mut context,
+            cfg,
         )
         .with_context(|| format!("While attempting to parse as `{}`", $name))
         {

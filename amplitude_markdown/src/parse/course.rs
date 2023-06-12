@@ -40,7 +40,7 @@ impl Track {
     }
 }
 
-pub fn parse_course(path: PathBuf, data: &mut RawCourseData) -> anyhow::Result<()> {
+pub fn parse_course(path: PathBuf, data: &mut RawCourseData, cfg: &Config) -> anyhow::Result<()> {
     let arena = Arena::new();
     let refs = {
         let header = fs::read_to_string(path.join("header.md"))?;
@@ -86,7 +86,7 @@ pub fn parse_course(path: PathBuf, data: &mut RawCourseData) -> anyhow::Result<(
 
         let mut ctx = DataContext::new(data, &course_id)?;
 
-        parse_track(path, &mut ctx).with_context(|| format!("While parsing track {track_id}"))?;
+        parse_track(path, &mut ctx, cfg).with_context(|| format!("While parsing track {track_id}"))?;
     }
 
     Ok(())
@@ -96,7 +96,7 @@ fn strip_prefix(path: &Path) -> String {
     path.file_name().unwrap().to_str().unwrap()[3..].to_string()
 }
 
-pub fn parse_track(path: PathBuf, ctx: &mut DataContext) -> anyhow::Result<()> {
+pub fn parse_track(path: PathBuf, ctx: &mut DataContext, cfg: &Config) -> anyhow::Result<()> {
     let track: RawTrack = toml::from_str(&fs::read_to_string(path.join("track.toml"))?)
         .context("While parsing `track.toml`")?;
     let track_id = strip_prefix(&path);
@@ -119,7 +119,7 @@ pub fn parse_track(path: PathBuf, ctx: &mut DataContext) -> anyhow::Result<()> {
         let id = strip_prefix(&path);
 
         ctx.scope(&id, |ctx| {
-            parse_item(&path, ctx, &track_id)
+            parse_item(&path, ctx, &track_id, cfg)
                 .with_context(|| format!("While parsing item at path `{}`", path.to_string_lossy()))
         })?
     }

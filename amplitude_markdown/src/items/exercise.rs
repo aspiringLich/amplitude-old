@@ -2,7 +2,10 @@ use super::*;
 
 use crate::parse::parse_md;
 pub use amplitude_runner::exercise::Exercise;
-use amplitude_runner::{exercise::ExerciseConfig, lang::Language};
+use amplitude_runner::{
+    exercise::{generate, ExerciseConfig},
+    lang::Language,
+};
 use std::str::FromStr;
 
 impl Item for Exercise {
@@ -10,6 +13,7 @@ impl Item for Exercise {
         dir: &Path,
         contents: DirContents,
         ctx: &mut DataContext,
+        cfg: &Config,
     ) -> anyhow::Result<ItemType> {
         ensure!(contents.contains("instructions.md"), "instructions.md");
         ensure!(contents.contains("config.toml"), "config.toml");
@@ -28,13 +32,17 @@ impl Item for Exercise {
             format!("src/{}.<code>", id),
             "Starting code"
         );
+        let generator = contents
+            .query("src/generator", FileType::Code)
+            .collect::<Vec<_>>();
         ensure!(
-            contents
-                .query("src/generator", FileType::Code)
-                .next()
-                .is_some(),
+            generator.len() > 0,
             "src/generator.<code>",
             "Test Case generator"
+        );
+        anyhow::ensure!(
+            generator.len() == 1,
+            "Multiple test case generator (`src/generator.<code>`) files found! Only one is allowed."
         );
 
         let config =
@@ -52,7 +60,17 @@ impl Item for Exercise {
                 )
             })
             .collect();
-        config.instructions = parse_md(&fs::read_to_string(dir.join("instructions.md"))?, ctx)?;
+        config.instructions = parse_md(
+            &fs::read_to_string(dir.join("instructions.md"))
+                .context("While reading `instructions.md`")?,
+            ctx,
+        )
+        .context("While parsing markdown for `instructions.md`")?;
+
+        let lang = Language::from_str(&generator[0].ext)?;
+        let content = fs::read_to_string(generator[0].path(dir))?;
+
+        generate(&lang, &cfg, &content, &mut config).context("While generating test cases")?;
 
         Ok(ItemType::Exercise(Exercise::new(config, code)))
     }

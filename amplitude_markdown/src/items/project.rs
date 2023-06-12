@@ -20,6 +20,7 @@ impl Item for Project {
         dir: &Path,
         contents: DirContents,
         _context: &mut DataContext,
+        _: &Config,
     ) -> anyhow::Result<ItemType> {
         ensure!(
             contents.query("start", FileType::Code).next().is_some(),

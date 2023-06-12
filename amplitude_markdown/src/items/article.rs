@@ -33,6 +33,7 @@ impl Item for Article {
         dir: &Path,
         contents: DirContents,
         context: &mut DataContext,
+        _: &Config,
     ) -> anyhow::Result<ItemType> {
         ensure!(contents.contains("article.md"), "article.md");
 

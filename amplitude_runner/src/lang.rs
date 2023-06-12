@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{error, fmt, str::FromStr};
 
 use enum_iterator::Sequence;
 use serde::Serialize;
@@ -43,8 +43,19 @@ impl Language {
     }
 }
 
+#[derive(Debug)]
+pub struct LanguageIdentError;
+
+impl fmt::Display for LanguageIdentError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Could not identify language")
+    }
+}
+
+impl error::Error for LanguageIdentError {}
+
 impl FromStr for Language {
-    type Err = String;
+    type Err = LanguageIdentError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(match s.to_ascii_lowercase().as_str() {
@@ -54,7 +65,7 @@ impl FromStr for Language {
             "python" | "py" => Language::Python,
             "rust" | "rs" => Language::Rust,
             "java" => Language::Java,
-            _ => return Err(format!("Could not identify `{s}`")),
+            _ => return Err(LanguageIdentError),
         })
     }
 }
