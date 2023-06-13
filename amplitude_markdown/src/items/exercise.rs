@@ -3,10 +3,14 @@ use super::*;
 use crate::parse::parse_md;
 pub use amplitude_runner::exercise::Exercise;
 use amplitude_runner::{
-    exercise::{generate, runner_template, ExerciseConfig},
+    exercise::{generate, runner_template, ExerciseConfig, LanguageInfo},
     lang::Language,
 };
-use std::{str::FromStr, collections::{HashMap, hash_map::DefaultHasher}, hash::{Hash, Hasher}};
+use std::{
+    collections::{hash_map::DefaultHasher, HashMap},
+    hash::{Hash, Hasher},
+    str::FromStr,
+};
 
 impl Item for Exercise {
     fn parse_from_dir(
@@ -25,9 +29,7 @@ impl Item for Exercise {
 
         let id = ctx.id().rsplit('/').next().unwrap().to_string();
         let binding = "src/".to_string() + &id;
-        let mut starting_code = contents
-            .query(&binding, FileType::Code)
-            .peekable();
+        let mut starting_code = contents.query(&binding, FileType::Code).peekable();
         ensure!(
             starting_code.peek().is_some(),
             format!("src/{}.<code>", id),
@@ -50,7 +52,7 @@ impl Item for Exercise {
             &fs::read_to_string(dir.join("config.toml")).context("While reading `config.toml`")?;
         let mut config: ExerciseConfig =
             toml::from_str(config).context("While parsing `config.toml`")?;
-        
+
         let mut hasher = DefaultHasher::new();
         id.hash(&mut hasher);
         // set seed of function configs
@@ -59,18 +61,38 @@ impl Item for Exercise {
             func.hash(&mut h);
             cfg.seed = h.finish();
         }
-        
 
-        let code = contents
-            .query(&id, FileType::Code)
-            .map(|item| {
-                (
-                    Language::from_str(&item.ext)
-                        .expect("Already guaranteed by check in Item impl of Exercise"),
-                    fs::read_to_string(item.path(dir)).expect("guaranteed valid path"),
-                )
-            })
-            .collect();
+        let lang = Language::from_str(&generator[0].ext)?;
+        let content = fs::read_to_string(generator[0].path(dir))
+            .context("While reading test case generator file")?;
+
+        generate(&lang, &cfg, &content, &mut config).context("While generating test cases")?;
+
+        let iter = starting_code
+            .filter_map(|item| Language::from_str(&item.ext).ok().map(|x| (item, x)))
+            .map(|(item, lang)| -> anyhow::Result<_> {
+                Ok((
+                    lang,
+                    LanguageInfo {
+                        code: fs::read_to_string(item.path(dir)).context("Expected valid path")?,
+                        runner: runner_template(&lang, &config, &id)
+                            .context("While generating runner template")?,
+                    },
+                ))
+            });
+
+        let mut lang_info = HashMap::new();
+        for info in iter {
+            match info {
+                Ok((lang, info)) => {
+                    lang_info.insert(lang, info);
+                }
+                Err(e) => {
+                    return Err(e.context("While parsing Language Info"));
+                }
+            }
+        }
+
         config.instructions = parse_md(
             &fs::read_to_string(dir.join("instructions.md"))
                 .context("While reading `instructions.md`")?,
@@ -78,20 +100,6 @@ impl Item for Exercise {
         )
         .context("While parsing markdown for `instructions.md`")?;
 
-        let lang = Language::from_str(&generator[0].ext)?;
-        let content = fs::read_to_string(generator[0].path(dir))
-            .context("While reading test case generator file")?;
-
-        generate(&lang, &cfg, &content, &mut config).context("While generating test cases")?;
-        
-        let mut runner = HashMap::new();
-        
-        for lang in starting_code.filter_map(|i| Language::from_str(&i.ext).ok()) {
-            let ret = runner_template(&lang, &config, &id).context("While generating runner template")?;
-            dbg!(&config);
-            runner.insert(lang, ret);
-        }
-
-        Ok(ItemType::Exercise(Exercise::new(config, code, runner)))
+        Ok(ItemType::Exercise(Exercise::new(config, lang_info)))
     }
 }

@@ -7,7 +7,6 @@
     export let classes: string = "";
     
     let body_element: HTMLElement;
-    let article_element: HTMLElement;
     let padding = 1000;
     let init = false;
 
@@ -37,8 +36,8 @@
     </style>
 </noscript>
 
-<div class="article max-w-3xl px-16 m-auto {classes}" class:show={init} bind:this={article_element}>
-    <div class="body" bind:this={body_element}>
+<div>
+    <div class="article container-xl px-16 m-auto {classes}" class:show={init} bind:this={body_element}>
         <h1 class="text-5xl my-6">{@html title}</h1>
         {@html body}
     </div>
@@ -60,9 +59,7 @@
             visibility: visible;
             opacity: 1;
         }
-    }
-
-    .body {
+        
         > :global(h2) {
             font-size: 1.75em;
             margin: 0.75em 0 0.75em 0;

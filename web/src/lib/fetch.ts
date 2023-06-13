@@ -1,4 +1,5 @@
 import { browser } from "$app/environment";
+import { itemID } from "$lib/item";
 
 export const fetchApi = async <T>(
     url: string,
@@ -34,13 +35,46 @@ export const fetchApi = async <T>(
 
 type List = { [key: string]: { [key: string]: string[] } };
 
-export const fetchItemList = async (): Promise<string[]> => {
+export const getItemList = async (): Promise<string[]> => {
     let list: List = await fetchApi("/api/list");
-    let items: string[] = []; 
+    let items: string[] = [];
     for (const [_, value] of Object.entries(list)) {
         for (const [_, item] of Object.entries(value)) {
-            items.push(...item)
+            items.push(...item);
         }
     }
     return items;
+};
+
+export type TestResult =
+    | {
+          type: "correct";
+          stdout: string;
+      }
+    | {
+          type: "incorrect";
+          stdout: string;
+      }
+    | {
+          type: "error";
+          stdout: string;
+          traceback: string;
+      };
+
+export class TestResults {
+    results: TestResult[];
+    hidden: boolean;
+    passed: boolean;
+}
+
+export const postCode = async (code: string, lang: string): Promise<TestResults> => {
+    let results: TestResults = await fetchApi("/api/test", {
+        method: "POST",
+        body: {
+            code,
+            lang,
+            id: itemID(),
+        },
+    });
+    return results;
 };

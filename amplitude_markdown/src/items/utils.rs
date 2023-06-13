@@ -106,6 +106,7 @@ impl FileType {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct DirItem {
     pub name: String,
     pub ext: String,

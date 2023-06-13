@@ -1,5 +1,5 @@
 import type { EntryGenerator, RouteParams } from "./$types";
-import { fetchApi, fetchItemList } from "$lib/fetch";
+import { fetchApi, getItemList } from "$lib/fetch";
 import type { Item } from "$lib/item";
 
 export const load = async ({ params, fetch }): Promise<Item> => {
@@ -15,7 +15,7 @@ export const load = async ({ params, fetch }): Promise<Item> => {
 };
 
 export const entries = (async () => {
-    let list = await fetchItemList();
+    let list = await getItemList();
     return list
         .map((item) => item.split["/"])
         .map((item) => {

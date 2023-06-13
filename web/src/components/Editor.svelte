@@ -15,18 +15,20 @@
     import { indentWithTab } from "@codemirror/commands";
     import { indentUnit, type LanguageSupport } from "@codemirror/language";
     import { debounce } from "$lib/util";
+    
+    import { python } from "@codemirror/lang-python";
 
     let classes = "";
     export { classes as class };
     export let value: string | null | undefined = "";
 
     export let basic = true;
-    export let lang: LanguageSupport | null | undefined = undefined;
+    export let lang_name: string | undefined = undefined;
     export let theme: Extension | null | undefined = undefined;
     export let extensions: Extension[] = [];
 
     export let useTab = true;
-    export let tabSize = 2;
+    export let tabSize = 4;
 
     export let styles: ThemeSpec | null | undefined = undefined;
     export let lineWrapping = false;
@@ -44,7 +46,11 @@
     let update_from_state = false;
     let first_config = true;
     let first_update = true;
-
+    
+    $: lang = {
+        "python": python(),
+    }[lang_name];
+    
     $: state_extensions = [
         ...get_base_extensions(basic, useTab, tabSize, lineWrapping, placeholder, editable, readonly, lang),
         ...get_theme(theme, styles),
@@ -134,7 +140,7 @@
             EditorView.editable.of(editable),
             EditorState.readOnly.of(readonly),
         ];
-
+        
         if (basic) extensions.push(basicSetup);
         if (useTab) extensions.push(keymap.of([indentWithTab]));
         if (placeholder) extensions.push(placeholderExt(placeholder));

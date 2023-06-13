@@ -17,6 +17,9 @@ use std::{
 };
 
 pub fn rebuild_images() {
+    // maybe i can figure out whats goin on here
+    dbg!(env::current_dir().unwrap());
+    dbg!(fs::read_dir(".").unwrap());
     scope_dir(&path::LANGUAGES, || {
         let langs: HashMap<String, LanguageConfig> =
             toml::from_str(&fs::read_to_string("languages.toml").unwrap()).unwrap();

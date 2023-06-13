@@ -5,8 +5,7 @@ use amplitude_common::path;
 
 use anyhow::Context;
 use handlebars::Handlebars;
-use serde::ser::SerializeSeq;
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use std::collections::HashMap;
@@ -34,17 +33,7 @@ pub struct FunctionConfig {
     #[serde(default = "visible_cases_default")]
     pub visible_cases: u32,
     #[serde(skip_deserializing)]
-    #[serde(serialize_with = "skip_hidden_test_cases")]
     pub tests: Vec<TestCase>,
-}
-
-fn skip_hidden_test_cases<S>(x: &Vec<TestCase>, s: S) -> Result<S::Ok, S::Error> where S: Serializer {
-    let list = x.iter().take_while(|t| !t.hidden).collect::<Vec<_>>();
-    let mut seq = s.serialize_seq(Some(list.len()))?;
-    for item in list {
-        seq.serialize_element(item)?;
-    }
-    seq.end()
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -59,8 +48,14 @@ pub struct ExerciseConfig {
 #[derive(Debug, Clone, Serialize)]
 pub struct Exercise {
     config: ExerciseConfig,
-    code: HashMap<Language, String>,
-    runners: HashMap<Language, String>,
+    lang_info: HashMap<Language, LanguageInfo>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct LanguageInfo {
+    pub code: String,
+    #[serde(skip_serializing)]
+    pub runner: String,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -70,27 +65,22 @@ pub enum TestResult {
     Correct { stdout: String },
     #[serde(rename = "incorrect")]
     Incorrect { stdout: String },
-    #[serde(rename = "exception")]
+    #[serde(rename = "error")]
     Exception { traceback: String, stdout: String },
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct TestResults {
-    pub visible: Vec<TestResult>,
+    pub results: Vec<TestResult>,
     pub hidden: bool,
     pub passed: bool,
 }
 
 impl Exercise {
-    pub fn new(
-        config: ExerciseConfig,
-        code: HashMap<Language, String>,
-        runners: HashMap<Language, String>,
-    ) -> Self {
+    pub fn new(config: ExerciseConfig, language_info: HashMap<Language, LanguageInfo>) -> Self {
         Self {
             config,
-            code,
-            runners,
+            lang_info: language_info,
         }
     }
 
@@ -112,16 +102,15 @@ impl Exercise {
             #[serde(rename = "exception")]
             Exception { traceback: String, stdout: String },
         }
-
+        let runner = &self
+            .lang_info
+            .get(lang)
+            .with_context(|| format!("Language `{}` not found for this question", lang.image()))?
+            .runner;
         let RunOutput { stdout, stderr, .. } = run(
             cfg.docker.language_config.get(lang.image()).unwrap(),
             &cfg.docker,
-            &self.runners.get(lang).with_context(|| {
-                format!(
-                    "Runner of lang `{}` not found for this question",
-                    lang.image()
-                )
-            })?,
+            runner,
             HashMap::from_iter([(id.to_string() + ".py", content.as_bytes())]),
             "",
         )
@@ -145,6 +134,7 @@ impl Exercise {
                 .map(|(i, t)| match t {
                     TestOutput::Answer { value, stdout } => {
                         let stdout = stdout.to_string();
+                        dbg!(value, &tests[i].output);
                         match value == &tests[i].output {
                             true => TestResult::Correct { stdout },
                             false => {
@@ -170,7 +160,7 @@ impl Exercise {
             results.insert(
                 func,
                 TestResults {
-                    visible,
+                    results: visible,
                     hidden,
                     passed: visible_passed && hidden,
                 },
@@ -200,6 +190,7 @@ pub fn runner_template(lang: &Language, cfg: &ExerciseConfig, id: &str) -> anyho
         )
         .context("While registering template file")?;
     handlebars.register_escape_fn(handlebars::no_escape);
+    handlebars.set_strict_mode(true);
     let out = handlebars
         .render(
             "runner",
@@ -218,9 +209,14 @@ pub struct TestCase {
     #[serde(skip_serializing)]
     pub output: serde_json::Value,
     #[serde(default)]
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing_if = "skip_if_bool_false")]
     pub hidden: bool,
 }
+
+const fn skip_if_bool_false(b: &bool) -> bool {
+    *b == false
+}
+
 const fn hidden_cases_default() -> u32 {
     5
 }
@@ -298,13 +294,10 @@ mod test {
     use amplitude_common::config_and_set_path;
 
     use super::*;
-    
+
     #[test]
     fn test_simple_langs() {
-        test_simple(
-            &Language::Python,
-            "def test(x):\n    return x - 1\n",
-        ).unwrap();
+        test_simple(&Language::Python, "def test(x):\n    return x - 1\n").unwrap();
     }
 
     fn test_simple(lang: &Language, code: &str) -> anyhow::Result<()> {
@@ -348,23 +341,20 @@ mod test {
         };
 
         let exercise = Exercise {
-            runners: HashMap::from_iter([(
+            lang_info: HashMap::from_iter([(
                 lang.clone(),
-                runner_template(lang, &config, "test").unwrap(),
+                LanguageInfo {
+                    runner: runner_template(lang, &config, "test").unwrap(),
+                    code: String::new(),
+                },
             )]),
             config,
-            code: HashMap::new(),
         };
-        let result = exercise.run_tests(
-            lang,
-            code,
-            "test",
-            &cfg,
-        )?;
+        let result = exercise.run_tests(lang, code, "test", &cfg)?;
         anyhow::ensure!(
             result["test"]
                 == TestResults {
-                    visible: vec![
+                    results: vec![
                         TestResult::Correct {
                             stdout: "".to_string()
                         },

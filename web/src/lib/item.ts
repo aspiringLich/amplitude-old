@@ -97,8 +97,8 @@ export function renderComponent(
     });
 }
 
-export function getArticle() {
-    return window.location.pathname.split("/")[2];
+export function itemID() {
+    return window.location.pathname.split("/").slice(1).join("/");
 }
 
 import Quiz from "$cmpt/Quiz.svelte";
@@ -161,6 +161,9 @@ export class ExerciseData {
             }[];
         }};
     };
+    lang_info: {[key: string]: {
+        code: string;
+    }}
     type?: "exercise";
 }
 

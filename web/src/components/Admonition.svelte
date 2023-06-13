@@ -5,6 +5,7 @@
         ExclamationTriangle,
         CheckCircled,
         CrossCircled,
+        Cross2,
     } from "radix-icons-svelte";
     import colors from "tailwindcss/colors";
 
@@ -17,7 +18,8 @@
         | "success"
         | "correct"
         | "failiure"
-        | "incorrect";
+        | "incorrect"
+        | "error";
     /** Set the color of the title background */
     export let title_color = 500;
     /** Set the color of the body */
@@ -31,6 +33,7 @@
         correct: ["lime", CheckCircled],
         failure: ["rose", CrossCircled],
         incorrect: ["rose", CrossCircled],
+        error: ["rose", Cross2],
     };
     $: [color_type, icon] = data[type];
     $: title_text = type.at(0).toUpperCase() + type.slice(1);

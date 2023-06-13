@@ -1,4 +1,4 @@
-use std::{env, path::PathBuf};
+use std::env;
 
 use amplitude_runner::rebuild_images;
 

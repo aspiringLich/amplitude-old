@@ -6,10 +6,10 @@
     export let data;
 </script>
 
-<AppShell slotPageContent="w-full">
-    <slot class="h-max">
+<AppShell slotPageContent="w-full h-full">
+    <slot>
         {#if data.type == "article"}
-            <Article {...data} />
+            <Article {...data} classes="max-w-3xl" />
         {:else if data.type == "exercise"}
             <Exercise {data} />
         {/if}
