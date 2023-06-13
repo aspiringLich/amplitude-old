@@ -2,21 +2,23 @@
     import { ArticleData, renderArticle } from "../lib/item";
     import { onMount } from "svelte";
 
-    export let data: ArticleData;
-
-    let body: HTMLElement;
-    let article: HTMLElement;
+    export let title: string;
+    export let body: string;
+    export let classes: string = "";
+    
+    let body_element: HTMLElement;
+    let article_element: HTMLElement;
     let padding = 1000;
     let init = false;
 
     onMount(() => {
-        renderArticle(body);
+        renderArticle(body_element);
 
         let hash = window.location.hash;
         if (hash) {
-            let element: HTMLElement = body.querySelector("#" + hash.slice(1));
+            let element: HTMLElement = body_element.querySelector("#" + hash.slice(1));
             if (element) {
-                body.scrollTo(0, element.offsetTop + 20);
+                body_element.scrollTo(0, element.offsetTop + 20);
             }
         }
 
@@ -35,21 +37,19 @@
     </style>
 </noscript>
 
-<div class="article" class:show={init} bind:this={article}>
-    <div class="max-w-3xl px-5 m-auto body" bind:this={body}>
-        <h1>{@html data.title}</h1>
-        {@html data.body}
+<div class="article max-w-3xl px-16 m-auto {classes}" class:show={init} bind:this={article_element}>
+    <div class="body" bind:this={body_element}>
+        <h1 class="text-5xl my-6">{@html title}</h1>
+        {@html body}
     </div>
 </div>
 
-<div style:height="{padding}vh" />
+<!-- <div style:height="{padding}vh" /> -->
 
 <!-- <div style:height="50vh" /> -->
 
 <style lang="scss">
     .article {
-        padding: 0 16px;
-
         visibility: hidden;
         opacity: 0;
         transform: translateY(-20px);

@@ -131,7 +131,7 @@ export function renderArticle(body: HTMLElement) {
 export class ArticleData {
     body: string;
     title: string;
-    type: "article";
+    type?: "article";
 }
 
 export class QuizData {
@@ -143,7 +143,25 @@ export class QuizData {
             correct: boolean;
         }[];
     }[];
-    type: "quiz";
+    type?: "quiz";
 }
 
-export type Item = ArticleData | QuizData;
+export class ExerciseData {
+    config: {
+        title: string;
+        instructions: string;
+        functions: {[key: string]: {
+            inputs: string[];
+            output: string;
+            hidden_cases: number;
+            visible_cases: number;
+            tests: {
+                inputs: Object[];
+                output: Object;
+            }[];
+        }};
+    };
+    type?: "exercise";
+}
+
+export type Item = ArticleData | QuizData | ExerciseData;

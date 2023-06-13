@@ -5,7 +5,8 @@ use amplitude_common::path;
 
 use anyhow::Context;
 use handlebars::Handlebars;
-use serde::{Deserialize, Serialize};
+use serde::ser::SerializeSeq;
+use serde::{Deserialize, Serialize, Serializer};
 use serde_json::json;
 
 use std::collections::HashMap;
@@ -33,20 +34,29 @@ pub struct FunctionConfig {
     #[serde(default = "visible_cases_default")]
     pub visible_cases: u32,
     #[serde(skip_deserializing)]
+    #[serde(serialize_with = "skip_hidden_test_cases")]
     pub tests: Vec<TestCase>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+fn skip_hidden_test_cases<S>(x: &Vec<TestCase>, s: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    let list = x.iter().take_while(|t| !t.hidden).collect::<Vec<_>>();
+    let mut seq = s.serialize_seq(Some(list.len()))?;
+    for item in list {
+        seq.serialize_element(item)?;
+    }
+    seq.end()
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct ExerciseConfig {
     title: String,
-    #[serde(skip)]
+    #[serde(skip_deserializing)]
     pub instructions: String,
     pub functions: HashMap<String, FunctionConfig>,
 }
 
 #[derive(Debug, Clone, Serialize)]
-#[serde(into = "ExcerciseSerialize")]
 pub struct Exercise {
     config: ExerciseConfig,
     code: HashMap<Language, String>,
@@ -171,26 +181,15 @@ impl Exercise {
     }
 }
 
-impl Into<ExcerciseSerialize> for Exercise {
-    fn into(self) -> ExcerciseSerialize {
-        ExcerciseSerialize {
-            title: self.config.title,
-            instructions: self.config.instructions,
-            code: self.code,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct ExcerciseSerialize {
-    title: String,
-    instructions: String,
-    code: HashMap<Language, String>,
-}
-
-const fn bool_is_false(b: &bool) -> bool {
-    *b == false
-}
+// impl Into<ExcerciseSerialize> for Exercise {
+//     fn into(self) -> ExcerciseSerialize {
+//         ExcerciseSerialize {
+//             title: self.config.title,
+//             instructions: self.config.instructions,
+//             code: self.code,
+//         }
+//     }
+// }
 
 pub fn runner_template(lang: &Language, cfg: &ExerciseConfig, id: &str) -> anyhow::Result<String> {
     let mut handlebars = Handlebars::new();
@@ -219,10 +218,9 @@ pub struct TestCase {
     #[serde(skip_serializing)]
     pub output: serde_json::Value,
     #[serde(default)]
-    #[serde(skip_serializing_if = "bool_is_false")]
+    #[serde(skip_serializing)]
     pub hidden: bool,
 }
-
 const fn hidden_cases_default() -> u32 {
     5
 }

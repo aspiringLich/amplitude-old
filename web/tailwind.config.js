@@ -15,7 +15,11 @@ export default {
         ),
     ],
     theme: {
-        extend: {},
+        extend: {
+            colors: {
+                base: '#fdfdfd',
+            },
+        },
         backgroundOpacity: "66%",
     },
     plugins: [
