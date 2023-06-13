@@ -10,11 +10,14 @@
     let code = data.lang_info[lang].code;
 </script>
 
-<Splitpanes theme="theme">
+<Splitpanes theme="theme" class="p-16 max-w-6xl m-auto">
     <Pane minSize={38} size={58}>
-        <ExercisePanel {data} bind:code={code} bind:lang={lang} />
+        <ExercisePanel {data} bind:code bind:lang />
     </Pane>
-    <Pane minSize={20}>
+    <Pane minSize={20} class="flex flex-col">
+        <!-- <div class="h-[45.64px] border-b border-surface-400">
+    <button type="button" class="btn variant-filled-primary">Run</button>
+</div> -->
         <Editor bind:value={code} lang_name={lang} />
     </Pane>
 </Splitpanes>

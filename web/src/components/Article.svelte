@@ -37,7 +37,7 @@
 </noscript>
 
 <div>
-    <div class="article container-xl px-16 m-auto {classes}" class:show={init} bind:this={body_element}>
+    <div class="article container-xl px-8 m-auto {classes}" class:show={init} bind:this={body_element}>
         <h1 class="text-5xl my-6">{@html title}</h1>
         {@html body}
     </div>

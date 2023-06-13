@@ -6,7 +6,8 @@
     export let data;
 </script>
 
-<AppShell slotPageContent="w-full h-full">
+
+<AppShell>
     <slot>
         {#if data.type == "article"}
             <Article {...data} classes="max-w-3xl" />

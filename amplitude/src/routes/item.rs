@@ -16,9 +16,14 @@ pub fn attach(server: &mut Server<State>) {
             .items
             .get(&req.id)
             .with_context(Status::NotFound, || format!("Item `{}` not found", req.id))?;
-
+        
+        let mut buffer = Vec::new();
+        let mut s = serde_json::Serializer::new(&mut buffer);
+        
+        item.serialize_for_route(&mut s).context(Status::InternalServerError, "While serializing Item to JSON")?;
+        
         Ok(Response::new()
-            .text(serde_json::to_string(item)?)
+            .bytes(buffer.as_slice())
             .content(Content::JSON))
     });
 }

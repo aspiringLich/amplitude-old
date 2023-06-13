@@ -38,11 +38,7 @@ impl Item for Exercise {
         let generator = contents
             .query("src/generator", FileType::Code)
             .collect::<Vec<_>>();
-        ensure!(
-            generator.len() > 0,
-            "src/code.<code>",
-            "Code"
-        );
+        ensure!(generator.len() > 0, "src/code.<code>", "Code");
         anyhow::ensure!(
             generator.len() == 1,
             "Multiple test case generator (`src/generator.<code>`) files found! Only one is allowed."
@@ -101,5 +97,11 @@ impl Item for Exercise {
         .context("While parsing markdown for `instructions.md`")?;
 
         Ok(ItemType::Exercise(Exercise::new(config, lang_info)))
+    }
+
+    fn transform(&mut self) {
+        for (_, cfg) in self.config.functions.iter_mut() {
+            cfg.tests.drain_filter(|test| test.hidden);
+        }
     }
 }

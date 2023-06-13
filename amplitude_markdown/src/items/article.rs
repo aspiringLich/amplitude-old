@@ -13,7 +13,7 @@ pub struct RawArticle {
     pub title: String,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 pub struct Article {
     pub title: String,
     pub body: String,

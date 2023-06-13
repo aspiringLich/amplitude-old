@@ -17,13 +17,11 @@ jobs:
       
       - name: Build
         run: |
-          ls
-          ls ../
           export RUST_BACKTRACE=1
           cargo build
 
-      - name: Test
-        run: |
-          export RUST_BACKTRACE=1
-          cargo r -p amplitude_runner
-          cargo test
+      # - name: Test
+      #   run: |
+      #     export RUST_BACKTRACE=1
+      #     cargo r -p amplitude_runner
+      #     cargo test

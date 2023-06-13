@@ -62,12 +62,17 @@ export type TestResult =
       };
 
 export class TestResults {
-    results: TestResult[];
-    hidden: boolean;
-    passed: boolean;
+    [key: string]: {
+        results: TestResult[];
+        hidden: boolean;
+        passed: boolean;
+    };
 }
 
-export const postCode = async (code: string, lang: string): Promise<TestResults> => {
+export const postCode = async (
+    code: string,
+    lang: string
+): Promise<TestResults> => {
     let results: TestResults = await fetchApi("/api/test", {
         method: "POST",
         body: {

@@ -24,8 +24,8 @@ pub struct DynStruct {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct FunctionConfig {
-    inputs: Vec<VariableType>,
-    output: VariableType,
+    pub inputs: Vec<VariableType>,
+    pub output: VariableType,
     #[serde(skip)]
     pub seed: u64,
     #[serde(default = "hidden_cases_default")]
@@ -39,7 +39,7 @@ pub struct FunctionConfig {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct ExerciseConfig {
-    title: String,
+    pub title: String,
     #[serde(skip_deserializing)]
     pub instructions: String,
     pub functions: HashMap<String, FunctionConfig>,
@@ -47,8 +47,8 @@ pub struct ExerciseConfig {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Exercise {
-    config: ExerciseConfig,
-    lang_info: HashMap<Language, LanguageInfo>,
+    pub config: ExerciseConfig,
+    pub lang_info: HashMap<Language, LanguageInfo>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -206,15 +206,9 @@ pub fn runner_template(lang: &Language, cfg: &ExerciseConfig, id: &str) -> anyho
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct TestCase {
     pub inputs: Vec<serde_json::Value>,
-    #[serde(skip_serializing)]
     pub output: serde_json::Value,
     #[serde(default)]
-    #[serde(skip_serializing_if = "skip_if_bool_false")]
     pub hidden: bool,
-}
-
-const fn skip_if_bool_false(b: &bool) -> bool {
-    *b == false
 }
 
 const fn hidden_cases_default() -> u32 {

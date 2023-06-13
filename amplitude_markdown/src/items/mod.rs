@@ -17,7 +17,7 @@ pub mod utils;
 
 use utils::*;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 #[serde(tag = "type")]
 #[serde(rename_all = "snake_case")]
 pub enum ItemType {
@@ -25,6 +25,19 @@ pub enum ItemType {
     Quiz(quiz::Quiz),
     Exercise(exercise::Exercise),
     Project(project::Project),
+}
+
+impl ItemType {
+    pub fn serialize_for_route<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        let mut copy = self.clone();
+        match &mut copy {
+            ItemType::Article(a) => a.transform(),
+            ItemType::Quiz(q) => q.transform(),
+            ItemType::Exercise(e) => e.transform(),
+            ItemType::Project(p) => p.transform(),
+        }
+        copy.serialize(s)
+    }
 }
 
 impl fmt::Display for ItemType {
@@ -50,6 +63,10 @@ pub trait Item {
         context: &mut DataContext,
         cfg: &Config,
     ) -> anyhow::Result<ItemType>;
+
+    /// Transform an instance of self into one ready to jsonify and send
+    /// to the client
+    fn transform(&mut self) {}
 }
 
 pub fn parse_item(

@@ -2,7 +2,7 @@ use crate::parse::context::ParseMarkdown;
 
 use super::*;
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct Answer {
     pub text: String,
@@ -12,7 +12,7 @@ pub struct Answer {
     pub correct: bool,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct Question {
     pub question: String,
@@ -25,7 +25,7 @@ pub struct QuizRaw {
     pub questions: Vec<Question>,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 pub struct Quiz {
     pub id: String,
     pub questions: Vec<Question>,

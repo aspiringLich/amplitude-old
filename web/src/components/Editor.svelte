@@ -159,69 +159,22 @@
 </script>
 
 <div class="codemirror-wrapper {classes}" bind:this={element} />
-{#if is_browser}
-<!-- {:else}
-    <div class="scm-waiting {classes}">
-        <div class="scm-waiting__loading scm-loading">
-            <div class="scm-loading__spinner" />
-            <p class="scm-loading__text">Loading editor...</p>
-        </div>
-
-        <pre class="scm-pre cm-editor">{value}</pre>
-    </div> -->
-{/if}
 
 <style>
+    .codemirror-wrapper {
+        height: 100%;
+    }
+    
     .codemirror-wrapper :global(.cm-focused) {
         outline: none;
     }
-
-    .scm-waiting {
-        position: relative;
+    
+    .codemirror-wrapper :global(.cm-editor) {
+        height: 100%;
+        max-height: none;
     }
-    .scm-waiting__loading {
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
-        background-color: rgba(255, 255, 255, 0.5);
-    }
-
-    .scm-loading {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .scm-loading__spinner {
-        width: 1rem;
-        height: 1rem;
-        border-radius: 100%;
-        border: solid 2px #000;
-        border-top-color: transparent;
-        margin-right: 0.75rem;
-        animation: spin 1s linear infinite;
-    }
-    .scm-loading__text {
-        font-family: sans-serif;
-    }
-    .scm-pre {
-        font-size: 0.85rem;
-        font-family: monospace;
-        tab-size: 2;
-        -moz-tab-size: 2;
-        resize: none;
-        pointer-events: none;
+    
+    .codemirror-wrapper :global(.cm-gutter) {
         user-select: none;
-        overflow: auto;
-    }
-
-    @keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
-        100% {
-            transform: rotate(360deg);
-        }
     }
 </style>

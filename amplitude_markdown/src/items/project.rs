@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct Project;
 
 fn parse_md(contents: &DirContents, _dir: &Path) -> anyhow::Result<()> {
