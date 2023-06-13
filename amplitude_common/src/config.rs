@@ -95,4 +95,6 @@ pub struct GithubOauth {
 pub struct LanguageConfig {
     pub image_name: String,
     pub source_path: String,
+    pub extension: String,
+    pub delimiter: String, 
 }

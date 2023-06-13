@@ -40,8 +40,8 @@ impl Item for Exercise {
             .collect::<Vec<_>>();
         ensure!(
             generator.len() > 0,
-            "src/generator.<code>",
-            "Test Case generator"
+            "src/code.<code>",
+            "Code"
         );
         anyhow::ensure!(
             generator.len() == 1,

@@ -14,9 +14,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
+      
       - name: Build
         run: |
+          ls
+          ls ../
           export RUST_BACKTRACE=1
           cargo build
 
