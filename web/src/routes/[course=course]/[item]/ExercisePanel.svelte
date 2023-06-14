@@ -35,7 +35,10 @@
     }
 </script>
 
-<TabGroup>
+<TabGroup
+    class="flex grow flex-col relative overflow-auto height-full"
+    regionPanel="height-full overflow-auto flex-[1_0_0px] !mt-0"
+>
     <Tab bind:group={tab_lp} name="instructions" value={0}>Instructions</Tab>
     <Tab bind:group={tab_lp} name="test" value={1}>Test Cases</Tab>
 
@@ -47,30 +50,23 @@
                 body={data.config.instructions}
             />
         {:else if tab_lp == 1}
-            <div class="m-8">
-                <button
-                    class="btn variant-filled-primary"
-                    type="button"
-                    on:click={run_code}
-                    disabled={run_disabled}>Run</button
-                >
+            <button
+                class="btn variant-filled-primary"
+                type="button"
+                on:click={run_code}
+                disabled={run_disabled}>Run</button
+            >
 
-                {#each fn_list as fn}
-                    {#each data.config.functions[fn].tests as func, i}
-                        <div class="card w-40 h-80 border-none">
-                            <header class="card-header text-lg font-bold">
-                                Test Case {i}
-                            </header>
-                            <section class="p-4" />
-                        </div>
-                    {/each}
+            {#each fn_list as fn}
+                {#each data.config.functions[fn].tests as func, i}
+                    <div class="card w-40 h-80 border-none">
+                        <header class="card-header text-lg font-bold">
+                            Test Case {i}
+                        </header>
+                        <section class="p-4" />
+                    </div>
                 {/each}
-            </div>
+            {/each}
         {/if}
     </svelte:fragment>
 </TabGroup>
-
-<style lang="postcss">
-    td {
-    }
-</style>

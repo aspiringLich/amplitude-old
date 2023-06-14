@@ -11,13 +11,13 @@
 </script>
 
 <Splitpanes theme="theme" class="p-16 max-w-6xl m-auto">
-    <Pane minSize={38} size={58}>
+    <Pane minSize={38} size={58} class="relative flex">
         <ExercisePanel {data} bind:code bind:lang />
     </Pane>
-    <Pane minSize={20} class="flex flex-col">
-        <!-- <div class="h-[45.64px] border-b border-surface-400">
-    <button type="button" class="btn variant-filled-primary">Run</button>
-</div> -->
-        <Editor bind:value={code} lang_name={lang} />
+    <Pane minSize={20} class="flex flex-col relative overflow-auto height-full">
+        <div class="h-[43px] border-b border-surface-400" />
+        <div class="block relative height-full overflow-auto flex-[1_1_0px] box-content">
+            <Editor bind:value={code} lang_name={lang} class="height-full overflow-auto" />
+        </div>
     </Pane>
 </Splitpanes>
