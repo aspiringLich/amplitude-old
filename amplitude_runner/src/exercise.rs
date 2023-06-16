@@ -6,7 +6,7 @@ use amplitude_common::path;
 use anyhow::Context;
 use handlebars::Handlebars;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
+use serde_json::{json, Value};
 
 use std::collections::HashMap;
 
@@ -64,9 +64,9 @@ pub enum TestResult {
     #[serde(rename = "correct")]
     Correct { stdout: String },
     #[serde(rename = "incorrect")]
-    Incorrect { stdout: String },
+    Incorrect { stdout: String, output: Value },
     #[serde(rename = "error")]
-    Exception { traceback: String, stdout: String },
+    Error { traceback: String, stdout: String },
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -139,7 +139,7 @@ impl Exercise {
                             true => TestResult::Correct { stdout },
                             false => {
                                 visible_passed = false;
-                                TestResult::Incorrect { stdout }
+                                TestResult::Incorrect { stdout, output: value.clone() }
                             }
                         }
                     }
@@ -147,7 +147,7 @@ impl Exercise {
                         let traceback = traceback.to_string();
                         let stdout = stdout.to_string();
                         visible_passed = false;
-                        TestResult::Exception { traceback, stdout }
+                        TestResult::Error { traceback, stdout }
                     }
                 })
                 .collect();

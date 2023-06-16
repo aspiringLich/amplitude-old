@@ -20,11 +20,14 @@
         | "failiure"
         | "incorrect"
         | "error";
-    /** Set the color of the title background */
-    export let title_color = 500;
-    /** Set the color of the body */
-    export let body_color = 100;
+    /** Base classes for styling the outer div */
+    export { classes as class };
+    let classes: string = "";
+    /** Base classes for styling the container itself */
+    export let container = "";
 
+    const title_color = 500;
+    const body_color = 100;
     const data = {
         note: ["purple", File],
         info: ["cyan", InfoCircled],
@@ -44,7 +47,7 @@
     // console.log("e");
 </script>
 
-<div class="admonition my-4">
+<div class="admonition my-4 flex flex-col {classes}">
     <div
         class="title rounded-t w-full text-white font-extrabold flex items-center"
         style:background-color={colors[color_type][title_color]}
@@ -53,20 +56,9 @@
         <span>{title_text}</span>
     </div>
     <blockquote
-        class="body rounded-t-none"
+        class="rounded-t-none {container}"
         style:background-color={colors[color_type][body_color]}
     >
         <slot />
     </blockquote>
 </div>
-
-<style lang="scss">
-    .admonition {
-        margin: 1em 0;
-        // padding: 0.5em;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        overflow: hidden;
-    }
-</style>

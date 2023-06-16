@@ -6,7 +6,7 @@
     import "../themes/colors.postcss";
     
     import hljs from 'highlight.js';
-    import { storeHighlightJs } from '@skeletonlabs/skeleton';
+    import { Toast, storeHighlightJs } from '@skeletonlabs/skeleton';
     import 'highlight.js/styles/agate.css';
 
     storeHighlightJs.set(hljs);
@@ -17,4 +17,6 @@
 </script>
 
 <slot />
+<Toast />
+
 

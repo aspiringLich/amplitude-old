@@ -4,6 +4,8 @@
     import { itemID, type ExerciseData } from "$lib/item";
     import ExercisePanel from "./ExercisePanel.svelte";
     import type { TestResults } from "$lib/fetch";
+    import { toastStore } from "@skeletonlabs/skeleton";
+    import type { ToastSettings } from "@skeletonlabs/skeleton";
 
     export let data: ExerciseData;
 
@@ -14,9 +16,6 @@
 
     async function run_code() {
         run_disabled = true;
-
-        // wait to be ABSOLUTELY SURE the code is up to date
-        await new Promise((r) => setTimeout(r, 100));
 
         let res = await fetch("/api/test", {
             method: "POST",
@@ -31,17 +30,31 @@
         });
         if (!res.ok) {
             results = new Error(await res.text());
+            const t: ToastSettings = {
+                message: "Error while trying to run code!",
+                background: "variant-filled-error"
+            };
+            toastStore.trigger(t)
         } else {
-            results = await res.json();
+            results = await res.json() as TestResults;
+            
+            let passed = !Object.values(results).reduce((acc, x) => acc || !x.passed, false);
+            const t: ToastSettings = passed ? {
+                message: "Congrats! All tests passed!",
+                background: "variant-filled-success"
+            } : {
+                message: "Some tests failed!",
+                background: "variant-filled-error"
+            };
+            toastStore.trigger(t)
         }
-        console.log(results)
         run_disabled = false;
     }
 </script>
 
 <Splitpanes theme="theme" class="p-16 max-w-6xl m-auto">
-    <Pane minSize={38} size={58} class="relative flex">
-        <ExercisePanel {data} bind:lang />
+    <Pane minSize={20} class="relative flex">
+        <ExercisePanel {data} bind:results />
     </Pane>
     <Pane minSize={20} class="flex flex-col relative overflow-auto height-full">
         <div class="h-[43px] border-b border-surface-400 flex items-center">

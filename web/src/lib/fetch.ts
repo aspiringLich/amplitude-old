@@ -54,6 +54,7 @@ export type TestResult =
     | {
           type: "incorrect";
           stdout: string;
+          output: Object;
       }
     | {
           type: "error";

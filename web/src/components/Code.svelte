@@ -20,23 +20,23 @@
     export let code = "";
 
     /** Specify if line numbers should be added to the code block*/
-    const lineNumbers = false;
+    export let lineNumbers = false;
 
     // Props (styles)
     /** Provide classes to set the background color. */
-    const background: CssClasses = "bg-neutral-900/90";
+    export let background: CssClasses = "bg-neutral-900/90";
     /** Provided classes to set the backdrop blur. */
-    const blur: CssClasses = "";
+    export let blur: CssClasses = "";
     /** Provide classes to set the text size. */
-    const text: CssClasses = "text-sm";
+    export let text: CssClasses = "text-sm";
     /** Provide classes to set the text color. */
-    const color: CssClasses = "text-white";
+    export let color: CssClasses = "text-white";
     /** Provide classes to set the border radius. */
-    const rounded: CssClasses = "rounded-container-token";
+    export let rounded: CssClasses = "rounded-container-token";
     /** Provide classes to set the box shadow. */
-    const shadow: CssClasses = "shadow";
+    export let shadow: CssClasses = "shadow";
     /** Provide classes to set the button styles. */
-    const button: CssClasses = "btn btn-sm variant-soft !text-white";
+    export let button: CssClasses = "btn btn-sm variant-soft !text-white";
 
     // Base Classes
     const cBase = "overflow-scroll shadow";
