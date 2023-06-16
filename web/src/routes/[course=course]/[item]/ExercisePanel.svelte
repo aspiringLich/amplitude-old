@@ -1,38 +1,19 @@
 <script lang="ts">
     import Article from "$cmpt/Article.svelte";
+    import type { TestResults } from "$lib/fetch";
     import type { ExerciseData } from "$lib/item";
-    import {
-        TabGroup,
-        Tab,
-        Table,
-        tableMapperValues,
-    } from "@skeletonlabs/skeleton";
-    import type { TableSource } from "@skeletonlabs/skeleton";
-    import { TestResults, postCode } from "$lib/fetch";
-    import Admonition from "$cmpt/Admonition.svelte";
+    import { TabGroup, Tab } from "@skeletonlabs/skeleton";
 
     export let data: ExerciseData;
-    export let code: string;
-    export let lang: string;
+    export const results: TestResults | Error | undefined = undefined;
+    export let lang: string = "";
 
     $: fn_list = Object.keys(data.config.functions);
 
-    let tab_lp = 0;
+    let tab_lp = 1;
     let run_disabled = false;
-    let results: TestResults | undefined = undefined;
 
     let selected_fn: string | undefined;
-
-    async function run_code() {
-        run_disabled = true;
-
-        // wait to be ABSOLUTELY SURE the code is up to date
-        await new Promise((r) => setTimeout(r, 100));
-
-        let res: TestResults = await postCode(code, lang);
-        results = res;
-        run_disabled = false;
-    }
 </script>
 
 <TabGroup
@@ -42,7 +23,7 @@
     <Tab bind:group={tab_lp} name="instructions" value={0}>Instructions</Tab>
     <Tab bind:group={tab_lp} name="test" value={1}>Test Cases</Tab>
 
-    <svelte:fragment slot="panel">
+    <span slot="panel">
         {#if tab_lp == 0}
             <Article
                 classes="h-max"
@@ -50,23 +31,49 @@
                 body={data.config.instructions}
             />
         {:else if tab_lp == 1}
-            <button
-                class="btn variant-filled-primary"
-                type="button"
-                on:click={run_code}
-                disabled={run_disabled}>Run</button
-            >
-
             {#each fn_list as fn}
-                {#each data.config.functions[fn].tests as func, i}
-                    <div class="card w-40 h-80 border-none">
-                        <header class="card-header text-lg font-bold">
-                            Test Case {i}
-                        </header>
-                        <section class="p-4" />
-                    </div>
-                {/each}
+                <div class="table-container">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Inputs</th>
+                                <th>Output</th>
+                                <th>Recieved</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {#each data.config.functions[fn].tests as func, i}
+                                {@const output = func.output}
+                                <tr>
+                                    <td>
+                                        {func.inputs
+                                            .map((x) => x.toString())
+                                            .join(", ")}
+                                    </td>
+                                    <td>{output}</td>
+                                    <td />
+                                </tr>
+                            {/each}
+                        </tbody>
+                    </table>
+                </div>
             {/each}
         {/if}
-    </svelte:fragment>
+    </span>
 </TabGroup>
+
+<style lang="postcss">
+    tbody td {
+        text-overflow: ellipsis;
+    }
+    
+    table {
+        background-color: transparent !important;
+    }
+    
+    tr {
+        border-width: 0 !important;
+    }
+    
+    
+</style>

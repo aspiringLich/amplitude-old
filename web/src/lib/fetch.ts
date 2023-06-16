@@ -69,17 +69,3 @@ export class TestResults {
     };
 }
 
-export const postCode = async (
-    code: string,
-    lang: string
-): Promise<TestResults> => {
-    let results: TestResults = await fetchApi("/api/test", {
-        method: "POST",
-        body: {
-            code,
-            lang,
-            id: itemID(),
-        },
-    });
-    return results;
-};

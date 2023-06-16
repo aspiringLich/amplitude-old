@@ -10,6 +10,10 @@
     import 'highlight.js/styles/agate.css';
 
     storeHighlightJs.set(hljs);
+    
+    import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
+    import { storePopup } from '@skeletonlabs/skeleton';
+    storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 </script>
 
 <slot />
