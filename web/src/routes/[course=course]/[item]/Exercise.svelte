@@ -6,6 +6,7 @@
     import type { TestResults } from "$lib/fetch";
     import { toastStore } from "@skeletonlabs/skeleton";
     import type { ToastSettings } from "@skeletonlabs/skeleton";
+    import Code from "$cmpt/Code.svelte";
 
     export let data: ExerciseData;
 
@@ -32,23 +33,32 @@
             results = new Error(await res.text());
             const t: ToastSettings = {
                 message: "Error while trying to run code!",
-                background: "variant-filled-error"
+                background: "variant-filled-error",
             };
-            toastStore.trigger(t)
+            toastStore.trigger(t);
         } else {
-            results = await res.json() as TestResults;
-            
-            let passed = !Object.values(results).reduce((acc, x) => acc || !x.passed, false);
-            const t: ToastSettings = passed ? {
-                message: "Congrats! All tests passed!",
-                background: "variant-filled-success"
-            } : {
-                message: "Some tests failed!",
-                background: "variant-filled-error"
-            };
-            toastStore.trigger(t)
+            results = (await res.json()) as TestResults;
+
+            let passed = !Object.values(results).reduce(
+                (acc, x) => acc || !x.passed,
+                false
+            );
+            const t: ToastSettings = passed
+                ? {
+                      message: "Congrats! All tests passed!",
+                      background: "variant-filled-success",
+                  }
+                : {
+                      message: "Some tests failed!",
+                      background: "variant-filled-error",
+                  };
+            toastStore.trigger(t);
         }
         run_disabled = false;
+    }
+
+    function stringify(list: Object[]): string {
+        return list.map((x) => JSON.stringify(x, null, 2)).join(", ");
     }
 </script>
 
@@ -78,3 +88,27 @@
         </div>
     </Pane>
 </Splitpanes>
+
+{#each Object.keys(data.config.functions) as fn}
+    {@const func = data.config.functions[fn]}
+
+    {#each func.tests as test, i}
+        {@const result = results?.[fn].results[i]}
+        <div class="card p-4 z-99" data-popup="popup-{fn}-{i}">
+            <h4>inputs</h4>
+            <Code code={stringify(test.inputs)} />
+            <h4>expected</h4>
+            <Code code={JSON.stringify(test.output, null, 2)} />
+
+            {#if result}
+                <h4>stdout</h4>
+                <Code code={result.stdout} />
+            {:else}
+                <h4>
+                    Hit <span class="text-success-800">Run</span> to see more information!
+                </h4>
+            {/if}
+            <div class="arrow" />
+        </div>
+    {/each}
+{/each}

@@ -6,7 +6,6 @@
     export let data;
 </script>
 
-
 <AppShell>
     <slot>
         {#if data.type == "article"}

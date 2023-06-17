@@ -4,7 +4,8 @@
     import Code from "$cmpt/Code.svelte";
     import type { TestResults } from "$lib/fetch";
     import type { ExerciseData } from "$lib/item";
-    import { TabGroup, Tab } from "@skeletonlabs/skeleton";
+    import { TabGroup, Tab, popup } from "@skeletonlabs/skeleton";
+    import type { PopupSettings } from "@skeletonlabs/skeleton";
     import { CrossCircled } from "radix-icons-svelte";
 
     export let data: ExerciseData;
@@ -13,6 +14,18 @@
 
     $: fn_list = Object.keys(data.config.functions);
     $: console.log(results);
+
+    function popupSettings(fn: string, i: number): PopupSettings {
+        return {
+            event: "click",
+            target: `popup-${fn}-${i}`,
+            placement: "right",
+        };
+    }
+    
+    function stringify(list: Object[]): string {
+        return list.map((x) => JSON.stringify(x, null, 2)).join(", ");
+    }
 </script>
 
 <TabGroup
@@ -32,7 +45,7 @@
         {:else if tabN == 1}
             {#if results instanceof Error}
                 <Admonition type="error" container="p-0">
-                    <Code code={results.message} rounded="rounded-t-none"/>
+                    <Code code={results.message} rounded="rounded-t-none" />
                 </Admonition>
             {/if}
 
@@ -57,22 +70,21 @@
                                     class:correct={result?.type === "correct"}
                                     class:incorrect={result?.type ===
                                         "incorrect" || result?.type === "error"}
+                                    use:popup={popupSettings(fn, i)}
                                 >
                                     <td>
-                                        {test.inputs
-                                            .map((x) => x.toString())
-                                            .join(", ")}
+                                        {stringify(test.inputs)}
                                     </td>
-                                    <td>{test.output}</td>
+                                    <td>{JSON.stringify(test.output)}</td>
                                     <td>
                                         {#if result}
                                             {#if result.type === "correct"}
-                                                {test.output}
+                                                {JSON.stringify(test.output)}
                                             {:else if result.type === "incorrect"}
-                                                {result.output.toString()}
+                                                {JSON.stringify(result.output)}
                                             {:else if result.type === "error"}
                                                 <CrossCircled
-                                                    class="stroke-error-500"
+                                                    class="stroke-error-800"
                                                 />
                                             {/if}
                                         {/if}

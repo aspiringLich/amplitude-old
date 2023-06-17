@@ -134,7 +134,7 @@ impl Exercise {
                 .map(|(i, t)| match t {
                     TestOutput::Answer { value, stdout } => {
                         let stdout = stdout.to_string();
-                        dbg!(value, &tests[i].output);
+                        // dbg!(value, &tests[i].output);
                         match value == &tests[i].output {
                             true => TestResult::Correct { stdout },
                             false => {
