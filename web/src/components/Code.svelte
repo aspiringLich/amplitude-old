@@ -21,6 +21,8 @@
 
     /** Specify if line numbers should be added to the code block*/
     export let lineNumbers = false;
+    /** Specify if a copy button should appear on the code block */
+    export let copy = false;
 
     // Props (styles)
     /** Provide classes to set the background color. */
@@ -108,7 +110,7 @@
         on:mouseleave={() => (hover = false)}
     >
         <!-- Copy Button -->
-        {#if hover || copyState}
+        {#if copy && (hover || copyState)}
             <button
                 class="codeblock-btn absolute right-1.5 top-1.5 {button}"
                 on:click={onCopyClick}

@@ -112,6 +112,7 @@ export function renderArticle(body: HTMLElement) {
         
         props.code = slots.default[0].innerHTML;
         props.language = language;
+        props.copy = true;
         slots.default = null;
     });
     renderComponent(body, "admonition", Admonition);

@@ -95,17 +95,21 @@
     {#each func.tests as test, i}
         {@const result = results?.[fn].results[i]}
         <div class="card p-4 z-99" data-popup="popup-{fn}-{i}">
-            <h4>inputs</h4>
-            <Code code={stringify(test.inputs)} />
-            <h4>expected</h4>
-            <Code code={JSON.stringify(test.output, null, 2)} />
+            <div class="grid grid-cols-[6em_1fr] grid-flow-row gap-2">
+                <h4>inputs</h4>
+                <Code code={stringify(test.inputs)} />
+                <h4>expected</h4>
+                <Code code={JSON.stringify(test.output, null, 2)} />
 
-            {#if result}
-                <h4>stdout</h4>
-                <Code code={result.stdout} />
-            {:else}
+                {#if result}
+                    <h4>stdout</h4>
+                    <Code code={result.stdout} />
+                {/if}
+            </div>
+            {#if !result}
                 <h4>
-                    Hit <span class="text-success-800">Run</span> to see more information!
+                    <span class="text-success-800">Run</span> your code to see more
+                    information!
                 </h4>
             {/if}
             <div class="arrow" />
