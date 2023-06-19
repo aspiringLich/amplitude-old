@@ -1,6 +1,6 @@
 import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
-import { svelte } from "@sveltejs/vite-plugin-svelte";
+// import { svelte } from "@sveltejs/vite-plugin-svelte";
 import path from "path";
 
 export default defineConfig({
@@ -11,17 +11,15 @@ export default defineConfig({
             },
         },
     },
-    plugins: [
-        sveltekit(),
-    ],
+    plugins: [sveltekit()],
     resolve: {
         alias: {
-            "$src": path.resolve("./src"),
-            "$lib": path.resolve("./src/lib"),
-            "$cmpt": path.resolve("./src/components"),
-            "$styles": path.resolve("./src/styles"),
-            "$static": path.resolve("./"),
-            "$assets": path.resolve("./assets"),
+            $src: path.resolve("./src"),
+            $lib: path.resolve("./src/lib"),
+            $cmpt: path.resolve("./src/components"),
+            $styles: path.resolve("./src/styles"),
+            $static: path.resolve(`./static`),
+            $assets: path.resolve(`./static/assets`),
         },
     },
 });

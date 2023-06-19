@@ -67,7 +67,7 @@
         <ExercisePanel {data} bind:results />
     </Pane>
     <Pane minSize={20} class="flex flex-col relative overflow-auto height-full">
-        <div class="h-[43px] bg-surface-200 flex items-center">
+        <div class="h-[42px] bg-surface-200 flex items-center">
             <button
                 type="button"
                 class="btn py-1 ml-1 variant-filled-primary left"
@@ -78,12 +78,12 @@
             </button>
         </div>
         <div
-            class="block relative height-full overflow-auto flex-[1_1_0px] box-content"
+            class="overflow-auto flex-[1_1_0px]"
         >
             <Editor
                 bind:value={code}
                 bind:lang_name={lang}
-                class="height-full overflow-auto"
+                class="overflow-auto"
             />
         </div>
     </Pane>

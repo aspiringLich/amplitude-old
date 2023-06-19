@@ -16,8 +16,9 @@ export const load = async ({ params, fetch }): Promise<Item> => {
 
 export const entries = (async () => {
     let list = await getItemList();
+    console.log(list);
     return list
-        .map((item) => item.split["/"])
+        .map((item) => item.split("/"))
         .map((item) => {
             return { course: item[0], item: item[1] };
         });

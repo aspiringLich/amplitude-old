@@ -21,17 +21,17 @@
             placement: "left",
         };
     }
-    
+
     function stringify(list: Object[]): string {
         return list.map((x) => JSON.stringify(x, null, 2)).join(", ");
     }
 </script>
 
 <TabGroup
-    class="flex grow flex-col relative overflow-auto height-full"
+    class="flex grow flex-col overflow-auto"
     border="border-b-0"
     regionList="bg-surface-200"
-    regionPanel="height-full overflow-auto flex-[1_0_0px] !mt-0 px-4"
+    regionPanel="overflow-auto flex-[1_0_0px] !mt-0 px-4"
 >
     <Tab bind:group={tabN} name="instructions" value={0}>Instructions</Tab>
     <Tab bind:group={tabN} name="test" value={1}>Test Cases</Tab>
