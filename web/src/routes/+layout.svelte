@@ -6,10 +6,11 @@
     import "../themes/colors.postcss";
 
     import hljs from "highlight.js";
-    import { Toast, storeHighlightJs } from "@skeletonlabs/skeleton";
+    import { storeHighlightJs } from "@skeletonlabs/skeleton";
     import "highlight.js/styles/agate.css";
-
     storeHighlightJs.set(hljs);
+
+    import { Toast } from "@skeletonlabs/skeleton";
 
     import {
         computePosition,
@@ -20,9 +21,13 @@
         arrow,
     } from "@floating-ui/dom";
     import { storePopup } from "@skeletonlabs/skeleton";
-    import { browser } from "$app/environment";
+    import { onMount } from "svelte";
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
+
+    let init = false;
+    onMount(() => (init = true));
 </script>
 
-<slot />
 <Toast />
+
+<slot />

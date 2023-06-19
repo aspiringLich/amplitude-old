@@ -67,7 +67,7 @@
         <ExercisePanel {data} bind:results />
     </Pane>
     <Pane minSize={20} class="flex flex-col relative overflow-auto height-full">
-        <div class="h-[43px] border-b border-surface-400 flex items-center">
+        <div class="h-[43px] bg-surface-200 flex items-center">
             <button
                 type="button"
                 class="btn py-1 ml-1 variant-filled-primary left"
@@ -105,14 +105,14 @@
                     <h4>stdout</h4>
                     <Code code={result.stdout} />
                 {/if}
+                {#if !result}
+                    <h4 class="col-span-2">
+                        <span class="text-success-800">Run</span> your code to see more
+                        information!
+                    </h4>
+                {/if}
             </div>
-            {#if !result}
-                <h4>
-                    <span class="text-success-800">Run</span> your code to see more
-                    information!
-                </h4>
-            {/if}
-            <div class="arrow" />
+            <div class="arrow bg-surface-100-800-token" />
         </div>
     {/each}
 {/each}

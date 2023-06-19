@@ -13,13 +13,12 @@
     let tabN = 0;
 
     $: fn_list = Object.keys(data.config.functions);
-    $: console.log(results);
 
     function popupSettings(fn: string, i: number): PopupSettings {
         return {
             event: "click",
             target: `popup-${fn}-${i}`,
-            placement: "right",
+            placement: "left",
         };
     }
     
@@ -30,6 +29,8 @@
 
 <TabGroup
     class="flex grow flex-col relative overflow-auto height-full"
+    border="border-b-0"
+    regionList="bg-surface-200"
     regionPanel="height-full overflow-auto flex-[1_0_0px] !mt-0 px-4"
 >
     <Tab bind:group={tabN} name="instructions" value={0}>Instructions</Tab>
@@ -116,7 +117,7 @@
     }
 
     table {
-        background-color: transparent !important;
+        /* background-color: transparent !important; */
     }
 
     .table tbody tr {
