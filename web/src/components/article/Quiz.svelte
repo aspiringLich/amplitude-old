@@ -1,6 +1,6 @@
 <script lang="ts">
     import { fetchApi } from "$lib/fetch";
-    import { QuizData, renderArticle } from "../lib/item";
+    import { QuizData, renderArticle } from "../../lib/item";
     import { afterUpdate, onMount } from "svelte";
     import { ChevronLeft, ChevronRight } from "radix-icons-svelte";
     import Admonition from "./Admonition.svelte";

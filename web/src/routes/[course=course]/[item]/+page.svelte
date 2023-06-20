@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Article from "$cmpt/Article.svelte";
+    import Article from "$cmpt/article/Article.svelte";
     import {
         AppShell,
         Drawer,

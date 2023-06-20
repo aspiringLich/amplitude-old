@@ -7,6 +7,6 @@
 <div class="block">
     <label class="label inline-flex items-center">
         <input class="checkbox" type="checkbox" bind:checked />
-        <span>{title}</span>
+        <span class="!mt-0 ml-2">{title}</span>
     </label>
 </div>

@@ -1,7 +1,7 @@
 <script lang="ts">
-    import Admonition from "$cmpt/Admonition.svelte";
-    import Article from "$cmpt/Article.svelte";
-    import Code from "$cmpt/Code.svelte";
+    import Admonition from "$cmpt/article/Admonition.svelte";
+    import Article from "$cmpt/article/Article.svelte";
+    import Code from "$cmpt/article/Code.svelte";
     import type { TestResults } from "$lib/fetch";
     import type { ExerciseData } from "$lib/item";
     import { TabGroup, Tab, popup } from "@skeletonlabs/skeleton";

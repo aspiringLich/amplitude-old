@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { ArticleData, renderArticle } from "../lib/item";
+    import { ArticleData, renderArticle } from "../../lib/item";
     import { onMount } from "svelte";
 
     export let data: ArticleData;

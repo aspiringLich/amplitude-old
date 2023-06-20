@@ -102,9 +102,9 @@ export function itemID() {
     return window.location.pathname.split("/").slice(1).join("/");
 }
 
-import Quiz from "$cmpt/Quiz.svelte";
-import Code from "$cmpt/Code.svelte";
-import Admonition from "$cmpt/Admonition.svelte";
+import Quiz from "$cmpt/article/Quiz.svelte";
+import Code from "$cmpt/article/Code.svelte";
+import Admonition from "$cmpt/article/Admonition.svelte";
 
 export function renderArticle(body: HTMLElement, data?: ArticleData) {
     renderComponent(
