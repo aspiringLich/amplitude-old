@@ -7,7 +7,7 @@
 
 <div class="card bg-white w-modal shadow-xl relative" use:focusTrap={true}>
     <button
-        class="btn btn-icon absolute top-1 right-1 hover:rotate-90"
+        class="btn btn-icon absolute top-1 right-1"
         on:click={() => modalStore.close()}
     >
         <Cross1 size={24} class="text-surface-900" />

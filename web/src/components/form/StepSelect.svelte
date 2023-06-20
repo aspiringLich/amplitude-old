@@ -21,23 +21,21 @@
     const dec = () => {
         selected = (selected - 1 + options.length) % options.length;
     };
-    
+
     $: value = options[selected];
 </script>
 
-<label class="label block">
-    <span>{title}</span>
-    <div class="btn-group block">
-        <div class="inline-flex">
-            <button on:click={inc}><ArrowLeft /></button>
-            <select class="select" bind:value={selected}>
-                {#each options as option, i}
-                    <option value={i}>{transform(option)}</option>
-                {/each}
-            </select>
-            <button on:click={dec} class="border-l-0">
-                <ArrowRight />
-            </button>
-        </div>
+<div class="block">
+    <span class="block">{title}</span>
+    <div class="btn-group inline-flex">
+        <button on:click={dec}><ArrowLeft /></button>
+        <select class="select" bind:value={selected}>
+            {#each options as option, i}
+                <option value={i}>{transform(option)}</option>
+            {/each}
+        </select>
+        <button on:click={inc} class="border-l-0">
+            <ArrowRight />
+        </button>
     </div>
-</label>
+</div>

@@ -19,7 +19,7 @@
 <AppShell>
     <button
         class="w-14 h-10 p-2 rounded-r-full absolute top-16 left-[-24px]
-    bg-surface-200 semi-interactive hover:bg-surface-300 hover:translate-x-3 active:bg-surface-400"
+    bg-surface-200/40 semi-interactive hover:bg-surface-200 hover:translate-x-3 active:bg-surface-400"
         on:click={() => drawerStore.open(settings)}
     >
         <ChevronRight color="black" size={24} class="ml-4" />
@@ -34,7 +34,7 @@
 <Drawer regionDrawer="p-8">
     <div class="relative">
         <button
-            class="absolute top-[-1em] right-[-1em] hover:rotate-90 semi-interactive"
+            class="absolute top-[-1em] right-[-1em] semi-interactive"
             on:click={() => drawerStore.close()}
         >
             <Cross1 size={24} />

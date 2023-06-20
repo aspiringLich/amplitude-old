@@ -79,7 +79,7 @@
                             {#each func.tests as test, i}
                                 {@const result = res?.results[i]}
                                 <tr
-                                    class="interactable"
+                                    class="interactable hover:cursor-pointer"
                                     class:correct={result?.type === "correct"}
                                     class:incorrect={result?.type ===
                                         "incorrect" || result?.type === "error"}

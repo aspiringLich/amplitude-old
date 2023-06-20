@@ -10,7 +10,7 @@ export type EditorSettings = {
 export const editorSettings: Writable<EditorSettings> = localStorageStore(
     "localEditorSettings",
     {
-        theme: "default",
+        theme: "tomorrow",
         fontSize: 14,
         flipPanes: false,
     }

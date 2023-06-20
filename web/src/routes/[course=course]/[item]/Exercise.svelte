@@ -6,7 +6,6 @@
     import type { TestResults } from "$lib/fetch";
     import { modalStore, toastStore } from "@skeletonlabs/skeleton";
     import type { ToastSettings } from "@skeletonlabs/skeleton";
-    import Code from "$cmpt/Code.svelte";
     import { Gear } from "radix-icons-svelte";
     import colors from "tailwindcss/colors";
     import { editorSettings as settings } from "$lib/settings";
