@@ -176,5 +176,6 @@
     
     .codemirror-wrapper :global(.cm-gutter) {
         user-select: none;
+        border-right-width: 0;
     }
 </style>

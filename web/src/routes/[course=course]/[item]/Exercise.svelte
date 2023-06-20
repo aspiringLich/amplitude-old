@@ -7,6 +7,8 @@
     import { toastStore } from "@skeletonlabs/skeleton";
     import type { ToastSettings } from "@skeletonlabs/skeleton";
     import Code from "$cmpt/Code.svelte";
+    import { Gear } from "radix-icons-svelte";
+    import colors from "tailwindcss/colors";
 
     export let data: ExerciseData;
 
@@ -67,7 +69,7 @@
         <ExercisePanel {data} bind:results />
     </Pane>
     <Pane minSize={20} class="flex flex-col relative overflow-auto height-full">
-        <div class="h-[42px] bg-surface-200 flex items-center">
+        <div class="h-[42px] bg-surface-200 flex items-center justify-between">
             <button
                 type="button"
                 class="btn py-1 ml-1 variant-filled-primary left"
@@ -75,6 +77,9 @@
                 on:click={run_code}
             >
                 Run
+            </button>
+            <button type="button" class="btn btn-icon hover:rotate-[22.5deg]">
+                <Gear size={24} color={colors["slate"][500]} />
             </button>
         </div>
         <div
@@ -88,31 +93,3 @@
         </div>
     </Pane>
 </Splitpanes>
-
-{#each Object.keys(data.config.functions) as fn}
-    {@const func = data.config.functions[fn]}
-
-    {#each func.tests as test, i}
-        {@const result = results?.[fn].results[i]}
-        <div class="card p-4 z-99" data-popup="popup-{fn}-{i}">
-            <div class="grid grid-cols-[6em_1fr] grid-flow-row gap-2">
-                <h4>inputs</h4>
-                <Code code={stringify(test.inputs)} />
-                <h4>expected</h4>
-                <Code code={JSON.stringify(test.output, null, 2)} />
-
-                {#if result}
-                    <h4>stdout</h4>
-                    <Code code={result.stdout} />
-                {/if}
-                {#if !result}
-                    <h4 class="col-span-2">
-                        <span class="text-success-800">Run</span> your code to see more
-                        information!
-                    </h4>
-                {/if}
-            </div>
-            <div class="arrow bg-surface-100-800-token" />
-        </div>
-    {/each}
-{/each}

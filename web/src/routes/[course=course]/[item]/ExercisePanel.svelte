@@ -25,6 +25,15 @@
     function stringify(list: Object[]): string {
         return list.map((x) => JSON.stringify(x, null, 2)).join(", ");
     }
+
+    let selected = undefined;
+    function select(n: number) {
+        if (selected === n) {
+            selected = undefined;
+        } else {
+            selected = n;
+        }
+    }
 </script>
 
 <TabGroup
@@ -39,9 +48,11 @@
     <svelte:fragment slot="panel">
         {#if tabN == 0}
             <Article
-                classes="h-max"
-                title={data.config.title}
-                body={data.config.instructions}
+                class="h-max"
+                data={{
+                    title: data.config.title,
+                    body: data.config.instructions,
+                }}
             />
         {:else if tabN == 1}
             {#if results instanceof Error}
@@ -71,7 +82,8 @@
                                     class:correct={result?.type === "correct"}
                                     class:incorrect={result?.type ===
                                         "incorrect" || result?.type === "error"}
-                                    use:popup={popupSettings(fn, i)}
+                                    on:click={() => select(i)}
+                                    class:selected={selected === i}
                                 >
                                     <td>
                                         {stringify(test.inputs)}
@@ -101,6 +113,58 @@
                                 </td>
                             </tr>
                         </tbody>
+                        {#if selected !== undefined}
+                            {@const test = func.tests[selected]}
+                            {@const result = res?.results[selected]}
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3" class="normal-case">
+                                        <div
+                                            class="grid grid-cols-[6em_1fr] grid-flow-row gap-2"
+                                        >
+                                            <span class="my-auto">inputs</span>
+                                            <Code
+                                                code={stringify(test.inputs)}
+                                            />
+                                            <span class="my-auto">expected</span
+                                            >
+                                            <Code
+                                                code={JSON.stringify(
+                                                    test.output,
+                                                    null,
+                                                    2
+                                                )}
+                                            />
+
+                                            {#if result}
+                                                <span class="my-auto"
+                                                    >stdout</span
+                                                >
+                                                {#if result.stdout?.length === 0}
+                                                    <span class="font-normal">N/A</span>
+                                                {:else}
+                                                    <Code
+                                                        code={result.stdout}
+                                                    />
+                                                {/if}
+                                            {/if}
+                                            {#if !result}
+                                                <span
+                                                    class="col-span-2 my-auto"
+                                                >
+                                                    <span
+                                                        class="text-success-800"
+                                                    >
+                                                        Run
+                                                    </span> your code to see more
+                                                    information!
+                                                </span>
+                                            {/if}
+                                        </div>
+                                    </th>
+                                </tr>
+                            </tfoot>
+                        {/if}
                     </table>
                 </div>
             {/each}
@@ -116,8 +180,8 @@
         font-family: monospace;
     }
 
-    table {
-        /* background-color: transparent !important; */
+    thead {
+        @apply border-b-0;
     }
 
     .table tbody tr {
@@ -139,6 +203,10 @@
 
         &:active {
             background-color: rgb(var(--color-surface-500) / 0.25);
+        }
+
+        &.selected {
+            background-color: rgb(var(--color-surface-500) / 0.3);
         }
     }
 

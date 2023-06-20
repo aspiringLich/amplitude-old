@@ -27,7 +27,7 @@
 </script>
 
 <noscript>
-    <style lang="scss">
+    <style lang="postcss">
         .article {
             visibility: visible !important;
             opacity: 1 !important;
@@ -47,7 +47,7 @@
 
 <!-- <div style:height="50vh" /> -->
 
-<style lang="scss">
+<style lang="postcss">
     .article {
         visibility: hidden;
         opacity: 0;
@@ -60,7 +60,7 @@
             opacity: 1;
         }
         
-        > :global(h2) {
+        &> :global(h2) {
             font-size: 1.75em;
             margin: 0.75em 0 0.75em 0;
 
@@ -69,7 +69,7 @@
             }
         }
 
-        :global(h2 > a) {
+        & :global(h2 > a) {
             color: black;
             text-decoration: none;
         }

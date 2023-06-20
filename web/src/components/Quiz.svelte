@@ -8,8 +8,6 @@
     // Props
     export let data: QuizData;
 
-    console.log(data);
-
     // Local
     let answers: { correct: boolean; num: number }[] = new Array(
         data.questions.length
@@ -51,11 +49,12 @@
 <blockquote class="container" bind:this={container}>
     <div class="flex items-center justify-center">
         <div class="buttons btn-group variant-filled-primary">
-            <button on:click={dec} disabled={n <= 0}>
+            <button type="button" title="Previous Question" on:click={dec} disabled={n <= 0}>
                 <ChevronLeft />
             </button>
             <button
-                type="button"
+                type="submit"
+                title="Submit Answer"
                 class="border-0"
                 on:click={submit}
                 disabled={selected === undefined || answers[n] !== undefined}
@@ -64,6 +63,7 @@
             </button>
             <button
                 type="button"
+                title="Next Question"
                 class="border-0"
                 on:click={inc}
                 disabled={!data.questions || n >= data.questions.length - 1}

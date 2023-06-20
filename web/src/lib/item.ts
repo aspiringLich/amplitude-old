@@ -149,7 +149,7 @@ export function renderArticle(body: HTMLElement, data?: ArticleData) {
 export class ArticleData {
     body: string;
     title: string;
-    quiz_data: { [key: string]: QuizData };
+    quiz_data?: { [key: string]: QuizData };
     type?: "article";
 }
 
