@@ -10,12 +10,23 @@
 <script lang="ts">
     import { createEventDispatcher, onDestroy, onMount } from "svelte";
     import { basicSetup } from "codemirror";
-    import { EditorView, keymap, placeholder as placeholderExt } from "@codemirror/view";
-    import { EditorState, StateEffect, type Extension } from "@codemirror/state";
+    import {
+        EditorView,
+        keymap,
+        placeholder as placeholderExt,
+    } from "@codemirror/view";
+    import {
+        EditorState,
+        StateEffect,
+        type Extension,
+    } from "@codemirror/state";
     import { indentWithTab } from "@codemirror/commands";
     import { indentUnit, type LanguageSupport } from "@codemirror/language";
     import { debounce } from "$lib/util";
-    
+
+    import { editorSettings as settings } from "$lib/settings";
+    import * as themes from "thememirror";
+
     import { python } from "@codemirror/lang-python";
 
     let classes = "";
@@ -23,8 +34,8 @@
     export let value: string | null | undefined = "";
 
     export let basic = true;
-    export let lang_name: string | undefined = undefined;
     export let theme: Extension | null | undefined = undefined;
+    export let lang_name: string | undefined = undefined;
     export let extensions: Extension[] = [];
 
     export let useTab = true;
@@ -46,13 +57,24 @@
     let update_from_state = false;
     let first_config = true;
     let first_update = true;
-    
+
     $: lang = {
-        "python": python(),
+        python: python(),
     }[lang_name];
     
+    $: theme = themes[$settings.theme];
+
     $: state_extensions = [
-        ...get_base_extensions(basic, useTab, tabSize, lineWrapping, placeholder, editable, readonly, lang),
+        ...get_base_extensions(
+            basic,
+            useTab,
+            tabSize,
+            lineWrapping,
+            placeholder,
+            editable,
+            readonly,
+            lang
+        ),
         ...get_theme(theme, styles),
         ...extensions,
     ];
@@ -118,7 +140,9 @@
         dispatch("change", value);
     }
 
-    function create_editor_state(value: string | null | undefined): EditorState {
+    function create_editor_state(
+        value: string | null | undefined
+    ): EditorState {
         return EditorState.create({
             doc: value ?? undefined,
             extensions: state_extensions,
@@ -140,7 +164,7 @@
             EditorView.editable.of(editable),
             EditorState.readOnly.of(readonly),
         ];
-        
+
         if (basic) extensions.push(basicSetup);
         if (useTab) extensions.push(keymap.of([indentWithTab]));
         if (placeholder) extensions.push(placeholderExt(placeholder));
@@ -150,7 +174,10 @@
         return extensions;
     }
 
-    function get_theme(theme: Extension | null | undefined, styles: ThemeSpec | null | undefined): Extension[] {
+    function get_theme(
+        theme: Extension | null | undefined,
+        styles: ThemeSpec | null | undefined
+    ): Extension[] {
         const extensions: Extension[] = [];
         if (styles) extensions.push(EditorView.theme(styles));
         if (theme) extensions.push(theme);
@@ -164,16 +191,16 @@
     .codemirror-wrapper {
         height: 100%;
     }
-    
+
     .codemirror-wrapper :global(.cm-focused) {
         outline: none;
     }
-    
+
     .codemirror-wrapper :global(.cm-editor) {
         height: 100%;
         max-height: none;
     }
-    
+
     .codemirror-wrapper :global(.cm-gutter) {
         user-select: none;
         border-right-width: 0;

@@ -26,3 +26,8 @@ export function debounce<T extends (...args: any[]) => any>(
         }
     } as T;
 }
+
+
+export function mod(n: number, m: number): number {
+    return ((n % m) + m) % m;
+}

@@ -4,11 +4,13 @@
     import { itemID, type ExerciseData } from "$lib/item";
     import ExercisePanel from "./ExercisePanel.svelte";
     import type { TestResults } from "$lib/fetch";
-    import { toastStore } from "@skeletonlabs/skeleton";
+    import { modalStore, toastStore } from "@skeletonlabs/skeleton";
     import type { ToastSettings } from "@skeletonlabs/skeleton";
     import Code from "$cmpt/Code.svelte";
     import { Gear } from "radix-icons-svelte";
     import colors from "tailwindcss/colors";
+    import { editorSettings as settings } from "$lib/settings";
+    import { onMount } from "svelte";
 
     export let data: ExerciseData;
 
@@ -59,17 +61,26 @@
         run_disabled = false;
     }
 
-    function stringify(list: Object[]): string {
-        return list.map((x) => JSON.stringify(x, null, 2)).join(", ");
-    }
+    $: fdir = $settings.flipPanes ? "!flex-row-reverse" : "!flex-row";
+
+    let loaded = false;
+    onMount(() => {
+        loaded = true;
+    });
 </script>
 
-<Splitpanes theme="theme" class="p-16 max-w-6xl m-auto">
+<Splitpanes
+    theme="theme"
+    class="p-16 max-w-6xl m-auto {fdir}"
+    rtl={$settings.flipPanes}
+>
     <Pane minSize={20} class="relative flex">
         <ExercisePanel {data} bind:results />
     </Pane>
     <Pane minSize={20} class="flex flex-col relative overflow-auto height-full">
-        <div class="h-[42px] bg-surface-200 flex items-center justify-between">
+        <div
+            class="h-[42px] bg-surface-200 flex items-center justify-between {fdir}"
+        >
             <button
                 type="button"
                 class="btn py-1 ml-1 variant-filled-primary left"
@@ -78,13 +89,20 @@
             >
                 Run
             </button>
-            <button type="button" class="btn btn-icon hover:rotate-[22.5deg]">
+            <button
+                type="button"
+                class="btn btn-icon hover:rotate-[22.5deg]"
+                on:click={() => {
+                    modalStore.trigger({
+                        type: "component",
+                        component: "EditorSettings",
+                    });
+                }}
+            >
                 <Gear size={24} color={colors["slate"][500]} />
             </button>
         </div>
-        <div
-            class="overflow-auto flex-[1_1_0px]"
-        >
+        <div class="overflow-auto flex-[1_1_0px]">
             <Editor
                 bind:value={code}
                 bind:lang_name={lang}

@@ -10,6 +10,7 @@
 
     export let data: ExerciseData;
     export let results: TestResults | Error | undefined = undefined;
+
     let tabN = 0;
 
     $: fn_list = Object.keys(data.config.functions);
@@ -141,7 +142,9 @@
                                                     >stdout</span
                                                 >
                                                 {#if result.stdout?.length === 0}
-                                                    <span class="font-normal">N/A</span>
+                                                    <span class="font-normal"
+                                                        >N/A</span
+                                                    >
                                                 {:else}
                                                     <Code
                                                         code={result.stdout}
