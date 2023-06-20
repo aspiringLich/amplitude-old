@@ -5,6 +5,7 @@
         Drawer,
         drawerStore,
         type DrawerSettings,
+        LightSwitch,
     } from "@skeletonlabs/skeleton";
     import Exercise from "./Exercise.svelte";
     import { ChevronRight, Cross1 } from "radix-icons-svelte";
@@ -19,10 +20,13 @@
 <AppShell>
     <button
         class="w-14 h-10 p-2 rounded-r-full absolute top-16 left-[-24px]
-    bg-surface-200/40 semi-interactive hover:bg-surface-200 hover:translate-x-3 active:bg-surface-400"
+    bg-surface-200/40 hover:bg-surface-200  active:bg-surface-400
+    dark:bg-surface-800/40 dark:hover:bg-surface-800 dark:active:bg-surface-600
+    semi-interactive hover:translate-x-3
+    dark:text-white"
         on:click={() => drawerStore.open(settings)}
     >
-        <ChevronRight color="black" size={24} class="ml-4" />
+        <ChevronRight size={24} class="ml-4" />
     </button>
     {#if data.type == "article"}
         <Article {data} class="max-w-3xl" />
@@ -40,6 +44,7 @@
             <Cross1 size={24} />
         </button>
     </div>
+    <LightSwitch />
     <h1 class="h1">Amplitude</h1>
     <p>epic temporary thingy lets goo</p>
 </Drawer>

@@ -46,7 +46,7 @@
     $: answered = answers[n] !== undefined;
 </script>
 
-<blockquote class="container" bind:this={container}>
+<div class="container" bind:this={container}>
     <div class="flex items-center justify-center">
         <div class="buttons btn-group variant-filled-primary">
             <button type="button" title="Previous Question" on:click={dec} disabled={n <= 0}>
@@ -106,7 +106,7 @@
             </Admonition>
         {/if}
     </div>
-</blockquote>
+</div>
 
 <style lang="postcss">
     .choice {

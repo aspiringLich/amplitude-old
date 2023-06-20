@@ -78,7 +78,7 @@
     </Pane>
     <Pane minSize={20} class="flex flex-col relative overflow-auto height-full">
         <div
-            class="h-[42px] bg-surface-200 flex items-center justify-between {fdir}"
+            class="h-[42px] bg-surface-200 dark:bg-surface-800 flex items-center justify-between {fdir}"
         >
             <button
                 type="button"
@@ -90,7 +90,7 @@
             </button>
             <button
                 type="button"
-                class="btn btn-icon hover:rotate-[22.5deg]"
+                class="btn btn-icon hover:rotate-[22.5deg] dark:text-surface-200"
                 on:click={() => {
                     modalStore.trigger({
                         type: "component",
@@ -98,7 +98,7 @@
                     });
                 }}
             >
-                <Gear size={24} color={colors["slate"][500]} />
+                <Gear size={24} />
             </button>
         </div>
         <div class="overflow-auto flex-[1_1_0px]">

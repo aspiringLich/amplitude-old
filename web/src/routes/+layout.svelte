@@ -8,7 +8,7 @@
 
     //~ `highlight.js`
     import hljs from "highlight.js";
-    import { storeHighlightJs } from "@skeletonlabs/skeleton";
+    import { storeHighlightJs, toastStore } from "@skeletonlabs/skeleton";
     import "highlight.js/styles/agate.css";
     storeHighlightJs.set(hljs);
 
@@ -37,7 +37,23 @@
             ref: EditorSettings,
         },
     };
+    
+    //~ Error Handling
+    const handleError = () => {
+        toastStore.trigger({
+            message: "An unexpected error occurred! Please reload the page to restore functionality.",
+            background: "variant-filled-error",
+        })
+    };
+    
+    import { autoModeWatcher } from '@skeletonlabs/skeleton';
 </script>
+
+
+<svelte:window on:error={handleError}/>
+<!-- <svelte:head>
+    {@html `<script>${autoModeWatcher.toString()} autoModeWatcher();</script>`}
+</svelte:head> -->
 
 <Toast />
 <Modal components={modalComponentRegistry} />

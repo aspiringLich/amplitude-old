@@ -70,8 +70,12 @@
         }
 
         & :global(h2 > a) {
-            color: black;
+            color: rgb(var(--text-color-base));
             text-decoration: none;
         }
+    }
+    
+    :global(html.dark h2 > a) {
+        color: rgb(var(--text-color-dark))
     }
 </style>

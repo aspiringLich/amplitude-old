@@ -141,7 +141,7 @@ export function renderArticle(body: HTMLElement, data?: ArticleData) {
         h2.innerHTML = `<a href="#${id}">${h2.innerHTML}</a>`;
     });
     body.querySelectorAll("h1,h2,h3,h4,h5,h6").forEach((h) => {
-        h.classList.add(h.tagName.toLowerCase());
+        h.classList.add(h.localName);
     });
 }
 

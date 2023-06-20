@@ -26,8 +26,6 @@
     /** Base classes for styling the container itself */
     export let container = "";
 
-    const title_color = 500;
-    const body_color = 100;
     const data = {
         note: ["purple", File],
         info: ["cyan", InfoCircled],
@@ -45,14 +43,14 @@
 <div class="admonition my-4 flex flex-col {classes}">
     <div
         class="title rounded-t w-full text-white font-extrabold flex items-center"
-        style:background-color={colors[color_type][title_color]}
+        style:background-color={colors[color_type][500] + "80"}
     >
         <svelte:component this={icon} size={18} class="m-1.5" />
         <span>{title_text}</span>
     </div>
     <blockquote
         class="rounded-t-none {container}"
-        style:background-color={colors[color_type][body_color]}
+        style:background-color={colors[color_type][300] + "80"}
     >
         <slot />
     </blockquote>
