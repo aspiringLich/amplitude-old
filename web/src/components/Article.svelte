@@ -2,16 +2,16 @@
     import { ArticleData, renderArticle } from "../lib/item";
     import { onMount } from "svelte";
 
-    export let title: string;
-    export let body: string;
-    export let classes: string = "";
+    export let data: ArticleData;
+    export { classes as class };
+    let classes: string = "";
     
     let body_element: HTMLElement;
     let padding = 1000;
     let init = false;
 
     onMount(() => {
-        renderArticle(body_element);
+        renderArticle(body_element, data);
 
         let hash = window.location.hash;
         if (hash) {
@@ -38,8 +38,8 @@
 
 <div>
     <div class="article container-xl px-8 m-auto {classes}" class:show={init} bind:this={body_element}>
-        <h1 class="text-5xl my-6">{@html title}</h1>
-        {@html body}
+        <h1 class="text-5xl my-6">{@html data.title}</h1>
+        {@html data.body}
     </div>
 </div>
 

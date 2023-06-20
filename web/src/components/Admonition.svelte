@@ -40,11 +40,6 @@
     };
     $: [color_type, icon] = data[type];
     $: title_text = type.at(0).toUpperCase() + type.slice(1);
-
-    // Reactive
-
-    // $: col = types[type].color;
-    // console.log("e");
 </script>
 
 <div class="admonition my-4 flex flex-col {classes}">

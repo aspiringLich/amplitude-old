@@ -16,6 +16,21 @@
     };
 </script>
 
+<AppShell>
+    <button
+        class="w-14 h-10 p-2 rounded-r-full absolute top-16 left-[-24px]
+    bg-surface-200 semi-interactive hover:bg-surface-300 hover:translate-x-3 active:bg-surface-400"
+        on:click={() => drawerStore.open(settings)}
+    >
+        <ChevronRight color="black" size={24} class="ml-4" />
+    </button>
+    {#if data.type == "article"}
+        <Article {data} class="max-w-3xl" />
+    {:else if data.type == "exercise"}
+        <Exercise {data} />
+    {/if}
+</AppShell>
+
 <Drawer regionDrawer="p-8">
     <div class="relative">
         <button
@@ -28,18 +43,3 @@
     <h1 class="h1">Amplitude</h1>
     <p>epic temporary thingy lets goo</p>
 </Drawer>
-
-<AppShell>
-    <button
-        class="w-10 h-10 p-2 rounded-r-full absolute top-16
-        bg-surface-200 semi-interactive hover:bg-surface-300 active:bg-surface-400"
-        on:click={() => drawerStore.open(settings)}
-    >
-        <ChevronRight color="black" size={24} />
-    </button>
-    {#if data.type == "article"}
-        <Article {...data} classes="max-w-3xl" />
-    {:else if data.type == "exercise"}
-        <Exercise {data} />
-    {/if}
-</AppShell>

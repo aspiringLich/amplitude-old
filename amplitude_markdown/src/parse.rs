@@ -1,7 +1,7 @@
 pub mod context;
 pub mod course;
-mod inject;
-mod link_concat;
+pub mod inject;
+pub mod link_concat;
 
 use crate::{items::ItemType, parse::course::parse_course, OsStrToString};
 use amplitude_common::config::{Config, ParseConfig};
@@ -18,7 +18,7 @@ use tracing::{info, warn};
 
 use self::{
     context::{DataContext, MarkdownContext},
-    course::{CourseConfig, Track},
+    course::{CourseConfig, Track}, inject::InjectData,
 };
 
 /// Clones the articles repo
@@ -133,12 +133,27 @@ fn parse_into_ast<'a>(
 }
 
 /// Parse the input `md` and return the output `html`.
+/// Has full access to `ItemContext`,
+/// Will also return the `InjectData` for the item
+pub(crate) fn parse_md_full(input: &str, ctx: &mut DataContext) -> anyhow::Result<(String, InjectData)> {
+    // do things
+    let arena = Arena::new();
+    let node = parse_into_ast(input, ctx.markdown_context(), ctx.id(), &arena)?;
+
+    let mut data = default();
+    inject::inject(node, ctx, &mut data)?;
+    parse_ast(node, ctx.markdown_context()).map(|s| (s, data))
+}
+
+/// Parse the input `md` and return the output `html`.
 /// Has full access to `ItemContext`
 pub(crate) fn parse_md(input: &str, ctx: &mut DataContext) -> anyhow::Result<String> {
     // do things
     let arena = Arena::new();
     let node = parse_into_ast(input, ctx.markdown_context(), ctx.id(), &arena)?;
-    inject::inject(node, ctx)?;
+
+    let mut data = default();
+    inject::inject(node, ctx, &mut data)?;
     parse_ast(node, ctx.markdown_context())
 }
 

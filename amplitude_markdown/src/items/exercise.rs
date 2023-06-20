@@ -101,7 +101,7 @@ impl Item for Exercise {
 
     fn transform(&mut self) {
         for (_, cfg) in self.config.functions.iter_mut() {
-            cfg.tests.drain_filter(|test| test.hidden);
+            cfg.tests.retain(|test| !test.hidden);
         }
     }
 }

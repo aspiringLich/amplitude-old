@@ -1,10 +1,11 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, hash_map::Entry};
 
 use super::context::DataContext;
 
 use crate::parse::parse_ast;
 use anyhow::Context;
 use comrak::nodes::{AstNode, NodeValue};
+use serde::Serialize;
 
 mod admonition;
 mod code;
@@ -176,7 +177,17 @@ fn parse_args(input: &str) -> anyhow::Result<HashMap<String, String>> {
     Ok(out)
 }
 
-pub(crate) fn inject<'a>(node: &'a AstNode<'a>, ctx: &mut DataContext) -> anyhow::Result<()> {
+#[derive(Serialize, Debug, Default, Clone)]
+pub struct InjectData {
+    #[serde(flatten)]
+    pub tags: HashMap<String, Vec<CallbackArgs>>,
+}
+
+pub(crate) fn inject<'a>(
+    node: &'a AstNode<'a>,
+    ctx: &mut DataContext,
+    data: &mut InjectData,
+) -> anyhow::Result<()> {
     // variables were going to detach
     let mut to_detach = vec![];
     // dbg!(node);
@@ -201,6 +212,13 @@ pub(crate) fn inject<'a>(node: &'a AstNode<'a>, ctx: &mut DataContext) -> anyhow
 
             if let Some(info) = MARKERS.get(text) {
                 let args = parse_args(post).context("While parsing arguments")?;
+                
+                let result = match data.tags.entry(text[1..].to_string()) {
+                    Entry::Vacant(entry) => entry.insert(Vec::new()),
+                    Entry::Occupied(entry) => entry.into_mut(),
+                };
+                result.push(args.clone());
+                
                 for key in info.mandatory_keys() {
                     if !args.contains_key(*key) {
                         anyhow::bail!(

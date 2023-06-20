@@ -2,7 +2,6 @@
 #![feature(let_chains)]
 #![feature(if_let_guard)]
 #![feature(default_free_fn)]
-#![feature(drain_filter)]
 
 use std::ffi::OsStr;
 

@@ -57,7 +57,7 @@ pub fn parse_course(path: PathBuf, data: &mut RawCourseData, cfg: &Config) -> an
     data.tracks.insert(course_id.clone(), Vec::new());
 
     // get index as item
-    let md = parse_md(
+    let (md, d) = parse_md_full(
         &fs::read_to_string(path.join("index.md"))?,
         &mut DataContext::new(data, &course_id)?,
     )?;
@@ -66,6 +66,7 @@ pub fn parse_course(path: PathBuf, data: &mut RawCourseData, cfg: &Config) -> an
             title: course.title.clone(),
         },
         md,
+        d,
     );
     data.items
         .insert(course_id.clone() + "-index", ItemType::Article(index));
@@ -86,7 +87,8 @@ pub fn parse_course(path: PathBuf, data: &mut RawCourseData, cfg: &Config) -> an
 
         let mut ctx = DataContext::new(data, &course_id)?;
 
-        parse_track(path, &mut ctx, cfg).with_context(|| format!("While parsing track {track_id}"))?;
+        parse_track(path, &mut ctx, cfg)
+            .with_context(|| format!("While parsing track {track_id}"))?;
     }
 
     Ok(())

@@ -16,7 +16,6 @@ export const fetchApi = async <T>(
     opts.fetch = opts.fetch ?? fetch;
     opts.method = opts.method ?? "GET";
 
-    // console.log("fetching", url, opts, "\n")
     let input = browser ? url : `http://127.0.0.1:8080${url}`;
     const req = await opts.fetch(input, {
         method: opts.method ?? "GET",
@@ -26,7 +25,7 @@ export const fetchApi = async <T>(
         body: opts.method == "POST" ? JSON.stringify(opts.body) : undefined,
     });
     if (!req.ok) {
-        console.log(req);
+        console.error(req);
         throw new Error(`failed to fetch ${url} with` + JSON.stringify(opts));
     }
 

@@ -3,7 +3,7 @@ use std::io::{self, BufRead, Read};
 use anyhow::Context;
 use serde::de::DeserializeOwned;
 
-use crate::parse::parse_md;
+use crate::parse::{inject::InjectData, parse_md_full};
 
 use super::*;
 
@@ -17,13 +17,15 @@ pub struct RawArticle {
 pub struct Article {
     pub title: String,
     pub body: String,
+    pub inject_data: InjectData,
 }
 
 impl Article {
-    pub fn from_raw(raw: RawArticle, body: String) -> Self {
+    pub fn from_raw(raw: RawArticle, body: String, inject_data: InjectData) -> Self {
         Self {
             title: raw.title,
             body,
+            inject_data,
         }
     }
 }
@@ -37,11 +39,11 @@ impl Item for Article {
     ) -> anyhow::Result<ItemType> {
         ensure!(contents.contains("article.md"), "article.md");
 
-        let (raw, s): (RawArticle, String) = parse_frontmatter(&dir.join("article.md"))
+        let (raw, s) = parse_frontmatter(&dir.join("article.md"))
             .context("While reading article / parsing frontmatter header")?;
-        let html = parse_md(&s, context).context("While parsing article markdown")?;
+        let (html, data) = parse_md_full(&s, context).context("While parsing article markdown")?;
 
-        let article = Article::from_raw(raw, html);
+        let article = Article::from_raw(raw, html, data);
         Ok(ItemType::Article(article))
     }
 }

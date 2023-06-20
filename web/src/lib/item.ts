@@ -55,15 +55,15 @@ function createSlots(slots: { [name: string]: any }) {
     return svelteSlots;
 }
 
+type Props = { [name: string]: any };
+
 // for slots: currently only works for a single default slot
 export function renderComponent(
     doc: HTMLElement,
     query: string,
     type: ComponentType,
-    manipulate: (
-        props: { [name: string]: any },
-        slots: { [name: string]: any },
-    ) => void = () => {}
+    propsCallback: (props: Props, slots: Props) => Props = (props) => props,
+    slotCallback: (slots: Props) => Props = (slots) => slots
 ) {
     doc.querySelectorAll(query).forEach((target) => {
         let props = {};
@@ -72,15 +72,16 @@ export function renderComponent(
         }
 
         if (target.childElementCount) {
-            let slots = {
+            let slots: Object = {
                 default: [...target.children, { $$scope: {} }],
             };
-            manipulate(props, slots);
+            props = propsCallback(props, slots);
+            slots = slotCallback(slots);
 
             props["$$slots"] = createSlots(slots);
             props["$$scope"] = {};
         } else {
-            manipulate(props, {})
+            props = propsCallback(props, {});
         }
 
         try {
@@ -105,26 +106,42 @@ import Quiz from "$cmpt/Quiz.svelte";
 import Code from "$cmpt/Code.svelte";
 import Admonition from "$cmpt/Admonition.svelte";
 
-export function renderArticle(body: HTMLElement) {
-    renderComponent(body, "pre:not(.component)", Code, (props, slots) => {
-        // console.log(slots);
-        let language = slots.default[0].classList[0]?.replace("language-", "") ?? "plaintext";
-        
-        props.code = slots.default[0].innerHTML;
-        props.language = language;
-        props.copy = true;
-        slots.default = null;
-    });
+export function renderArticle(body: HTMLElement, data?: ArticleData) {
+    renderComponent(
+        body,
+        "pre:not(.component)",
+        Code,
+        (props, slots) => {
+            let language =
+                slots.default[0].classList[0]?.replace("language-", "") ??
+                "plaintext";
+
+            return {
+                code: slots.default[0].innerHTML,
+                language,
+                copy: true,
+            };
+        },
+        (slots) => {
+            return {};
+        }
+    );
     renderComponent(body, "admonition", Admonition);
-    renderComponent(body, "quiz", Quiz);
+    renderComponent(body, "quiz", Quiz, (props, slots) => {
+        if (!data) return props;
+        return {
+            data: data.quiz_data[props.id]
+        }
+    });
 
     // turn all h2s into links to themselves
-    body.childNodes.forEach((element: HTMLElement) => {
-        if (element.localName != "h2") return;
-
-        let id = element.textContent.toLowerCase().replace(/[^a-z0-9]/g, "-");
-        element.id = id;
-        element.innerHTML = `<a href="#${id}">${element.innerHTML}</a>`;
+    body.querySelectorAll("h2").forEach((h2) => {
+        let id = h2.textContent.toLowerCase().replace(/[^a-z0-9]/g, "-");
+        h2.id = id;
+        h2.innerHTML = `<a href="#${id}">${h2.innerHTML}</a>`;
+    });
+    body.querySelectorAll("h1,h2,h3,h4,h5,h6").forEach((h) => {
+        h.classList.add(h.tagName.toLowerCase());
     });
 }
 
@@ -132,10 +149,12 @@ export function renderArticle(body: HTMLElement) {
 export class ArticleData {
     body: string;
     title: string;
+    quiz_data: { [key: string]: QuizData };
     type?: "article";
 }
 
 export class QuizData {
+    id: string;
     questions: {
         question: string;
         answers: {
@@ -151,20 +170,24 @@ export class ExerciseData {
     config: {
         title: string;
         instructions: string;
-        functions: {[key: string]: {
-            inputs: string[];
-            output: string;
-            hidden_cases: number;
-            visible_cases: number;
-            tests: {
-                inputs: Object[];
-                output: Object;
-            }[];
-        }};
+        functions: {
+            [key: string]: {
+                inputs: string[];
+                output: string;
+                hidden_cases: number;
+                visible_cases: number;
+                tests: {
+                    inputs: Object[];
+                    output: Object;
+                }[];
+            };
+        };
     };
-    lang_info: {[key: string]: {
-        code: string;
-    }}
+    lang_info: {
+        [key: string]: {
+            code: string;
+        };
+    };
     type?: "exercise";
 }
 
