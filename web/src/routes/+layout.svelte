@@ -1,6 +1,6 @@
 <script lang="ts">
     export let data;
-    
+
     //~ Themes
     // import "@skeletonlabs/skeleton/themes/theme-skeleton.css";
     import "@skeletonlabs/skeleton/styles/skeleton.css";
@@ -52,7 +52,7 @@
     import { AppShell, Drawer, drawerStore } from "@skeletonlabs/skeleton";
     import { ChevronRight, Cross1 } from "radix-icons-svelte";
     import NavBar from "$cmpt/NavBar.svelte";
-    import { fade } from 'svelte/transition';
+    import { fly } from "svelte/transition";
 </script>
 
 <svelte:window on:error={handleError} />
@@ -62,7 +62,7 @@
 
 <AppShell slotPageContent="relative">
     <svelte:fragment slot="header">
-        <NavBar path={data.pathname}/>
+        <NavBar path={data.pathname} />
     </svelte:fragment>
     <!-- OH LAWD -->
     <button
@@ -77,12 +77,16 @@
     >
         <ChevronRight size={24} class="ml-4" />
     </button>
-    
-    <!-- {#key data.pathname}
-        <div style="display: contents" class="h-full" transition:fade> -->
+
+    {#key data.pathname}
+        <div
+            class="h-full"
+            in:fly={{ x: -10, duration: 500, delay: 500 }}
+            out:fly={{ x: 5, duration: 500 }}
+        >
             <slot />
-        <!-- </div>
-    {/key} -->
+        </div>
+    {/key}
 </AppShell>
 
 <Drawer regionDrawer="p-8">

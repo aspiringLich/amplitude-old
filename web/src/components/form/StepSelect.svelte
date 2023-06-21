@@ -26,8 +26,8 @@
 </script>
 
 <div class="block my-2">
-    <span class="block">{title}</span>
-    <div class="btn-group bg-surface-200 inline-flex mt-1">
+    <span class="block font-semibold text-surface-700-200-token">{title}</span>
+    <div class="btn-group bg-surface-200-700-token inline-flex mt-1">
         <button class="z-20" on:click={dec}><ArrowLeft size={18} /></button>
         <select class="select border-l-0 border-b-2 rounded-none" bind:value={selected}>
             {#each options as option, i}

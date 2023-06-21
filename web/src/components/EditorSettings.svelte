@@ -25,7 +25,6 @@
     <Modal>
         <h3 class="h3 !my-1">Editor Settings</h3>
         <div class="grid grid-cols-1 gap-2 !mt-0">
-            <Checkbox title="Flip Panes" bind:checked={$settings.flipPanes} />
             <Editor
                 class="w-full h-64 min-h-64 max-h-64"
                 lang_name="python"
@@ -43,6 +42,7 @@
                 transform={titleize}
                 bind:value={$settings.darkTheme}
             />
+            <Checkbox title="Flip Panes" bind:checked={$settings.flipPanes} />
         </div>
     </Modal>
 {/if}
