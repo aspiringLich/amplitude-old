@@ -62,7 +62,7 @@
 
 <AppShell slotPageContent="relative">
     <svelte:fragment slot="header">
-        <NavBar />
+        <NavBar path={data.pathname}/>
     </svelte:fragment>
     <!-- OH LAWD -->
     <button

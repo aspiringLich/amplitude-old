@@ -27,9 +27,9 @@
 
 <div class="block my-2">
     <span class="block">{title}</span>
-    <div class="btn-group inline-flex mt-1">
-        <button on:click={dec}><ArrowLeft size={18} /></button>
-        <select class="select" bind:value={selected}>
+    <div class="btn-group bg-surface-200 inline-flex mt-1">
+        <button class="z-20" on:click={dec}><ArrowLeft size={18} /></button>
+        <select class="select border-l-0 border-b-2 rounded-none" bind:value={selected}>
             {#each options as option, i}
                 <option value={i}>{transform(option)}</option>
             {/each}

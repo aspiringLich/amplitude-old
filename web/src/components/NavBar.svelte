@@ -3,8 +3,9 @@
     import { LightSwitch, Avatar } from "@skeletonlabs/skeleton";
     import { TriangleDown } from "radix-icons-svelte";
     
-    let path = browser ? window.location.pathname.split("/").slice(1) : [];
-    $: trunc = path.slice(0, path.length - 1);
+    export let path: string;
+    $: list = path.split("/").slice(1, path.length - 1);
+    $: trunc = list.slice(0, list.length - 1);
 </script>
 
 <div
@@ -25,7 +26,7 @@
             {/each}
             
             <li class="crumb-seperator" aria-hidden>/</li>
-            <li class="crumb">{path[path.length - 1]}</li>
+            <li class="crumb">{list[list.length - 1]}</li>
         </ol>
     </div>
     <div />
