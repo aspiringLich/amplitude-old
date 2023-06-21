@@ -67,112 +67,108 @@
                 {@const res = results?.[fn]}
 
                 <div class="table-container mt-4">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Inputs</th>
-                    <th>Output</th>
-                    <th>Recieved</th>
-                </tr>
-            </thead>
-            <tbody>
-                {#each func.tests as test, i}
-                    {@const result = res?.results[i]}
-                    <tr
-                        class="interactable hover:cursor-pointer"
-                        class:correct={result?.type === "correct"}
-                        class:incorrect={result?.type ===
-                            "incorrect" || result?.type === "error"}
-                        on:click={() => select(i)}
-                        class:selected={selected === i}
-                    >
-                        <td>
-                            {stringify(test.inputs)}
-                        </td>
-                        <td>{JSON.stringify(test.output)}</td>
-                        <td>
-                            {#if result}
-                                {#if result.type === "correct"}
-                                    {JSON.stringify(test.output)}
-                                {:else if result.type === "incorrect"}
-                                    {JSON.stringify(result.output)}
-                                {:else if result.type === "error"}
-                                    <CrossCircled
-                                        class="stroke-error-800"
-                                    />
-                                {/if}
-                            {/if}
-                        </td>
-                    </tr>
-                {/each}
-                <tr
-                    class:correct={res?.hidden}
-                    class:incorrect={res?.hidden === false}
-                >
-                    <td colspan={3}>
-                        ...{func.hidden_cases} more hidden cases
-                    </td>
-                </tr>
-            </tbody>
-            {#if selected !== undefined}
-                {@const test = func.tests[selected]}
-                {@const result = res?.results[selected]}
-                <tfoot>
-                    <tr>
-                        <th colspan="3" class="normal-case">
-                            <div
-                                class="grid grid-cols-[6em_1fr] grid-flow-row gap-2"
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Inputs</th>
+                                <th>Output</th>
+                                <th>Recieved</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {#each func.tests as test, i}
+                                {@const result = res?.results[i]}
+                                <tr
+                                    class="interactable hover:cursor-pointer"
+                                    class:correct={result?.type === "correct"}
+                                    class:incorrect={result?.type ===
+                                        "incorrect" || result?.type === "error"}
+                                    on:click={() => select(i)}
+                                    class:selected={selected === i}
+                                >
+                                    <td>
+                                        {stringify(test.inputs)}
+                                    </td>
+                                    <td>{JSON.stringify(test.output)}</td>
+                                    <td>
+                                        {#if result}
+                                            {#if result.type === "correct"}
+                                                {JSON.stringify(test.output)}
+                                            {:else if result.type === "incorrect"}
+                                                {JSON.stringify(result.output)}
+                                            {:else if result.type === "error"}
+                                                <CrossCircled
+                                                    class="stroke-error-800"
+                                                />
+                                            {/if}
+                                        {/if}
+                                    </td>
+                                </tr>
+                            {/each}
+                            <tr
+                                class:correct={res?.hidden}
+                                class:incorrect={res?.hidden === false}
                             >
-                                <span class="my-auto">
-                                    inputs
-                                </span>
-                                <Code
-                                    code={stringify(test.inputs)}
-                                />
-                                <span class="my-auto">
-                                    expected
-                                </span>
-                                <Code
-                                    code={JSON.stringify(
-                                        test.output,
-                                        null,
-                                        2
-                                    )}
-                                />
-
-                                {#if result}
-                                    <span class="my-auto">
-                                        stdout
-                                    </span>
-                                    {#if result.stdout?.length === 0}
-                                        <span class="font-normal">
-                                            N/A
-                                        </span>
-                                    {:else}
-                                        <Code
-                                            code={result.stdout}
-                                        />
-                                    {/if}
-                                {/if}
-                                {#if !result}
-                                    <span
-                                        class="col-span-2 my-auto"
-                                    >
-                                        <span
-                                            class="text-success-800"
+                                <td colspan={3}>
+                                    ...{func.hidden_cases} more hidden cases
+                                </td>
+                            </tr>
+                        </tbody>
+                        {#if selected !== undefined}
+                            {@const test = func.tests[selected]}
+                            {@const result = res?.results[selected]}
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3" class="normal-case">
+                                        <div
+                                            class="grid grid-cols-[6em_1fr] grid-flow-row gap-2"
                                         >
-                                            Run
-                                        </span> Your code to see more
-                                        information!
-                                    </span>
-                                {/if}
-                            </div>
-                        </th>
-                    </tr>
-                </tfoot>
-            {/if}
-        </table>
-    </div>
+                                            <span class="my-auto">Inputs</span>
+                                            <Code
+                                                code={stringify(test.inputs)}
+                                            />
+                                            <span class="my-auto">Output</span>
+                                            <Code
+                                                code={JSON.stringify(
+                                                    test.output,
+                                                    null,
+                                                    2
+                                                )}
+                                            />
+
+                                            {#if result}
+                                                <span class="my-auto">
+                                                    stdout
+                                                </span>
+                                                {#if result.stdout?.length === 0}
+                                                    <span class="font-normal">
+                                                        N/A
+                                                    </span>
+                                                {:else}
+                                                    <Code
+                                                        code={result.stdout}
+                                                    />
+                                                {/if}
+                                            {/if}
+                                            {#if !result}
+                                                <span
+                                                    class="col-span-2 my-auto"
+                                                >
+                                                    <span
+                                                        class="text-success-600-300-token"
+                                                    >
+                                                        Run
+                                                    </span>
+                                                    your code to see more information!
+                                                </span>
+                                            {/if}
+                                        </div>
+                                    </th>
+                                </tr>
+                            </tfoot>
+                        {/if}
+                    </table>
+                </div>
             {/each}
         {/if}
     </svelte:fragment>

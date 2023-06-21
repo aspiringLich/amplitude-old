@@ -14,7 +14,8 @@
             .replace(/^./, (match) => match.toUpperCase())
             .trim();
     };
-    let trimmed_themes = Object.keys(themes).filter((x) => x != "createTheme");
+    const predicate = (x: string) => x != "createTheme";
+    let trimmed_themes = ["default", ...Object.keys(themes)].filter(predicate);
     let value = `import itertools, random\n\ndeck = list(itertools.product(
     range(1,14),\n    ['Spade','Heart','Diamond','Club']\n))\nrandom.shuffle(deck)
 \nprint("You got:")\nfor i in range(5):\n   print(deck[i][0], "of", deck[i][1])`;
@@ -31,10 +32,16 @@
                 bind:value
             />
             <StepSelect
-                title="Editor Theme"
+                title="Editor Theme (light)"
                 options={trimmed_themes}
                 transform={titleize}
-                bind:value={$settings.theme}
+                bind:value={$settings.lightTheme}
+            />
+            <StepSelect
+                title="Editor Theme (dark)"
+                options={trimmed_themes}
+                transform={titleize}
+                bind:value={$settings.darkTheme}
             />
         </div>
     </Modal>

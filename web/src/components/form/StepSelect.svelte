@@ -25,17 +25,17 @@
     $: value = options[selected];
 </script>
 
-<div class="block">
+<div class="block my-2">
     <span class="block">{title}</span>
-    <div class="btn-group inline-flex">
-        <button on:click={dec}><ArrowLeft /></button>
+    <div class="btn-group inline-flex mt-1">
+        <button on:click={dec}><ArrowLeft size={18} /></button>
         <select class="select" bind:value={selected}>
             {#each options as option, i}
                 <option value={i}>{transform(option)}</option>
             {/each}
         </select>
         <button on:click={inc} class="border-l-0">
-            <ArrowRight />
+            <ArrowRight size={18}/>
         </button>
     </div>
 </div>

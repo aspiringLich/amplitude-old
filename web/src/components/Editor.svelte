@@ -9,6 +9,7 @@
 
 <script lang="ts">
     import { createEventDispatcher, onDestroy, onMount } from "svelte";
+    import { modeCurrent } from "@skeletonlabs/skeleton";
     import { basicSetup } from "codemirror";
     import {
         EditorView,
@@ -61,8 +62,8 @@
     $: lang = {
         python: python(),
     }[lang_name];
-    
-    $: theme = themes[$settings.theme];
+
+    $: theme = themes[$modeCurrent ? $settings.lightTheme : $settings.darkTheme];
 
     $: state_extensions = [
         ...get_base_extensions(

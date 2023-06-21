@@ -3,12 +3,12 @@
     import { Cross1 } from "radix-icons-svelte";
 </script>
 
-<div class="card bg-white w-modal shadow-xl relative" use:focusTrap={true}>
+<div class="card w-modal shadow-xl relative" use:focusTrap={true}>
     <button
-        class="btn btn-icon absolute top-1 right-1"
+        class="absolute top-2 right-2"
         on:click={() => modalStore.close()}
     >
-        <Cross1 size={24} class="text-surface-900" />
+        <Cross1 size={24} />
     </button>
 
     <div class="max-h-[80vh] overflow-auto p-4 ">

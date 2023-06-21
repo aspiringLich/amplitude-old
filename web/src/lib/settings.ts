@@ -2,7 +2,8 @@ import { localStorageStore } from "@skeletonlabs/skeleton";
 import type { Writable } from "svelte/store";
 
 export type EditorSettings = {
-    theme: string;
+    lightTheme: string;
+    darkTheme: string;
     fontSize: number;
     flipPanes: boolean;
 };
@@ -10,7 +11,8 @@ export type EditorSettings = {
 export const editorSettings: Writable<EditorSettings> = localStorageStore(
     "localEditorSettings",
     {
-        theme: "tomorrow",
+        lightTheme: "tomorrow",
+        darkTheme: "dracula",
         fontSize: 14,
         flipPanes: false,
     }

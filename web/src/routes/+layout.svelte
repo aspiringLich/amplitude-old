@@ -1,4 +1,6 @@
 <script lang="ts">
+    export let data;
+    
     //~ Themes
     // import "@skeletonlabs/skeleton/themes/theme-skeleton.css";
     import "@skeletonlabs/skeleton/styles/skeleton.css";
@@ -37,25 +39,61 @@
             ref: EditorSettings,
         },
     };
-    
+
     //~ Error Handling
     const handleError = () => {
         toastStore.trigger({
-            message: "An unexpected error occurred! Please reload the page to restore functionality.",
+            message:
+                "An unexpected error occurred! Please reload the page to restore functionality.",
             background: "variant-filled-error",
-        })
+        });
     };
-    
-    import { autoModeWatcher } from '@skeletonlabs/skeleton';
+
+    import { AppShell, Drawer, drawerStore } from "@skeletonlabs/skeleton";
+    import { ChevronRight, Cross1 } from "radix-icons-svelte";
+    import NavBar from "$cmpt/NavBar.svelte";
+    import { fade } from 'svelte/transition';
 </script>
 
-
-<svelte:window on:error={handleError}/>
-<!-- <svelte:head>
-    {@html `<script>${autoModeWatcher.toString()} autoModeWatcher();</script>`}
-</svelte:head> -->
+<svelte:window on:error={handleError} />
 
 <Toast />
 <Modal components={modalComponentRegistry} />
 
-<slot />
+<AppShell slotPageContent="relative">
+    <svelte:fragment slot="header">
+        <NavBar />
+    </svelte:fragment>
+    <!-- OH LAWD -->
+    <button
+        class="w-14 h-10 p-2 rounded-r-full fixed top-16 left-[-24px]
+        bg-surface-200/40 hover:bg-surface-200 active:bg-surface-400
+        dark:bg-surface-800/40 dark:hover:bg-surface-800 dark:active:bg-surface-600
+        semi-interactive hover:translate-x-3"
+        on:click={() =>
+            drawerStore.open({
+                width: "w-96",
+            })}
+    >
+        <ChevronRight size={24} class="ml-4" />
+    </button>
+    
+    <!-- {#key data.pathname}
+        <div style="display: contents" class="h-full" transition:fade> -->
+            <slot />
+        <!-- </div>
+    {/key} -->
+</AppShell>
+
+<Drawer regionDrawer="p-8">
+    <div class="relative">
+        <button
+            class="absolute top-[-1em] right-[-1em] semi-interactive"
+            on:click={() => drawerStore.close()}
+        >
+            <Cross1 size={24} />
+        </button>
+    </div>
+    <h1 class="h1">Amplitude</h1>
+    <p>epic temporary thingy lets goo</p>
+</Drawer>

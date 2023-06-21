@@ -70,7 +70,7 @@
 
 <Splitpanes
     theme="theme"
-    class="p-16 max-w-6xl m-auto {fdir}"
+    class="p-16 pt-8 max-w-6xl m-auto {fdir}"
     rtl={$settings.flipPanes}
 >
     <Pane minSize={20} class="relative flex">
@@ -90,7 +90,7 @@
             </button>
             <button
                 type="button"
-                class="btn btn-icon hover:rotate-[22.5deg] dark:text-surface-200"
+                class="btn btn-icon hover:rotate-[22.5deg] text-surface-500 dark:text-surface-300"
                 on:click={() => {
                     modalStore.trigger({
                         type: "component",
@@ -101,7 +101,7 @@
                 <Gear size={24} />
             </button>
         </div>
-        <div class="overflow-auto flex-[1_1_0px]">
+        <div class="overflow-auto flex-[1_1_0px] bg-surface-100-800-token">
             <Editor
                 bind:value={code}
                 bind:lang_name={lang}
