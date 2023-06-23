@@ -62,12 +62,12 @@ impl<'a> TryFrom<&'a str> for VariableType {
 
         // array
         if let Some(s) = s.strip_suffix("[]") {
-            return Ok(VariableType::Array(Box::new(VariableType::try_from(s)?)));
+            Ok(VariableType::Array(Box::new(VariableType::try_from(s)?)))
         }
         // struct
-        else if s.starts_with("{") {
+        else if s.starts_with('{') {
             anyhow::ensure!(
-                s.ends_with("}"),
+                s.ends_with('}'),
                 "Expected ending `}}` when starting with `{{`"
             );
             let s = &s[1..s.len() - 1];
@@ -97,9 +97,9 @@ impl<'a> TryFrom<&'a str> for VariableType {
             Ok(VariableType::Struct(map))
         }
         // tuple
-        else if s.starts_with("(") {
+        else if s.starts_with('(') {
             anyhow::ensure!(
-                s.ends_with(")"),
+                s.ends_with(')'),
                 "Expected ending `)` when starting with `(`"
             );
             let s = &s[1..s.len() - 1];
@@ -151,7 +151,7 @@ mod test {
         let class = |fields: &[(&'static str, VariableType)]| {
             VariableType::Struct(
                 fields
-                    .into_iter()
+                    .iter()
                     .cloned()
                     .map(|(a, b)| (a.to_string(), b))
                     .collect(),

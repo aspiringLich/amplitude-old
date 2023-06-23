@@ -16,7 +16,7 @@ def_static!(LANGUAGES, "./languages");
 #[derive(Clone, Default)]
 pub struct StaticPath(&'static str);
 
-pub fn scope_dir<P: AsRef<Path>, F: FnOnce() -> ()>(path: P, f: F) -> io::Result<()> {
+pub fn scope_dir<P: AsRef<Path>, F: FnOnce()>(path: P, f: F) -> io::Result<()> {
     env::set_current_dir(path)?;
     f();
     env::set_current_dir("..")

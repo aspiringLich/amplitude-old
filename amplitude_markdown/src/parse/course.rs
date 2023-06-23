@@ -63,7 +63,7 @@ pub fn parse_course(path: PathBuf, data: &mut RawCourseData, cfg: &Config) -> an
     )?;
     let index = Article::from_raw(
         RawArticle {
-            title: course.title.clone(),
+            title: course.title,
         },
         md,
         d,
@@ -128,7 +128,7 @@ pub fn parse_track(path: PathBuf, ctx: &mut DataContext, cfg: &Config) -> anyhow
         }
 
         let id = strip_prefix(&path)
-            .split_once(".")
+            .split_once('.')
             .map(|x| x.0.to_string())
             .unwrap_or_else(|| strip_prefix(&path));
 

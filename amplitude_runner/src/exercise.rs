@@ -129,7 +129,7 @@ impl Exercise {
 
             let mut visible_passed = true;
             let visible = visible
-                .into_iter()
+                .iter()
                 .enumerate()
                 .map(|(i, t)| match t {
                     TestOutput::Answer { value, stdout } => {
@@ -154,7 +154,7 @@ impl Exercise {
                     }
                 })
                 .collect();
-            let hidden = hidden.into_iter().enumerate().all(|(i, t)| match t {
+            let hidden = hidden.iter().enumerate().all(|(i, t)| match t {
                 TestOutput::Answer { value, .. } => {
                     &tests[i + fn_config.visible_cases as usize].output == value
                 }
@@ -277,8 +277,8 @@ pub fn generate(
             "Test cases for function `{}` < cfg.hidden_cases + cfg.visible_cases",
             func
         );
-        for i in cfg.hidden_cases as usize..tests.len() {
-            tests[i].hidden = true
+        for test in tests.iter_mut().skip(cfg.hidden_cases as usize) {
+            test.hidden = true
         }
         cfg.tests = tests;
     }
@@ -339,7 +339,7 @@ mod test {
 
         let exercise = Exercise {
             lang_info: HashMap::from_iter([(
-                lang.clone(),
+                *lang,
                 LanguageInfo {
                     runner: runner_template(lang, &config, "test").unwrap(),
                     code: String::new(),

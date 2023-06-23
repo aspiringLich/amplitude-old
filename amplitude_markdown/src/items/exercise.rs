@@ -45,7 +45,7 @@ impl FromDirectory for Exercise {
         let content = fs::read_to_string(generator[0].path())
             .context("While reading test case generator file")?;
 
-        generate(&lang, &cfg, &content, &mut config).context("While generating test cases")?;
+        generate(&lang, cfg, &content, &mut config).context("While generating test cases")?;
 
         let iter = starting_code
             .filter_map(|item| Language::from_str(&item.ext).ok().map(|x| (item, x)))

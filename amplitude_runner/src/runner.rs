@@ -86,7 +86,7 @@ pub fn run(
         .map(|path| {
             format!(
                 "{}:/runner/{}",
-                tempdir.path().join(&path).to_string_lossy(),
+                tempdir.path().join(path).to_string_lossy(),
                 &path
             )
         })
