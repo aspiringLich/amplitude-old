@@ -1,7 +1,7 @@
 use std::{error, fmt, str::FromStr};
 
 use enum_iterator::Sequence;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Sequence, Debug, Serialize, Deserialize, PartialEq, Hash, Eq, Clone, Copy)]
 pub enum Language {
@@ -72,4 +72,3 @@ impl FromStr for Language {
         })
     }
 }
-

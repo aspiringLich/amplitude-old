@@ -12,42 +12,25 @@ use std::{
     str::FromStr,
 };
 
-impl Item for Exercise {
-    fn parse_from_dir(
-        dir: &Path,
-        contents: DirContents,
-        ctx: &mut DataContext,
+impl FromDirectory for Exercise {
+    fn from_directory(
+        content: &DirectoryContent,
+        context: &mut DataContext,
         cfg: &Config,
-    ) -> anyhow::Result<ItemType> {
-        ensure!(contents.contains("instructions.md"), "instructions.md");
-        ensure!(contents.contains("config.toml"), "config.toml");
-        ensure!(
-            contents.query("src", FileType::Directory).next().is_some(),
-            "src/",
-            "Source directory"
-        );
+    ) -> anyhow::Result<Self> {
+        let instructions = content.query_file("instructions", FileType::Markdown)?;
+        let config = content.query_file("config.toml", FileType::Toml)?;
+        let src_path = content.get_directory("src")?;
+        let src = DirectoryContent::new(&src_path)?;
 
-        let id = ctx.id().rsplit('/').next().unwrap().to_string();
-        let binding = "src/".to_string() + &id;
-        let mut starting_code = contents.query(&binding, FileType::Code).peekable();
-        ensure!(
-            starting_code.peek().is_some(),
-            format!("src/{}.<code>", id),
-            "Starting code"
-        );
-        let generator = contents
-            .query("src/generator", FileType::Code)
+        let id = context.id().rsplit_once('/').unwrap().1.to_string();
+        let starting_code = src.query_files(&id, FileType::Code)?;
+        let generator = src
+            .query_files("generator", FileType::Code)?
             .collect::<Vec<_>>();
-        ensure!(generator.len() > 0, "src/code.<code>", "Code");
-        anyhow::ensure!(
-            generator.len() == 1,
-            "Multiple test case generator (`src/generator.<code>`) files found! Only one is allowed."
-        );
 
-        let config =
-            &fs::read_to_string(dir.join("config.toml")).context("While reading `config.toml`")?;
         let mut config: ExerciseConfig =
-            toml::from_str(config).context("While parsing `config.toml`")?;
+            toml::from_str(&config.read_to_string()?).context("While parsing `config.toml`")?;
 
         let mut hasher = DefaultHasher::new();
         id.hash(&mut hasher);
@@ -59,7 +42,7 @@ impl Item for Exercise {
         }
 
         let lang = Language::from_str(&generator[0].ext)?;
-        let content = fs::read_to_string(generator[0].path(dir))
+        let content = fs::read_to_string(generator[0].path())
             .context("While reading test case generator file")?;
 
         generate(&lang, &cfg, &content, &mut config).context("While generating test cases")?;
@@ -70,7 +53,7 @@ impl Item for Exercise {
                 Ok((
                     lang,
                     LanguageInfo {
-                        code: fs::read_to_string(item.path(dir)).context("Expected valid path")?,
+                        code: fs::read_to_string(item.path()).context("Expected valid path")?,
                         runner: runner_template(&lang, &config, &id)
                             .context("While generating runner template")?,
                     },
@@ -89,19 +72,15 @@ impl Item for Exercise {
             }
         }
 
-        config.instructions = parse_md(
-            &fs::read_to_string(dir.join("instructions.md"))
-                .context("While reading `instructions.md`")?,
-            ctx,
-        )
-        .context("While parsing markdown for `instructions.md`")?;
+        config.instructions = parse_md(&instructions.read_to_string()?, context)
+            .context("While parsing markdown for `instructions.md`")?;
 
-        Ok(ItemType::Exercise(Exercise::new(config, lang_info)))
+        Ok(Exercise::new(config, lang_info))
     }
+}
 
-    fn transform(&mut self) {
-        for (_, cfg) in self.config.functions.iter_mut() {
-            cfg.tests.retain(|test| !test.hidden);
-        }
+pub fn transform(exercise: &mut Exercise) {
+    for (_, cfg) in exercise.config.functions.iter_mut() {
+        cfg.tests.retain(|test| !test.hidden);
     }
 }

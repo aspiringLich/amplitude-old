@@ -36,8 +36,10 @@ npm run dev # the rust server AND the sveltekit server must be both running
    - [ ] Settings
    - [ ] Course page
  - [ ] Web Course Editor
-   - [ ] Create Items
+   - [ ] Edit Exercises 
+   - [ ] Create Exercises
    - [ ] Edit Items
+   - [ ] Create Items
    - [ ] Delete Items
    - [ ] Move Items
    - [ ] Create Courses

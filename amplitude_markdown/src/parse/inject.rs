@@ -1,4 +1,4 @@
-use std::collections::{HashMap, hash_map::Entry};
+use std::collections::{hash_map::Entry, HashMap};
 
 use super::context::DataContext;
 
@@ -212,13 +212,13 @@ pub(crate) fn inject<'a>(
 
             if let Some(info) = MARKERS.get(text) {
                 let args = parse_args(post).context("While parsing arguments")?;
-                
+
                 let result = match data.tags.entry(text[1..].to_string()) {
                     Entry::Vacant(entry) => entry.insert(Vec::new()),
                     Entry::Occupied(entry) => entry.into_mut(),
                 };
                 result.push(args.clone());
-                
+
                 for key in info.mandatory_keys() {
                     if !args.contains_key(*key) {
                         anyhow::bail!(

@@ -1,4 +1,4 @@
-use crate::error::{HandledRoute, StatusContext, error};
+use crate::error::{error, HandledRoute, StatusContext};
 use crate::state::State;
 
 use afire::prelude::*;
@@ -8,9 +8,9 @@ use serde::Deserialize;
 use tracing::trace;
 
 mod auth;
-mod test;
 mod item;
 mod list;
+mod test;
 
 pub fn attach(server: &mut Server<State>) {
     server.route(Method::ANY, "/api/**", |_| {

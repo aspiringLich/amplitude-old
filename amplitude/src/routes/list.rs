@@ -9,7 +9,7 @@ struct CourseReq {
 pub fn attach(server: &mut Server<State>) {
     server.handled_stateful_route(Method::POST, "/api/list", |state, req| {
         let req: CourseReq = json(req)?;
-        
+
         let parse_data = state.parse_data();
         let tree = parse_data
             .tree

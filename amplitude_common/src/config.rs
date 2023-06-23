@@ -1,4 +1,4 @@
-use std::{fs, collections::HashMap};
+use std::{collections::HashMap, fs};
 
 use clap::Parser;
 use serde::Deserialize;
@@ -62,7 +62,12 @@ pub struct Config {
 }
 
 fn language_config() -> HashMap<String, LanguageConfig> {
-    toml::from_str(fs::read_to_string(path::LANGUAGES.join("languages.toml")).unwrap().as_str()).unwrap()
+    toml::from_str(
+        fs::read_to_string(path::LANGUAGES.join("languages.toml"))
+            .unwrap()
+            .as_str(),
+    )
+    .unwrap()
 }
 
 #[derive(Deserialize, Debug)]
@@ -96,5 +101,5 @@ pub struct LanguageConfig {
     pub image_name: String,
     pub source_path: String,
     pub extension: String,
-    pub delimiter: String, 
+    pub delimiter: String,
 }

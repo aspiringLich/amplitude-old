@@ -1,3 +1,5 @@
+use std::io::Read;
+
 use crate::parse::context::ParseMarkdown;
 
 use super::*;
@@ -62,30 +64,21 @@ impl Quiz {
     }
 }
 
-impl Item for Quiz {
-    fn parse_from_dir(
-        dir: &Path,
-        contents: DirContents,
-        ctx: &mut DataContext,
+impl FromFile for Quiz {
+    fn from_file(
+        filename: &str,
+        file: &mut File,
+        context: &mut DataContext,
         _: &Config,
-    ) -> anyhow::Result<ItemType>
-    where
-        Self: Sized,
-    {
-        ensure!(
-            contents.contains("quiz.toml"),
-            "quiz.toml"
-        );
-        anyhow::ensure!(
-            contents.len() == 1,
-            "Quiz directory should only contain `quiz.toml`"
-        );
+    ) -> anyhow::Result<Self> {
+        let id = filename[3..]
+            .strip_suffix(".toml")
+            .unwrap_or("")
+            .to_string();
+        let mut s = String::new();
+        file.read_to_string(&mut s)?;
+        let quiz = Quiz::from_str(&s, id, context)?;
 
-        let id = dir.file_name().to_string();
-        let s =
-            std::fs::read_to_string(dir.join("quiz.toml")).context("While reading quiz.toml")?;
-        let quiz = Quiz::from_str(&s, id, ctx)?;
-
-        Ok(ItemType::Quiz(quiz))
+        Ok(quiz)
     }
 }

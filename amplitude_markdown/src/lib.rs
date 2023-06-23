@@ -10,6 +10,7 @@ pub mod items;
 /// This crate parses markdown and toml files to build rendered html course
 /// pages.
 pub mod parse;
+pub mod path;
 
 pub trait OsStrToString {
     /// I am sick and tired of `OsStr` and `Option<&OsStr>` being absolute

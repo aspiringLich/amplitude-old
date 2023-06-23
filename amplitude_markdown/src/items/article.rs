@@ -30,26 +30,23 @@ impl Article {
     }
 }
 
-impl Item for Article {
-    fn parse_from_dir(
-        dir: &Path,
-        contents: DirContents,
+impl FromFile for Article {
+    fn from_file(
+        _: &str,
+        file: &mut File,
         context: &mut DataContext,
         _: &Config,
-    ) -> anyhow::Result<ItemType> {
-        ensure!(contents.contains("article.md"), "article.md");
-
-        let (raw, s) = parse_frontmatter(&dir.join("article.md"))
+    ) -> anyhow::Result<Self> {
+        let (raw, s) = parse_frontmatter(file)
             .context("While reading article / parsing frontmatter header")?;
         let (html, data) = parse_md_full(&s, context).context("While parsing article markdown")?;
 
         let article = Article::from_raw(raw, html, data);
-        Ok(ItemType::Article(article))
+        Ok(article)
     }
 }
 
-pub fn parse_frontmatter<T: DeserializeOwned>(path: &Path) -> anyhow::Result<(T, String)> {
-    let file = fs::File::open(path).unwrap();
+pub fn parse_frontmatter<T: DeserializeOwned>(file: &File) -> anyhow::Result<(T, String)> {
     let mut reader = io::BufReader::new(file);
     let mut line = String::new();
 
@@ -77,8 +74,5 @@ pub fn parse_frontmatter<T: DeserializeOwned>(path: &Path) -> anyhow::Result<(T,
         line = String::new();
     }
 
-    anyhow::bail!(
-        "Did not find end of Frontmatter header on path {}",
-        path.display()
-    )
+    anyhow::bail!("Did not find end of Frontmatter header")
 }

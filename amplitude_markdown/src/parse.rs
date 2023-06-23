@@ -18,7 +18,8 @@ use tracing::{info, warn};
 
 use self::{
     context::{DataContext, MarkdownContext},
-    course::{CourseConfig, Track}, inject::InjectData,
+    course::{CourseConfig, Track},
+    inject::InjectData,
 };
 
 /// Clones the articles repo
@@ -135,7 +136,10 @@ fn parse_into_ast<'a>(
 /// Parse the input `md` and return the output `html`.
 /// Has full access to `ItemContext`,
 /// Will also return the `InjectData` for the item
-pub(crate) fn parse_md_full(input: &str, ctx: &mut DataContext) -> anyhow::Result<(String, InjectData)> {
+pub(crate) fn parse_md_full(
+    input: &str,
+    ctx: &mut DataContext,
+) -> anyhow::Result<(String, InjectData)> {
     // do things
     let arena = Arena::new();
     let node = parse_into_ast(input, ctx.markdown_context(), ctx.id(), &arena)?;

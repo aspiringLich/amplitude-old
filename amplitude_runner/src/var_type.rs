@@ -104,7 +104,7 @@ impl<'a> TryFrom<&'a str> for VariableType {
             );
             let s = &s[1..s.len() - 1];
             let mut vec = Vec::new();
-            
+
             let mut iter = s.split(',').peekable();
             while let Some(ty) = iter.next() {
                 if ty.trim().is_empty() {

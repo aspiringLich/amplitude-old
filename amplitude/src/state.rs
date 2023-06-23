@@ -19,7 +19,7 @@ impl State {
     pub fn parse_data(&self) -> RwLockReadGuard<ParseData> {
         self.parse_data.read()
     }
-    
+
     pub fn new() -> anyhow::Result<Self> {
         let args = Args::parse();
         let mut config = toml::from_str::<Config>(&fs::read_to_string(&args.config)?)?;

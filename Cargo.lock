@@ -91,6 +91,7 @@ dependencies = [
  "marksman_escape",
  "parking_lot",
  "serde",
+ "thiserror",
  "toml",
  "tracing",
  "tracing-subscriber",

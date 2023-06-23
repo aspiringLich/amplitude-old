@@ -80,6 +80,11 @@ pub fn parse_course(path: PathBuf, data: &mut RawCourseData, cfg: &Config) -> an
         }
 
         let file_name = dir.file_name();
+
+        if file_name == "exercises" {
+            continue;
+        }
+
         let track_id = file_name.to_str().unwrap();
         if track_id.starts_with('.') {
             continue;
@@ -109,16 +114,23 @@ pub fn parse_track(path: PathBuf, ctx: &mut DataContext, cfg: &Config) -> anyhow
     for item in fs::read_dir(&path)? {
         let item = item?;
         let path = item.path();
-        if !path.is_dir() {
+        if path.is_dir() {
             continue;
         }
+
         let file_name = item.file_name();
         let file_name = file_name.to_str().unwrap();
         if file_name.starts_with('.') {
             continue;
         }
+        if file_name == "track.toml" {
+            continue;
+        }
 
-        let id = strip_prefix(&path);
+        let id = strip_prefix(&path)
+            .split_once(".")
+            .map(|x| x.0.to_string())
+            .unwrap_or_else(|| strip_prefix(&path));
 
         ctx.scope(&id, |ctx| {
             parse_item(&path, ctx, &track_id, cfg)

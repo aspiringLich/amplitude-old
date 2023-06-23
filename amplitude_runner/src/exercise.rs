@@ -139,7 +139,10 @@ impl Exercise {
                             true => TestResult::Correct { stdout },
                             false => {
                                 visible_passed = false;
-                                TestResult::Incorrect { stdout, output: value.clone() }
+                                TestResult::Incorrect {
+                                    stdout,
+                                    output: value.clone(),
+                                }
                             }
                         }
                     }

@@ -156,7 +156,6 @@ impl<T> StatusContext<T> for Option<T> {
     }
 }
 
-
 pub(crate) fn error<T>(status: Status, msg: &str) -> Result<T, StatusError> {
     Err(StatusError {
         status,
