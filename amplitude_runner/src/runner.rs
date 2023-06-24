@@ -62,7 +62,7 @@ pub fn run(
             .filter_map(|x| x.ok())
             .all(|x| !x.starts_with(&lang.image_name))
         {
-            eprintln!("Image {} not found! try running `cargo r -p amplitude_runner` to rebuild docker images", &lang.image_name);
+            dbg!("Image {} not found! try running `cd amplitude_runner` and `cargo r` to rebuild docker images", &lang.image_name);
             std::process::exit(-1);
         }
     }

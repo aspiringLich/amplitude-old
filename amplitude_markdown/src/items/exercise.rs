@@ -19,7 +19,7 @@ impl FromDirectory for Exercise {
         cfg: &Config,
     ) -> anyhow::Result<Self> {
         let instructions = content.query_file("instructions", FileType::Markdown)?;
-        let config = content.query_file("config.toml", FileType::Toml)?;
+        let config = content.query_file("config", FileType::Toml)?;
         let src_path = content.get_directory("src")?;
         let src = DirectoryContent::new(&src_path)?;
 

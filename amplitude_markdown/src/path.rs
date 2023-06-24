@@ -89,7 +89,8 @@ impl<'a> DirectoryContent<'a> {
             .filter(move |item| item.item_type == typ)
             .filter(move |item| item.name == name)
             .peekable();
-        if iter.peek().is_none() {
+        let burner = iter.next();
+        if burner.is_none() {
             anyhow::bail!("Required file `{}.{}` not found!", name, typ);
         }
         if iter.peek().is_some() {
@@ -99,7 +100,7 @@ impl<'a> DirectoryContent<'a> {
                 typ
             );
         }
-        Ok(iter.next().unwrap())
+        Ok(burner.unwrap())
     }
 
     /// Get files by name and filetype, erroring if they don't exist.

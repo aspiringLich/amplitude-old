@@ -1,9 +1,13 @@
 use super::*;
 
-use crate::items::{
-    article::{Article, RawArticle},
-    parse_item,
+use crate::{
+    items::{
+        article::{Article, RawArticle},
+        parse_item,
+    },
+    path::from_directory,
 };
+use amplitude_runner::exercise::Exercise;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -79,9 +83,29 @@ pub fn parse_course(path: PathBuf, data: &mut RawCourseData, cfg: &Config) -> an
             continue;
         }
 
+        let mut ctx = DataContext::new(data, &course_id)?;
         let file_name = dir.file_name();
 
         if file_name == "exercises" {
+            for item in fs::read_dir(&path)
+                .with_context(|| format!("While reading dir {}", path.display()))?
+            {
+                let item = item?;
+                let path = item.path();
+                
+                let file_name = path.file_name().unwrap();
+                let file_name = file_name.to_string_lossy();
+                
+                if path.is_dir() {
+                    ctx.scope(&file_name, |ctx| -> anyhow::Result<()> {
+                        let exercise: Exercise =
+                            from_directory(&path, ctx, cfg).context("While parsing exercise")?;
+                        ctx.add_item(ItemType::Exercise(exercise), "")
+                            .context("While adding item to course")?;
+                        Ok(())
+                    })?;
+                }
+            }
             continue;
         }
 
@@ -89,8 +113,6 @@ pub fn parse_course(path: PathBuf, data: &mut RawCourseData, cfg: &Config) -> an
         if track_id.starts_with('.') {
             continue;
         }
-
-        let mut ctx = DataContext::new(data, &course_id)?;
 
         parse_track(path, &mut ctx, cfg)
             .with_context(|| format!("While parsing track {track_id}"))?;
