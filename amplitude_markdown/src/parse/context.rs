@@ -18,6 +18,12 @@ pub struct DataContext<'a> {
 }
 
 impl<'a> DataContext<'a> {
+    pub fn next_seed(&mut self) -> u64 {
+        let seed = self.context.seed;
+        self.context.seed += 1;
+        return seed;
+    }
+    
     /// Add an item to the context
     pub fn add_item(&mut self, item: ItemType, track_id: &str) -> anyhow::Result<()> {
         debug!(

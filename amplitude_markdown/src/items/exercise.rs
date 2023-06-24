@@ -7,8 +7,7 @@ use amplitude_runner::{
     lang::Language,
 };
 use std::{
-    collections::{hash_map::DefaultHasher, HashMap},
-    hash::{Hash, Hasher},
+    collections::HashMap,
     str::FromStr,
 };
 
@@ -32,14 +31,10 @@ impl FromDirectory for Exercise {
         let mut config: ExerciseConfig =
             toml::from_str(&config.read_to_string()?).context("While parsing `config.toml`")?;
 
-        let mut hasher = DefaultHasher::new();
-        id.hash(&mut hasher);
-        // set seed of function configs
-        for (func, cfg) in config.functions.iter_mut() {
-            let mut h = hasher.clone();
-            func.hash(&mut h);
-            cfg.seed = h.finish();
-        }
+        config
+            .functions
+            .values_mut()
+            .for_each(|f| f.seed = context.next_seed());
 
         let lang = Language::from_str(&generator[0].ext)?;
         let content = fs::read_to_string(generator[0].path())

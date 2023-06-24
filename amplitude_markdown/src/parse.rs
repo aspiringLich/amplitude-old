@@ -177,6 +177,7 @@ pub struct RawCourseData {
     markdown_context: MarkdownContext,
     items: HashMap<String, ItemType>,
     tracks: HashMap<String, Vec<Track>>,
+    pub seed: u64,
 }
 
 /// Storing information about what weve parsed so far
@@ -250,6 +251,7 @@ impl RawCourseData {
             markdown_context,
             tracks: default(),
             items: default(),
+            seed: default(),
         })
     }
 

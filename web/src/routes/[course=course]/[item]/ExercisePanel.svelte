@@ -190,11 +190,11 @@
         border-width: 0 !important;
 
         &.correct {
-            color: rgb(var(--color-success-800));
+            @apply text-success-700-200-token;
         }
 
         &.incorrect {
-            color: rgb(var(--color-error-800));
+            @apply text-error-700-200-token;
         }
     }
 
