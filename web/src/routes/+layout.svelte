@@ -32,11 +32,14 @@
     //~ Modals
     import { Modal } from "@skeletonlabs/skeleton";
     import type { ModalComponent } from "@skeletonlabs/skeleton";
-    import EditorSettings from "$cmpt/EditorSettings.svelte";
+    import EditorSettings from "$cmpt/modals/EditorSettings.svelte";
+    import Login from "$cmpt/modals/Login.svelte";
     const modalComponentRegistry: Record<string, ModalComponent> = {
-        // Custom Modal 1
         EditorSettings: {
             ref: EditorSettings,
+        },
+        Login: {
+            ref: Login
         },
     };
 
@@ -92,7 +95,8 @@
 <Drawer regionDrawer="p-8">
     <div class="relative">
         <button
-            class="absolute top-[-1em] right-[-1em] semi-interactive"
+            class="absolute top-[-1.5em] right-[-1.5em] semi-interactive 
+            hover:bg-slate-200 interactive p-1 rounded-full"
             on:click={() => drawerStore.close()}
         >
             <Cross1 size={24} />

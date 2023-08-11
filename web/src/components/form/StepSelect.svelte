@@ -25,7 +25,7 @@
     $: value = options[selected];
 </script>
 
-<div class="block my-2">
+<div class="block">
     <span class="block font-semibold text-surface-700-200-token">{title}</span>
     <div class="btn-group bg-surface-200-700-token inline-flex mt-1">
         <button class="z-20" on:click={dec}><ArrowLeft size={18} /></button>

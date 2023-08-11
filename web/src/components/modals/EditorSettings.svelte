@@ -2,7 +2,7 @@
     import { modalStore } from "@skeletonlabs/skeleton";
     import { editorSettings as settings } from "$lib/settings";
     import * as themes from "thememirror";
-    import Modal from "$cmpt/Modal.svelte";
+    import Modal from "$cmpt/modals/Modal.svelte";
     import Editor from "$cmpt/Editor.svelte";
     import Checkbox from "$cmpt/form/Checkbox.svelte";
     import StepSelect from "$cmpt/form/StepSelect.svelte";

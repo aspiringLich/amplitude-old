@@ -5,7 +5,7 @@
 
 <div class="card w-modal shadow-xl relative" use:focusTrap={true}>
     <button
-        class="absolute top-2 right-2"
+        class="absolute top-1 right-1 hover:bg-slate-200 interactive p-1 rounded-full"
         on:click={() => modalStore.close()}
     >
         <Cross1 size={20} class="stroke-3"/>
