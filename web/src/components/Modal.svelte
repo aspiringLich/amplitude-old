@@ -8,10 +8,10 @@
         class="absolute top-2 right-2"
         on:click={() => modalStore.close()}
     >
-        <Cross1 size={24} />
+        <Cross1 size={20} class="stroke-3"/>
     </button>
 
-    <div class="max-h-[80vh] overflow-auto p-4 ">
+    <div class="max-h-[80vh] overflow-auto p-4 pt-2">
         <slot />
     </div>
 </div>

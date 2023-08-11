@@ -11,8 +11,8 @@ You can find the articles in the [amplitude_articles] repository.
 ## Building
 
 ```bash
-cargo r            # to clone the articles from `amplitude_articles`
-cargo r -- --local # if you want to use your local files
+cargo r -- --pull  # to clone the articles from `amplitude_articles`
+cargo r            # if you want to use your local files
 
 cd web
 npm i
