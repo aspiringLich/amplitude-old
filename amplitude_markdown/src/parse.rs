@@ -4,7 +4,10 @@ pub mod inject;
 pub mod link_concat;
 
 use crate::{items::ItemType, parse::course::parse_course, OsStrToString};
-use amplitude_common::{config::{Config, ParseConfig}, default};
+use amplitude_common::{
+    config::{Config, ParseConfig},
+    default,
+};
 use anyhow::Context;
 use comrak::{
     nodes::AstNode, parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions,
@@ -45,8 +48,8 @@ pub fn clone_repo(config: &ParseConfig) -> anyhow::Result<()> {
 
 /// Reparses the things and does the things
 pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
-    if !config.args.local {
-        info!("Deleting `{}` and recloning repo... (If you dont want this behavior, run with `--local`)", config.parse.clone_path);
+    if config.args.pull {
+        info!("Deleting `{}` and recloning repo...", config.parse.clone_path);
         clone_repo(&config.parse).context("While cloning repo")?;
     } else {
         info!(

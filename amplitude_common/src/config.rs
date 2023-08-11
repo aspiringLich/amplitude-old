@@ -7,9 +7,9 @@ use crate::path;
 
 #[derive(Parser, Default, Deserialize, Debug)]
 pub struct Args {
-    /// Whether or not to reclone the repo from github or to use the existing one
+    /// Whether or not to pull the repo from github or to use the existing one
     #[arg(long, default_value_t = false)]
-    pub local: bool,
+    pub pull: bool,
     /// The path of the config file
     #[arg(long, default_value_t = {"config.toml".to_string()})]
     pub config: String,
