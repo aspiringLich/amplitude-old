@@ -1,6 +1,17 @@
 use std::{
+    collections::HashMap,
     error::Error,
     fmt::{self, Debug, Display},
+    fs::File,
+};
+
+use amplitude_common::config::Config;
+use anyhow::Context;
+
+use crate::{
+    parse::context::DataContext,
+    path::{from_directory, DirectoryContent, FromDirectory, FromFile},
+    OsStrToString,
 };
 
 #[derive(Default, Debug)]
@@ -94,5 +105,90 @@ impl Display for ErrorList<anyhow::Error> {
 impl Error for ErrorList<anyhow::Error> {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         None
+    }
+}
+
+/// A struct that expects a directory structure like this:
+/// ```plaintext
+/// 00-one
+/// 01-two
+/// 02-three
+/// 03-four
+/// ```
+pub struct OrderedDirectories<T> {
+    pub items: HashMap<String, T>,
+}
+
+impl<T> FromDirectory for OrderedDirectories<T>
+where
+    T: FromDirectory,
+{
+    fn from_directory(
+        content: &DirectoryContent,
+        context: &mut DataContext,
+        cfg: &Config,
+    ) -> anyhow::Result<Self> {
+        let mut items = HashMap::new();
+
+        for dir in &content.directories {
+            let id = &dir.as_str()[3..];
+            let path = content.path.join(&dir);
+
+            if dir.starts_with('.') {
+                continue;
+            }
+
+            items.insert(
+                id.to_string(),
+                from_directory(&path, context, cfg)
+                    .with_context(|| format!("While parsing path {}", path.display()))?,
+            );
+        }
+
+        Ok(Self { items })
+    }
+}
+
+/// A struct that expects a directory structure like this:
+/// ```plaintext
+/// 00-one.md
+/// 01-two.md
+/// 02-three.md
+/// 03-four.md
+/// ```
+pub struct OrderedFiles<T> {
+    pub items: HashMap<String, T>,
+}
+
+impl<T> FromDirectory for OrderedFiles<T>
+where
+    T: FromFile,
+{
+    fn from_directory(
+        content: &DirectoryContent,
+        context: &mut DataContext,
+        cfg: &Config,
+    ) -> anyhow::Result<Self> {
+        let mut items = HashMap::new();
+
+        for dir in &content.directories {
+            let id = &dir.as_str()[3..];
+            let path = content.path.join(&dir);
+            items.insert(
+                id.to_string(),
+                T::from_file(
+                    &path
+                        .file_name()
+                        .context("While getting filename")?
+                        .to_string(),
+                    &mut File::open(&path).context("While opening file")?,
+                    context,
+                    cfg,
+                )
+                .with_context(|| format!("While parsing path {}", path.display()))?,
+            );
+        }
+
+        Ok(Self { items })
     }
 }

@@ -4,7 +4,7 @@ pub mod inject;
 pub mod link_concat;
 
 use crate::{items::ItemType, parse::course::parse_course, OsStrToString};
-use amplitude_common::config::{Config, ParseConfig};
+use amplitude_common::{config::{Config, ParseConfig}, default};
 use anyhow::Context;
 use comrak::{
     nodes::AstNode, parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions,
@@ -13,7 +13,7 @@ use comrak::{
 use git2::build::RepoBuilder;
 use link_concat::link_concat_callback;
 use serde::{ser::SerializeMap, Serialize, Serializer};
-use std::{collections::HashMap, default::default, fs, path::Path, vec};
+use std::{collections::HashMap, fs, path::Path, vec};
 use tracing::{info, warn};
 
 use self::{

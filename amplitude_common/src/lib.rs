@@ -23,3 +23,7 @@ pub fn config_and_set_path() -> anyhow::Result<config::Config> {
 
     Ok(config)
 }
+
+pub fn default<T: Default>() -> T {
+    T::default()
+}

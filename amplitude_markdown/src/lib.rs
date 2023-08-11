@@ -1,7 +1,6 @@
 #![feature(decl_macro)]
 #![feature(let_chains)]
 #![feature(if_let_guard)]
-#![feature(default_free_fn)]
 
 use std::ffi::OsStr;
 

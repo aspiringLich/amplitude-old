@@ -74,7 +74,7 @@ impl<'a> DirItem<'a> {
 }
 
 pub struct DirectoryContent<'a> {
-    directories: Vec<String>,
+    pub directories: Vec<String>,
     files: Vec<DirItem<'a>>,
     pub path: &'a Path,
 }

@@ -67,6 +67,11 @@ impl<'a> DataContext<'a> {
     pub fn id(&self) -> &str {
         &self.id
     }
+    
+    /// Return the course id
+    pub fn course_id(&self) -> &str {
+        self.id.split_once("/").unwrap_or_default().0
+    }
 
     /// Return the `MarkdownContext` used for parsing markdown
     pub fn markdown_context(&self) -> &MarkdownContext {

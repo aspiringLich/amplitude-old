@@ -1,4 +1,3 @@
-#![feature(default_free_fn)]
 #![feature(iter_intersperse)]
 
 pub mod exercise;
