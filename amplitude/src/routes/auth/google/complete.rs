@@ -1,34 +1,34 @@
 use std::time::Duration;
 
 use afire::{internal::encoding::url, HeaderType, Method, Response, Server, SetCookie, Status};
+use anyhow::Context;
+use serde::Deserialize;
 use serde_json::Value;
 
 use crate::{
+    error::HandledRoute,
     misc::{current_epoch, rand_str, LoginProvider, SESSION_LENGTH},
     session::{GoogleSession, Session, SessionPlatform},
     state::State,
 };
 
 pub fn attach(server: &mut Server<State>) {
-    server.stateful_route(Method::GET, "/auth/google/complete", move |app, req| {
+    server.handled_stateful_route(Method::GET, "/auth/google/complete", move |app, req| {
         // Get Code from URI
-        let code = match req.query.get("code") {
-            Some(i) => i,
-            _ => return Response::new().text("No Auth Code Found"),
-        };
+        let code = req.query.get("code").context("No auth code found")?;
 
         // Get and verify state
-        let state = match req.query.get("state") {
-            Some(i) => i,
-            _ => return Response::new().text("No State Found"),
-        };
-        let state = match app.db.auth().get_oauth(LoginProvider::Google, state) {
-            Ok(i) => i,
-            Err(_) => return Response::new().text("Invalid state"),
-        };
+        let state = req.query.get("state").context("No state found")?;
+        let state = app
+            .db
+            .auth()
+            .get_oauth(LoginProvider::Google, state)
+            .context("Invalid state")?;
 
         if current_epoch() - state >= 60 * 10 {
-            return Response::new().text("State Expired");
+            return Ok(Response::new()
+                .status(Status::BadRequest)
+                .text("State Expired"));
         }
 
         // Get Access Token
@@ -39,41 +39,43 @@ pub fn attach(server: &mut Server<State>) {
                 ("grant_type", "authorization_code"),
                 ("client_secret", &cfg.client_secret),
                 ("client_id", &cfg.client_id),
-                ("code", &url::decode(code).unwrap()),
+                (
+                    "code",
+                    &url::decode(code).context("Invalid URL encoding on")?,
+                ),
                 (
                     "redirect_uri",
                     &format!("{}/auth/google/complete", cfg.external_url),
                 ),
-            ])
-            .unwrap()
+            ])?
             .into_reader();
 
         // Parse Response and net Token
-        let token = serde_json::from_reader::<_, Value>(resp).unwrap();
+        let token = serde_json::from_reader::<_, Value>(resp)?;
         let access_token = token
             .get("access_token")
             .and_then(|x| x.as_str())
-            .expect("No Access Token!?");
+            .context("No Access Token!?")?;
 
         // Get User Info
         let user_raw = ureq::get("https://www.googleapis.com/oauth2/v1/userinfo")
             .set("Authorization", &format!("Bearer {access_token}"))
             .timeout(Duration::from_secs(app.config.server.req_duration))
-            .call()
-            .unwrap()
+            .call()?
             .into_reader();
 
         // Parse JSON
-        let user = serde_json::from_reader::<_, Value>(user_raw).unwrap();
-        let id = user.get("id").and_then(|x| x.as_str()).expect("No ID");
-        let name = user.get("name").and_then(|x| x.as_str()).expect("No Name");
-        let avatar = user
-            .get("picture")
-            .and_then(|x| x.as_str())
-            .expect("No Picture");
+        #[derive(Deserialize)]
+        struct GoogleUser {
+            id: String,
+            name: String,
+            picture: String,
+        }
+
+        let user = serde_json::from_reader::<_, GoogleUser>(user_raw)?;
 
         let google = GoogleSession {
-            google_id: id.to_owned(),
+            google_id: user.id,
             access_token: access_token.to_owned(),
         };
         let token = rand_str(10);
@@ -81,24 +83,23 @@ pub fn attach(server: &mut Server<State>) {
             platform: SessionPlatform::Google(google),
             token: token.to_owned(),
             id: rand_str(10),
-            name: name.to_owned(),
-            avatar: avatar.to_owned(),
+            name: user.name,
+            avatar: user.picture,
             signup: current_epoch(),
         };
 
         app.db
             .session()
-            .add_session(&session, req.headers.get(HeaderType::UserAgent))
-            .unwrap();
+            .add_session(&session, req.headers.get(HeaderType::UserAgent))?;
 
         let cookie = SetCookie::new("session", token)
             .path("/")
             .max_age(SESSION_LENGTH);
 
-        Response::new()
+        Ok(Response::new()
             .status(Status::TemporaryRedirect)
             .header("Cache-Control", "no-store")
             .header("Location", "/")
-            .cookie(cookie)
+            .cookie(cookie))
     });
 }

@@ -84,7 +84,7 @@ impl<'a> SessionDb<'a> {
                         signup: x.get::<_, u64>(6)?,
                         token: token.to_string(),
                         platform: SessionPlatform::Github(GithubSession {
-                            github_id: x.get::<_, String>(1)?,
+                            github_id: x.get::<_, u64>(1)?,
                             login: x.get::<_, String>(3)?,
                             token: x.get::<_, String>(5)?,
                         }),
