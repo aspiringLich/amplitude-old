@@ -4,7 +4,6 @@ use afire::{HeaderType, Method, Query, Response, Server, SetCookie, Status};
 use serde_json::Value;
 
 use crate::{
-    database::Database,
     misc::{current_epoch, rand_str, LoginProvider, SESSION_LENGTH},
     session::{GithubSession, Session, SessionPlatform},
     state::State,
@@ -23,7 +22,7 @@ pub fn attach(server: &mut Server<State>) {
             Some(i) => i,
             _ => return Response::new().text("No State Found"),
         };
-        let state = match app.db().get_oauth(LoginProvider::Github, state) {
+        let state = match app.db.auth().get_oauth(LoginProvider::Github, state) {
             Ok(i) => i,
             Err(_) => return Response::new().text("Invalid state"),
         };
@@ -77,7 +76,8 @@ pub fn attach(server: &mut Server<State>) {
             signup: current_epoch(),
         };
 
-        app.db()
+        app.db
+            .session()
             .add_session(&session, req.headers.get(HeaderType::UserAgent))
             .unwrap();
 

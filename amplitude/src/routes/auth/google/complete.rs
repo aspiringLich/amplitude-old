@@ -4,7 +4,6 @@ use afire::{internal::encoding::url, HeaderType, Method, Response, Server, SetCo
 use serde_json::Value;
 
 use crate::{
-    database::Database,
     misc::{current_epoch, rand_str, LoginProvider, SESSION_LENGTH},
     session::{GoogleSession, Session, SessionPlatform},
     state::State,
@@ -23,7 +22,7 @@ pub fn attach(server: &mut Server<State>) {
             Some(i) => i,
             _ => return Response::new().text("No State Found"),
         };
-        let state = match app.db().get_oauth(LoginProvider::Google, state) {
+        let state = match app.db.auth().get_oauth(LoginProvider::Google, state) {
             Ok(i) => i,
             Err(_) => return Response::new().text("Invalid state"),
         };
@@ -87,7 +86,8 @@ pub fn attach(server: &mut Server<State>) {
             signup: current_epoch(),
         };
 
-        app.db()
+        app.db
+            .session()
             .add_session(&session, req.headers.get(HeaderType::UserAgent))
             .unwrap();
 

@@ -1,7 +1,6 @@
 use afire::{Method, Response, Server, Status};
 
 use crate::{
-    database::Database,
     misc::{rand_str, LoginProvider},
     state::State,
 };
@@ -10,7 +9,10 @@ pub fn attach(server: &mut Server<State>) {
     server.stateful_route(Method::GET, "/auth/github/redirect", move |app, _| {
         let state = rand_str(10);
 
-        app.db().add_oauth(LoginProvider::Github, &state).unwrap();
+        app.db
+            .auth()
+            .add_oauth(LoginProvider::Github, &state)
+            .unwrap();
 
         let cfg = app.config.auth.github_oauth.as_ref().unwrap();
         Response::new()
