@@ -16,7 +16,13 @@ use comrak::{
 use git2::build::RepoBuilder;
 use link_concat::link_concat_callback;
 use serde::{ser::SerializeMap, Serialize, Serializer};
-use std::{collections::HashMap, fs, path::Path, vec};
+use std::{
+    collections::{hash_map::DefaultHasher, HashMap},
+    fs,
+    hash::{Hash, Hasher},
+    path::{Path, PathBuf},
+    vec,
+};
 use tracing::{info, warn};
 
 use self::{
@@ -49,7 +55,10 @@ pub fn clone_repo(config: &ParseConfig) -> anyhow::Result<()> {
 /// Reparses the things and does the things
 pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
     if config.args.pull {
-        info!("Deleting `{}` and recloning repo...", config.parse.clone_path);
+        info!(
+            "Deleting `{}` and recloning repo...",
+            config.parse.clone_path
+        );
         clone_repo(&config.parse).context("While cloning repo")?;
     } else {
         info!(
@@ -57,6 +66,12 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
             config.parse.clone_path
         );
     }
+
+    // delete the generated asset files
+    if Path::new(&config.parse.asset_path).exists() {
+        fs::remove_dir_all(&config.parse.asset_path).context("While clearing asset path")?;
+    }
+    fs::create_dir(&config.parse.asset_path).context("While creating asset path")?;
 
     let options = ComrakOptions {
         extension: ComrakExtensionOptions {
@@ -106,7 +121,7 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
     }
     let data = ParseData::from_raw(data).context("While generating `ParseData`")?;
 
-    dbg!(&data);
+    // dbg!(&data);
 
     Ok(data)
 }
@@ -265,4 +280,34 @@ impl RawCourseData {
             .push(track);
         Ok(())
     }
+}
+
+/// Takes a path to a file and throws it in the asset folder to be served in
+/// wherever we want to serve it.
+///
+/// Returns the new path of the file (from the servers perspective)
+pub fn register_file<P: AsRef<Path>>(path: P, cfg: &Config) -> anyhow::Result<PathBuf> {
+    let path = path.as_ref();
+
+    // hash the path to generate (hopefully) unique filename
+    let mut hasher = DefaultHasher::new();
+    path.hash(&mut hasher);
+
+    let orig_filename = path
+        .file_name()
+        .context("Expected file to have a name")?
+        .to_string_lossy();
+    let filename = format!("{:x}-{}", hasher.finish(), orig_filename);
+
+    // copy the file to the asset path
+    let new_path = Path::new(&cfg.parse.asset_path).join(&filename);
+    assert!(
+        !new_path.exists(),
+        "Either there was a hash collision or you forgot to clear {}",
+        cfg.parse.asset_path
+    );
+    fs::copy(path, &new_path).context("While copying file")?;
+
+    let path_out = Path::new(&cfg.parse.asset_prefix).join(&filename);
+    return Ok(path_out);
 }

@@ -26,6 +26,12 @@ tmp_folder = ""
 git_url = "https://github.com/rcsc/amplitude_articles.git"
 # Where to clone the aforementioned git repository to
 clone_path = "./articles"
+# Where to store assets (images, etc)
+asset_path = "./web/static/generated"
+# The prefix to use for asset paths
+asset_prefix = "./generated"
+# image file extensions (non exhaustive)
+image_extensions = ["png", "jpg", "jpeg", "gif", "svg", "bmp", "tiff", "webp"]
 
 # # Github OAuth configuration
 # [github_oauth]

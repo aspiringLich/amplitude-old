@@ -11,11 +11,18 @@ use amplitude_runner::exercise::Exercise;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(deny_unknown_fields)]
+pub struct RawCourseConfig {
+    pub title: String,
+    pub description: String,
+}
+
+#[derive(Serialize, Debug, Clone)]
 pub struct CourseConfig {
     pub title: String,
     pub description: String,
+    pub icon: PathBuf,
 }
 
 #[derive(Deserialize)]
@@ -44,6 +51,36 @@ impl Track {
     }
 }
 
+impl CourseConfig {
+    /// Sorta messy but whatever.
+    /// 
+    /// From the information in the config file (`RawCourseConfig`), generates
+    /// the full `CourseConfig` struct, which includes the path to the icon file
+    /// (and maybe other stuff in the future).
+    pub fn from_raw(raw: RawCourseConfig, path: &Path, cfg: &Config) -> anyhow::Result<Self> {
+        let icon = fs::read_dir(path)?
+            .find(|x| {
+                x.as_ref()
+                    .is_ok_and(|x| x.file_name().to_string_lossy().starts_with("icon."))
+            })
+            .with_context(|| format!("Could not find icon file in `{}`", path.display()))?
+            .unwrap();
+        let icon = icon.path();
+        anyhow::ensure!(cfg
+            .parse
+            .image_extensions
+            .contains(&icon.extension().unwrap().to_string()));
+
+        let new_path = register_file(&icon, cfg).context("While registering icon file")?;
+
+        Ok(Self {
+            title: raw.title,
+            description: raw.description,
+            icon: new_path,
+        })
+    }
+}
+
 pub fn parse_course(path: PathBuf, data: &mut RawCourseData, cfg: &Config) -> anyhow::Result<()> {
     let arena = Arena::new();
     let refs = {
@@ -56,8 +93,13 @@ pub fn parse_course(path: PathBuf, data: &mut RawCourseData, cfg: &Config) -> an
     let course_id = path.file_name().to_string();
 
     // insert course info
-    let course: CourseConfig = toml::from_str(&fs::read_to_string(path.join("course.toml"))?)?;
-    data.course_data.insert(course_id.clone(), course.clone());
+    let course: RawCourseConfig = toml::from_str(&fs::read_to_string(path.join("course.toml"))?)?;
+    let title = course.title.clone();
+
+    data.course_data.insert(
+        course_id.clone(),
+        CourseConfig::from_raw(course, &path, cfg)?,
+    );
     data.tracks.insert(course_id.clone(), Vec::new());
 
     // get index as item
@@ -65,13 +107,7 @@ pub fn parse_course(path: PathBuf, data: &mut RawCourseData, cfg: &Config) -> an
         &fs::read_to_string(path.join("index.md"))?,
         &mut DataContext::new(data, &course_id)?,
     )?;
-    let index = Article::from_raw(
-        RawArticle {
-            title: course.title,
-        },
-        md,
-        d,
-    );
+    let index = Article::from_raw(RawArticle { title }, md, d);
     data.items
         .insert(course_id.clone() + "-index", ItemType::Article(index));
 
@@ -92,10 +128,10 @@ pub fn parse_course(path: PathBuf, data: &mut RawCourseData, cfg: &Config) -> an
             {
                 let item = item?;
                 let path = item.path();
-                
+
                 let file_name = path.file_name().unwrap();
                 let file_name = file_name.to_string_lossy();
-                
+
                 if path.is_dir() {
                     ctx.scope(&file_name, |ctx| -> anyhow::Result<()> {
                         let exercise: Exercise =
@@ -129,7 +165,7 @@ pub fn parse_track(path: PathBuf, ctx: &mut DataContext, cfg: &Config) -> anyhow
     let track: RawTrack = toml::from_str(&fs::read_to_string(path.join("track.toml"))?)
         .context("While parsing `track.toml`")?;
     let track_id = strip_prefix(&path);
-    let track = Track::from_raw(track, track_id.clone())?;
+    let track = Track::from_raw(track, track_id.clone()).context("While parsing `RawTrack`")?;
 
     ctx.add_track(track)?;
 

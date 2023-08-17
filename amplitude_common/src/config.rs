@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs};
+use std::{collections::{HashMap, HashSet}, fs};
 
 use clap::Parser;
 use serde::Deserialize;
@@ -27,6 +27,9 @@ impl Args {
 pub struct ParseConfig {
     pub git_url: String,
     pub clone_path: String,
+    pub asset_path: String,
+    pub asset_prefix: String,
+    pub image_extensions: HashSet<String>,
 }
 
 #[derive(Deserialize, Debug)]
