@@ -13,7 +13,7 @@ use tracing_subscriber::{
     filter, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt,
 };
 
-use crate::{database::Database, logger::AfireLogger};
+use crate::logger::AfireLogger;
 mod database;
 mod error;
 mod logger;
@@ -44,7 +44,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let threads = app.config.server.threads;
     ctrlc::set_handler(move || {
         info!("Exiting");
-        app.db().cleanup().unwrap();
+        app.db.cleanup().unwrap();
         process::exit(0);
     })
     .unwrap();

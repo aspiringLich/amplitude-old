@@ -4,7 +4,7 @@ use afire::Request;
 use anyhow::{anyhow, bail};
 use serde::Serialize;
 
-use crate::{database::Database, misc::LoginProvider, state::State};
+use crate::{misc::LoginProvider, state::State};
 
 #[derive(Serialize)]
 pub struct Session {
@@ -42,7 +42,7 @@ pub struct GoogleSession {
 }
 
 pub struct GithubSession {
-    pub github_id: String,
+    pub github_id: u64,
     pub login: String,
     pub token: String,
 }
@@ -55,7 +55,8 @@ pub fn get_session(app: Arc<State>, req: &Request) -> anyhow::Result<Session> {
     }
 
     let session = app
-        .db()
+        .db
+        .session()
         .get_session(token)
         .ok()
         .ok_or(anyhow!("Invalid session"))?;

@@ -5,9 +5,7 @@ use afire::{Content, Method, Response, Server};
 use serde::Serialize;
 use serde_json::json;
 
-use crate::{
-    database::Database, error::HandledRoute, misc::OkResponse, session::get_session, state::State,
-};
+use crate::{error::HandledRoute, misc::OkResponse, session::get_session, state::State};
 
 #[derive(Serialize)]
 struct SessionEntry {
@@ -30,7 +28,8 @@ pub fn attach(server: &mut Server<State>) {
         };
 
         let sessions = app
-            .db()
+            .db
+            .session()
             .get_sessions(&session)?
             .into_iter()
             .map(|x| SessionEntry {

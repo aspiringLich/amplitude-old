@@ -2,14 +2,12 @@
 
 use afire::{Method, Response, Server, SetCookie, Status};
 
-use crate::{
-    database::Database, error::HandledRoute, misc::OkResponse, session::get_session, state::State,
-};
+use crate::{error::HandledRoute, misc::OkResponse, session::get_session, state::State};
 
 pub fn attach(server: &mut Server<State>) {
     server.handled_stateful_route(Method::GET, "/auth/logout-all", move |app, req| {
         if let Ok(i) = get_session(app.clone(), req) {
-            app.db().delete_sessions(&i)?;
+            app.db.session().delete_sessions(&i)?;
         }
 
         // Remove Session Cookie
