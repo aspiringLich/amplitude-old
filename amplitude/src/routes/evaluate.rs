@@ -13,7 +13,7 @@ struct EvaluateReq {
 }
 
 pub fn attach(server: &mut Server<State>) {
-    server.handled_stateful_route(Method::POST, "/api/test", |state, req| {
+    server.handled_stateful_route(Method::POST, "/api/evaluate", |state, req| {
         let body: EvaluateReq = json(req)?;
 
         let parse_data = state.parse_data();

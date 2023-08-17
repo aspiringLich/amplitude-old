@@ -32,7 +32,7 @@ export const fetchApi = async <T>(
     return await req.json();
 };
 
-type List = { [key: string]: { [key: string]: string[] } };
+export type List = { [key: string]: { [key: string]: string[] } };
 
 export const getItemList = async (): Promise<string[]> => {
     let list: List = await fetchApi("/api/list");
@@ -69,3 +69,9 @@ export class TestResults {
     };
 }
 
+export class CourseConfig {
+    title: string;
+    description: string;
+    icon: string;
+    index: string;
+}

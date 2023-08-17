@@ -8,9 +8,10 @@ use serde::Deserialize;
 use tracing::trace;
 
 mod auth;
+mod course;
+mod evaluate;
 mod item;
 mod list;
-mod test;
 
 pub fn attach(server: &mut Server<State>) {
     server.route(Method::ANY, "/api/**", |_| {
@@ -20,7 +21,8 @@ pub fn attach(server: &mut Server<State>) {
     });
 
     auth::attach(server);
-    test::attach(server);
+    course::attach(server);
+    evaluate::attach(server);
     list::attach(server);
     item::attach(server);
 }

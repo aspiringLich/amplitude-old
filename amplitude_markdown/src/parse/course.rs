@@ -1,12 +1,6 @@
 use super::*;
 
-use crate::{
-    items::{
-        article::{Article, RawArticle},
-        parse_item,
-    },
-    path::from_directory,
-};
+use crate::{items::parse_item, path::from_directory};
 use amplitude_runner::exercise::Exercise;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -23,6 +17,7 @@ pub struct CourseConfig {
     pub title: String,
     pub description: String,
     pub icon: PathBuf,
+    pub index: String,
 }
 
 #[derive(Deserialize)]
@@ -57,7 +52,13 @@ impl CourseConfig {
     /// From the information in the config file (`RawCourseConfig`), generates
     /// the full `CourseConfig` struct, which includes the path to the icon file
     /// (and maybe other stuff in the future).
-    pub fn from_raw(raw: RawCourseConfig, path: &Path, cfg: &Config) -> anyhow::Result<Self> {
+    pub fn from_raw(
+        raw: RawCourseConfig,
+        path: &Path,
+        cfg: &Config,
+        data: &mut RawCourseData,
+        course_id: &str,
+    ) -> anyhow::Result<Self> {
         let icon = fs::read_dir(path)?
             .find(|x| {
                 x.as_ref()
@@ -73,10 +74,17 @@ impl CourseConfig {
 
         let new_path = register_file(&icon, cfg).context("While registering icon file")?;
 
+        let index = parse_md(
+            &fs::read_to_string(path.join("index.md"))?,
+            &mut DataContext::new(data, &course_id)?,
+        )
+        .context("While parsing index.md")?;
+
         Ok(Self {
             title: raw.title,
             description: raw.description,
             icon: new_path,
+            index,
         })
     }
 }
@@ -94,22 +102,10 @@ pub fn parse_course(path: PathBuf, data: &mut RawCourseData, cfg: &Config) -> an
 
     // insert course info
     let course: RawCourseConfig = toml::from_str(&fs::read_to_string(path.join("course.toml"))?)?;
-    let title = course.title.clone();
+    let course = CourseConfig::from_raw(course, &path, cfg, data, &course_id)?;
 
-    data.course_data.insert(
-        course_id.clone(),
-        CourseConfig::from_raw(course, &path, cfg)?,
-    );
+    data.course_data.insert(course_id.clone(), course);
     data.tracks.insert(course_id.clone(), Vec::new());
-
-    // get index as item
-    let (md, d) = parse_md_full(
-        &fs::read_to_string(path.join("index.md"))?,
-        &mut DataContext::new(data, &course_id)?,
-    )?;
-    let index = Article::from_raw(RawArticle { title }, md, d);
-    data.items
-        .insert(course_id.clone() + "-index", ItemType::Article(index));
 
     for dir in fs::read_dir(&path)? {
         let dir = dir?;

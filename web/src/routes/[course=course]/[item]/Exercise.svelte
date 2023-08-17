@@ -21,7 +21,7 @@
     async function run_code() {
         run_disabled = true;
 
-        let res = await fetch("/api/test", {
+        let res = await fetch("/api/evaluate", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
