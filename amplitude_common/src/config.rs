@@ -1,4 +1,7 @@
-use std::{collections::{HashMap, HashSet}, fs};
+use std::{
+    collections::{HashMap, HashSet},
+    fs,
+};
 
 use clap::Parser;
 use serde::Deserialize;

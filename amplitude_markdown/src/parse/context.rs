@@ -21,9 +21,9 @@ impl<'a> DataContext<'a> {
     pub fn next_seed(&mut self) -> u64 {
         let seed = self.context.seed;
         self.context.seed += 1;
-        return seed;
+        seed
     }
-    
+
     /// Add an item to the context
     pub fn add_item(&mut self, item: ItemType, track_id: &str) -> anyhow::Result<()> {
         debug!(
@@ -67,10 +67,10 @@ impl<'a> DataContext<'a> {
     pub fn id(&self) -> &str {
         &self.id
     }
-    
+
     /// Return the course id
     pub fn course_id(&self) -> &str {
-        self.id.split_once("/").unwrap_or_default().0
+        self.id.split_once('/').unwrap_or_default().0
     }
 
     /// Return the `MarkdownContext` used for parsing markdown

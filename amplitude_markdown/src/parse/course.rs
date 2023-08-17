@@ -53,7 +53,7 @@ impl Track {
 
 impl CourseConfig {
     /// Sorta messy but whatever.
-    /// 
+    ///
     /// From the information in the config file (`RawCourseConfig`), generates
     /// the full `CourseConfig` struct, which includes the path to the icon file
     /// (and maybe other stuff in the future).

@@ -309,5 +309,5 @@ pub fn register_file<P: AsRef<Path>>(path: P, cfg: &Config) -> anyhow::Result<Pa
     fs::copy(path, &new_path).context("While copying file")?;
 
     let path_out = Path::new(&cfg.parse.asset_prefix).join(&filename);
-    return Ok(path_out);
+    Ok(path_out)
 }

@@ -49,7 +49,7 @@ mod tests {
 [b]: https://b.com
 [c]: https://c.com
 ";
-        let mut refs = comrak::parse_document_refs(&Arena::new(), links);
+        let refs = comrak::parse_document_refs(&Arena::new(), links);
         let flatten = refs.map.iter().map(|(l, r)| (l.as_str(), r.url.as_str()));
         let mut list = flatten.collect::<Vec<_>>();
         list.sort();
@@ -67,7 +67,7 @@ mod tests {
             &arena,
             "[a/search?q=b]",
             &comrak::ComrakOptions::default(),
-            Some(&mut |link| link_concat_callback(link, &mut refs)),
+            Some(&mut |link| link_concat_callback(link, &refs)),
         );
         let mut cm = vec![];
         comrak::format_commonmark(out, &comrak::ComrakOptions::default(), &mut cm).unwrap();

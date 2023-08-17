@@ -6,10 +6,7 @@ use amplitude_runner::{
     exercise::{generate, runner_template, ExerciseConfig, LanguageInfo},
     lang::Language,
 };
-use std::{
-    collections::HashMap,
-    str::FromStr,
-};
+use std::{collections::HashMap, str::FromStr};
 
 impl FromDirectory for Exercise {
     fn from_directory(

@@ -132,7 +132,7 @@ where
 
         for dir in &content.directories {
             let id = &dir.as_str()[3..];
-            let path = content.path.join(&dir);
+            let path = content.path.join(dir);
 
             if dir.starts_with('.') {
                 continue;
@@ -173,7 +173,7 @@ where
 
         for dir in &content.directories {
             let id = &dir.as_str()[3..];
-            let path = content.path.join(&dir);
+            let path = content.path.join(dir);
             items.insert(
                 id.to_string(),
                 T::from_file(

@@ -15,7 +15,9 @@ impl Callback for Quiz {
         // dbg!(node);
 
         let mut ast = node.data.borrow_mut();
-        let NodeValue::CodeBlock(ref code) = ast.value else { anyhow::bail!("Expected Code block") };
+        let NodeValue::CodeBlock(ref code) = ast.value else {
+            anyhow::bail!("Expected Code block")
+        };
 
         let quiz = items::quiz::Quiz::from_str(&code.literal, id.clone(), ctx)?;
         ctx.add_item(ItemType::Quiz(quiz), "")?;
