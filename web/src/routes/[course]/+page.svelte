@@ -5,10 +5,10 @@
     export let data;
 </script>
 
-<div class="max-w-6xl mx-auto px-16">
-    <div class="shadow-xl rounded-md">
+<div class="max-w-6xl mx-auto px-16 py-8">
+    <div class="shadow-2xl">
         <div class="relative top-0 left-0 max-h-[24rem] overflow-hidden">
-            <img class="w-full" src={data.course.icon} alt="Header" />
+            <img class="w-full rounded-t-md" src={data.course.icon} alt="Header" />
             <div class="absolute top-0 left-0" id="gradient" />
             <div class="absolute bottom-0 h-24 leading-none ml-4">
                 <h1 class="h1 text-surface-50 !m-0 relative top-2">
@@ -17,7 +17,7 @@
                 <b class="text-surface-50">{data.course.description}</b>
             </div>
         </div>
-        <div class="bg-surface-50-900-token">
+        <div class="bg-surface-50-900-token rounded-b-md">
             <Article
                 data={{
                     body: data.course.index,

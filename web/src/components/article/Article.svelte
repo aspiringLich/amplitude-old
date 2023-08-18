@@ -47,6 +47,7 @@
 <!-- <div style:height="50vh" /> -->
 
 <style lang="postcss">
+    /*! purgecss start ignore */
     .article {
         visibility: hidden;
         opacity: 0;

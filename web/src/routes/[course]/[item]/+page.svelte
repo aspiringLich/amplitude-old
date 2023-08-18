@@ -8,7 +8,7 @@
 </script>
 
 {#if data.type == "article"}
-    <Article {data} class="max-w-3xl" />
+    <Article {data} classes="max-w-3xl" />
 {:else if data.type == "exercise"}
     <Exercise {data} />
 {:else}

@@ -1,5 +1,6 @@
 import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
+import { purgeCss } from "vite-plugin-tailwind-purgecss";
 // import { svelte } from "@sveltejs/vite-plugin-svelte";
 import path from "path";
 
@@ -11,7 +12,7 @@ export default defineConfig({
             },
         },
     },
-    plugins: [sveltekit()],
+    plugins: [sveltekit(), purgeCss()],
     resolve: {
         alias: {
             $src: path.resolve("./src"),
