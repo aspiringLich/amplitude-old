@@ -39,7 +39,7 @@
             ref: EditorSettings,
         },
         Login: {
-            ref: Login
+            ref: Login,
         },
     };
 
@@ -52,10 +52,26 @@
         });
     };
 
+    //~ Update Scroll Position
+    let scrollElement: Element;
+    const updateScroll = () => {
+        document.body.style.setProperty(
+            "--scroll",
+            scrollElement.scrollTop.toString()
+        );
+    };
+
     import { AppShell, Drawer, drawerStore } from "@skeletonlabs/skeleton";
     import { ChevronRight, Cross1 } from "radix-icons-svelte";
     import NavBar from "$cmpt/NavBar.svelte";
     import { fly } from "svelte/transition";
+    import { onMount } from "svelte";
+    
+    let loaded = false;
+    onMount(() => {
+        loaded = true;
+        scrollElement = document.querySelector("#page");
+    });
 </script>
 
 <svelte:window on:error={handleError} />
@@ -63,7 +79,7 @@
 <Toast />
 <Modal components={modalComponentRegistry} />
 
-<AppShell slotPageContent="relative">
+<AppShell slotPageContent="relative" on:scroll={updateScroll}>
     <svelte:fragment slot="header">
         <NavBar path={data.pathname} />
     </svelte:fragment>
@@ -80,22 +96,24 @@
     >
         <ChevronRight size={24} class="ml-4" />
     </button>
-
-    {#key data.pathname}
-        <div
-            class="h-full"
-            in:fly={{ x: -10, duration: 500, delay: 500 }}
-            out:fly={{ x: 5, duration: 500 }}
-        >
-            <slot />
-        </div>
-    {/key}
+    
+    {#if loaded}
+        {#key data.pathname}
+            <div
+                class="h-full"
+                in:fly={{ x: -10, duration: 500, delay: 500 }}
+                out:fly={{ x: 5, duration: 500 }}
+            >
+                <slot />
+            </div>
+        {/key}
+    {/if}
 </AppShell>
 
 <Drawer regionDrawer="p-8">
     <div class="relative">
         <button
-            class="absolute top-[-1.5em] right-[-1.5em] semi-interactive 
+            class="absolute top-[-1.5em] right-[-1.5em] semi-interactive
             hover:bg-slate-200 interactive p-1 rounded-full"
             on:click={() => drawerStore.close()}
         >
