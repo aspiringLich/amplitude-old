@@ -73,12 +73,15 @@
     class="p-16 pt-8 max-w-6xl m-auto {fdir}"
     rtl={$settings.flipPanes}
 >
-    <Pane minSize={20} class="relative flex">
+    <Pane minSize={20} class="relative flex shadow-xl">
         <ExercisePanel {data} bind:results />
     </Pane>
-    <Pane minSize={20} class="flex flex-col relative overflow-auto height-full">
+    <Pane
+        minSize={20}
+        class="flex flex-col relative overflow-auto shadow-xl"
+    >
         <div
-            class="h-[42px] bg-surface-200 dark:bg-surface-800 flex items-center justify-between {fdir}"
+            class="h-[42px] bg-surface-200-700-token flex items-center justify-between {fdir}"
         >
             <button
                 type="button"

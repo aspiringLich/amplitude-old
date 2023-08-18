@@ -40,7 +40,7 @@
 <TabGroup
     class="flex grow flex-col overflow-auto"
     border="border-b-0"
-    regionList="bg-surface-200 dark:bg-surface-800"
+    regionList="bg-surface-200-700-token"
     regionPanel="overflow-auto flex-[1_0_0px] !mt-0 px-4 bg-surface-50 dark:bg-surface-900"
 >
     <Tab bind:group={tabN} name="instructions" value={0}>Instructions</Tab>
@@ -49,7 +49,7 @@
     <svelte:fragment slot="panel">
         {#if tabN == 0}
             <Article
-                class="h-max"
+                classes="h-max"
                 data={{
                     title: data.config.title,
                     body: data.config.instructions,

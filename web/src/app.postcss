@@ -81,23 +81,23 @@ blockquote {
     box-sizing: border-box;
     width: 100%;
     overflow: hidden;
-    @apply bg-surface-100 rounded-container-token m-0 py-4 px-6;
+    @apply bg-surface-100-800-token rounded-container-token m-0 py-4 px-6;
 }
 
 .splitpanes.theme {
     .splitpanes__pane {
-        @apply bg-base rounded-md;
+        @apply rounded-md;
         overflow-y: auto;
     }
     .splitpanes__splitter {
         /* @apply bg-surface-100; */
         box-sizing: border-box;
         position: relative;
-        flex-shrink: 0;
+        /* flex-shrink: 0; */
         &:before,
         &:after {
             content: "";
-            position: absolute;
+            /* position: absolute; */
             top: 50%;
             left: 50%;
             /* transition: background-color 0.3s; */
@@ -175,3 +175,5 @@ blockquote {
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 150ms;
 }
+
+

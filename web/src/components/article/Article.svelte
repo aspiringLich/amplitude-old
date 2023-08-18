@@ -3,8 +3,7 @@
     import { onMount } from "svelte";
 
     export let data: ArticleData;
-    export { classes as class };
-    let classes: string = "";
+    export let classes = "";
     
     let body_element: HTMLElement;
     let padding = 1000;
@@ -37,8 +36,8 @@
 </noscript>
 
 <div>
-    <div class="article container-xl px-8 m-auto {classes}" class:show={init} bind:this={body_element}>
-        <h1 class="text-5xl my-6">{@html data.title}</h1>
+    <div class="article container-xl px-8 py-4 m-auto {classes}" class:show={init} bind:this={body_element}>
+    <h1 class="text-5xl my-6">{@html data.title}</h1>
         {@html data.body}
     </div>
 </div>
