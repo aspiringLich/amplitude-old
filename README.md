@@ -21,11 +21,11 @@ npm run dev # the rust server AND the sveltekit server must be both running
 
 ## To-Do
 
- - [x] Reworked article / item system
+ - [x] ~~Reworked article / item system~~
  - [x] Article
    - [x] Admonitions
    - [x] Code Blocks
-   - [x] Quiz
+   - [x] ~~Quiz~~
  - [ ] Exercises ~~/ Projects~~
    - [x] Code editor
    - [x] Test case generation system

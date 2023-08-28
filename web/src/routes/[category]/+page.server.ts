@@ -1,13 +1,13 @@
 import type { EntryGenerator, RouteParams } from "./$types";
-import { CourseConfig, fetchApi, getExerciseList, type List } from "$lib/fetch";
+import { CategoryConfig, fetchApi, getExerciseList, type List } from "$lib/fetch";
 
 class Data {
-    course: CourseConfig;
+    course: CategoryConfig;
     list: List;
 }
 
 export const load = async ({ params, fetch }): Promise<Data> => {
-    let response: CourseConfig = await fetchApi("/api/category", {
+    let response: CategoryConfig = await fetchApi("/api/category", {
         method: "POST",
         body: {
             category: `${params.category}`,

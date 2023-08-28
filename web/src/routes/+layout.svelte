@@ -72,6 +72,8 @@
         loaded = true;
         scrollElement = document.querySelector("#page");
     });
+    
+    let duration = 400;
 </script>
 
 <svelte:window on:error={handleError} />
@@ -101,8 +103,8 @@
         {#key data.pathname}
             <div
                 class="h-full"
-                in:fly={{ x: -10, duration: 500, delay: 500 }}
-                out:fly={{ x: 5, duration: 500 }}
+                in:fly={{ x: -5, duration, delay: duration }}
+                out:fly={{ x: 5, duration }}
             >
                 <slot />
             </div>

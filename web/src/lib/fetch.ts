@@ -69,9 +69,7 @@ export class TestResults {
     };
 }
 
-export class CourseConfig {
+export class CategoryConfig {
     title: string;
     description: string;
-    icon: string;
-    index: string;
 }
