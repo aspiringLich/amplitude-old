@@ -27,7 +27,18 @@ export function debounce<T extends (...args: any[]) => any>(
     } as T;
 }
 
-
 export function mod(n: number, m: number): number {
     return ((n % m) + m) % m;
 }
+
+// https://stackoverflow.com/questions/7225407/convert-camelcasetext-to-title-case-text
+export const camelToTitle = (str: string) => {
+    return str
+        .replace(/([A-Z])/g, (match) => ` ${match}`)
+        .replace(/^./, (match) => match.toUpperCase())
+        .trim();
+};
+// https://stackoverflow.com/questions/54246477/how-to-convert-camelcase-to-snake-case
+export const camelToSkewer = (str) =>
+    str.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+

@@ -6,14 +6,8 @@
     import Editor from "$cmpt/Editor.svelte";
     import Checkbox from "$cmpt/form/Checkbox.svelte";
     import StepSelect from "$cmpt/form/StepSelect.svelte";
+    import { camelToTitle } from "$lib/util";
 
-    // https://stackoverflow.com/questions/7225407/convert-camelcasetext-to-title-case-text
-    const titleize = (str: string) => {
-        return str
-            .replace(/([A-Z])/g, (match) => ` ${match}`)
-            .replace(/^./, (match) => match.toUpperCase())
-            .trim();
-    };
     const predicate = (x: string) => x != "createTheme";
     let trimmed_themes = ["default", ...Object.keys(themes)].filter(predicate);
     let value = `import itertools, random\n\ndeck = list(itertools.product(
@@ -33,13 +27,13 @@
             <StepSelect
                 title="Editor Theme (light)"
                 options={trimmed_themes}
-                transform={titleize}
+                transform={camelToTitle}
                 bind:value={$settings.lightTheme}
             />
             <StepSelect
                 title="Editor Theme (dark)"
                 options={trimmed_themes}
-                transform={titleize}
+                transform={camelToTitle}
                 bind:value={$settings.darkTheme}
             />
             <Checkbox title="Flip Panes" bind:checked={$settings.flipPanes} />

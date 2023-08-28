@@ -62,7 +62,7 @@
     };
 
     import { AppShell, Drawer, drawerStore } from "@skeletonlabs/skeleton";
-    import { ChevronRight, Cross1 } from "radix-icons-svelte";
+    import { HamburgerMenu, Cross1 } from "radix-icons-svelte";
     import NavBar from "$cmpt/NavBar.svelte";
     import { fly } from "svelte/transition";
     import { onMount } from "svelte";
@@ -85,20 +85,7 @@
     <svelte:fragment slot="header">
         <NavBar path={data.pathname} />
     </svelte:fragment>
-    <!-- OH LAWD -->
-    <button
-        class="w-14 h-10 p-2 rounded-r-full fixed top-16 left-[-24px]
-        bg-surface-200/40 hover:bg-surface-200 active:bg-surface-400
-        dark:bg-surface-800/40 dark:hover:bg-surface-800 dark:active:bg-surface-600
-        semi-interactive hover:translate-x-3"
-        on:click={() =>
-            drawerStore.open({
-                width: "w-96",
-            })}
-    >
-        <ChevronRight size={24} class="ml-4" />
-    </button>
-    
+
     {#if loaded}
         {#key data.pathname}
             <div
@@ -115,7 +102,7 @@
 <Drawer regionDrawer="p-8">
     <div class="relative">
         <button
-            class="absolute top-[-1.5em] right-[-1.5em] semi-interactive
+            class="absolute top-[-1.5em] right-[-1.5em]
             hover:bg-slate-200 interactive p-1 rounded-full"
             on:click={() => drawerStore.close()}
         >

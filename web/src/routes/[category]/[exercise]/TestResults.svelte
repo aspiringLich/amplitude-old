@@ -86,7 +86,7 @@
                             <Code code={JSON.stringify(test.output, null, 2)} />
 
                             {#if result}
-                                {#if result.output}
+                                {#if result.output !== undefined}
                                     <span class="my-auto"> Recieved </span>
                                     <Code code={JSON.stringify(result.output, null, 2)} />
                                 {/if}
@@ -98,7 +98,7 @@
                                 {:else}
                                     <Code code={result.stdout} />
                                 {/if}
-                                {#if result.traceback}
+                                {#if result.traceback !== undefined}
                                     <span class="my-auto"> Traceback </span>
                                     <Code code={result.traceback} />
                                 {/if}

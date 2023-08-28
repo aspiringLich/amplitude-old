@@ -1,7 +1,12 @@
 <script lang="ts">
     import { browser } from "$app/environment";
-    import { LightSwitch, Avatar, modalStore } from "@skeletonlabs/skeleton";
-    import { TriangleDown } from "radix-icons-svelte";
+    import {
+        LightSwitch,
+        Avatar,
+        modalStore,
+        drawerStore,
+    } from "@skeletonlabs/skeleton";
+    import { HamburgerMenu, TriangleDown } from "radix-icons-svelte";
 
     export let path: string;
     $: list = path.split("/").slice(1, path.length - 1);
@@ -19,7 +24,16 @@
     class="grid grid-cols-[1fr_1fr] grid-flow-row justify-between
     bg-surface-50-900-token pt-1 pb-1.5"
 >
-    <div>
+    <div class="flex items-center">
+        <button
+            class="hover:bg-slate-200 interactive p-1 rounded-full ml-4"
+            on:click={() =>
+                drawerStore.open({
+                    width: "w-96",
+                })}
+        >
+            <HamburgerMenu size={20} />
+        </button>
         <ol class="breadcrumb ml-4">
             <li class="crumb"><a class="anchor" href="/">home</a></li>
 
