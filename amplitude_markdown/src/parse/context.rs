@@ -1,6 +1,5 @@
-use super::{course::{Track, CategoryConfig}, parse_md, RawParseData};
+use super::{parse_md, RawParseData, course::CategoryConfig};
 use amplitude_runner::exercise::Exercise;
-use anyhow::Context;
 use comrak::{ComrakOptions, RefMap};
 use tracing::debug;
 
@@ -26,11 +25,7 @@ impl<'a> DataContext<'a> {
 
     /// Add an exercise to the context
     pub fn add(&mut self, exercise: Exercise) -> anyhow::Result<()> {
-        debug!(
-            "{:24} (id: {})",
-            "Adding exercise to context",
-            &self.id
-        );
+        debug!("{:24} (id: {})", "Adding exercise to context", &self.id);
         self.context.exercises.insert(self.id.clone(), exercise);
         let (cat, id) = self.id.split_once('/').expect("ID has slash");
         self.context
@@ -52,11 +47,7 @@ impl<'a> DataContext<'a> {
     }
 
     pub fn add_category(&mut self, category: CategoryConfig) {
-        debug!(
-            "{:24} (id: {})",
-            "Adding category to context",
-            &self.id
-        );
+        debug!("{:24} (id: {})", "Adding category to context", &self.id);
         self.context.categories.insert(self.id.clone(), category);
         self.context.tree.insert(self.id.clone(), vec![]);
     }
@@ -75,12 +66,12 @@ impl<'a> DataContext<'a> {
     pub fn markdown_context(&self) -> &MarkdownContext {
         &self.context.markdown_context
     }
-    
+
     /// Return the `MarkdownContext` used for parsing markdown mutably
     pub fn markdown_context_mut(&mut self) -> &mut MarkdownContext {
         &mut self.context.markdown_context
     }
-    
+
     /// Return the `ComrakOptions` used for parsing markdown
     pub fn markdown_options(&self) -> &ComrakOptions {
         &self.context.markdown_context.options

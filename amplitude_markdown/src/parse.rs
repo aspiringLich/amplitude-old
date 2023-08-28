@@ -20,7 +20,7 @@ use comrak::{
 };
 use git2::build::RepoBuilder;
 use link_concat::link_concat_callback;
-use serde::{ser::SerializeMap, Serialize, Serializer};
+
 use std::{
     collections::{hash_map::DefaultHasher, HashMap},
     fs::{self, File},
@@ -32,7 +32,7 @@ use tracing::{info, warn};
 
 use self::{
     context::{DataContext, MarkdownContext},
-    course::{CategoryConfig, Track},
+    course::CategoryConfig,
     inject::InjectData,
 };
 
