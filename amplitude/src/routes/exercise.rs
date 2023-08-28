@@ -24,7 +24,7 @@ pub fn attach(server: &mut Server<State>) {
         
         let mut clone = e.clone();
         transform(&mut clone);
-        e.serialize(&mut s).context(
+        clone.serialize(&mut s).context(
             Status::InternalServerError,
             "While serializing Item to JSON",
         )?;

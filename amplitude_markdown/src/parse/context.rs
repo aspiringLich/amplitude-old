@@ -27,12 +27,12 @@ impl<'a> DataContext<'a> {
     pub fn add(&mut self, exercise: Exercise) -> anyhow::Result<()> {
         debug!("{:24} (id: {})", "Adding exercise to context", &self.id);
         self.context.exercises.insert(self.id.clone(), exercise);
-        let (cat, id) = self.id.split_once('/').expect("ID has slash");
+        let (cat, _) = self.id.split_once('/').expect("ID has slash");
         self.context
             .tree
             .entry(cat.to_string())
             .or_default()
-            .push(id.to_string());
+            .push(self.id.to_string());
         // if !track_id.is_empty() {
         //     let id = self.id.clone();
         //     self.get_course_tracks()?

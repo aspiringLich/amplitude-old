@@ -32,13 +32,13 @@ export const fetchApi = async <T>(
     return await req.json();
 };
 
-export type List = { [key: string]: { [key: string]: string[] } };
+export type List = { [key: string]: string[] };
 
-export const getItemList = async (): Promise<string[]> => {
+export const getExerciseList = async (): Promise<string[]> => {
     let list: List = await fetchApi("/api/list");
     let items: string[] = [];
     for (const [_, value] of Object.entries(list)) {
-        for (const [_, item] of Object.entries(value)) {
+        for (const item of value) {
             items.push(...item);
         }
     }

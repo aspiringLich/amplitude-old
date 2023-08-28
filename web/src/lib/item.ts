@@ -191,4 +191,4 @@ export class ExerciseData {
     type?: "exercise";
 }
 
-export type Item = ArticleData | QuizData | ExerciseData;
+export type Item = ExerciseData;
