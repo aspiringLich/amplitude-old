@@ -265,7 +265,7 @@ pub struct ParseData {
     pub categories: HashMap<String, CategoryConfig>,
     // pub items: HashMap<String, ItemType>,
     // pub tracks: HashMap<String, Vec<Track>>,
-    exercises: HashMap<String, Exercise>,
+    pub exercises: HashMap<String, Exercise>,
     pub tree: HashMap<String, Vec<String>>,
 }
 

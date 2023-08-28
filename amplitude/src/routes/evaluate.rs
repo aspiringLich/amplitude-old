@@ -1,4 +1,3 @@
-use amplitude_markdown::items::ItemType;
 use amplitude_runner::lang::Language;
 
 use super::*;
@@ -17,16 +16,10 @@ pub fn attach(server: &mut Server<State>) {
         let body: EvaluateReq = json(req)?;
 
         let parse_data = state.parse_data();
-        let item = parse_data
-            .items
+        let e = parse_data
+            .exercises
             .get(&body.id)
-            .with_context(Status::NotFound, || format!("Item `{}` not found", body.id))?;
-        let ItemType::Exercise(e) = item else {
-            return error(
-                Status::ExpectationFailed,
-                "Requested item is not an exercise",
-            );
-        };
+            .with_context(Status::NotFound, || format!("Exercise `{}` not found", body.id))?;
 
         let id = body.id.split_once('/').unwrap().1;
         let results = e

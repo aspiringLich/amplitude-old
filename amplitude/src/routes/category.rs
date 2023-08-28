@@ -7,7 +7,7 @@ struct CourseReq {
 
 /// Returns the configuration / information needed to display a course page
 pub fn attach(server: &mut Server<State>) {
-    server.handled_stateful_route(Method::POST, "api/course", |state, req| {
+    server.handled_stateful_route(Method::POST, "api/category", |state, req| {
         let mut req: CourseReq = json(req)?;
         req.course = req
             .course
@@ -20,7 +20,7 @@ pub fn attach(server: &mut Server<State>) {
             .categories
             .get(&req.course)
             .with_context(Status::NotFound, || {
-                format!("Course `{}` not found", req.course)
+                format!("Category `{}` not found", req.course)
             })?;
         Ok(Response::new()
             .text(serde_json::to_string(&course)?)

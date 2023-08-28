@@ -1,4 +1,4 @@
-use crate::error::{error, HandledRoute, StatusContext};
+use crate::error::{HandledRoute, StatusContext};
 use crate::state::State;
 
 use afire::prelude::*;
@@ -8,9 +8,9 @@ use serde::Deserialize;
 use tracing::trace;
 
 mod auth;
-mod course;
+mod category;
 mod evaluate;
-mod item;
+mod exercise;
 mod list;
 
 pub fn attach(server: &mut Server<State>) {
@@ -21,10 +21,10 @@ pub fn attach(server: &mut Server<State>) {
     });
 
     auth::attach(server);
-    course::attach(server);
+    category::attach(server);
     evaluate::attach(server);
     list::attach(server);
-    item::attach(server);
+    exercise::attach(server);
 }
 
 pub fn json<T>(req: &Request) -> anyhow::Result<T>
