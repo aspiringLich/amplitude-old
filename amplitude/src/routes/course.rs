@@ -17,7 +17,7 @@ pub fn attach(server: &mut Server<State>) {
 
         let parse_data = state.parse_data();
         let course = parse_data
-            .course_data
+            .categories
             .get(&req.course)
             .with_context(Status::NotFound, || {
                 format!("Course `{}` not found", req.course)

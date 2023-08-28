@@ -1,5 +1,5 @@
-use super::{course::Track, parse_md, RawCourseData};
-use crate::items::ItemType;
+use super::{course::{Track, CategoryConfig}, parse_md, RawParseData};
+use amplitude_runner::exercise::Exercise;
 use anyhow::Context;
 use comrak::{ComrakOptions, RefMap};
 use tracing::debug;
@@ -13,7 +13,7 @@ pub struct MarkdownContext {
 /// Sort of like `ParseContext` but scoped to something specific
 #[derive(Debug)]
 pub struct DataContext<'a> {
-    context: &'a mut RawCourseData,
+    context: &'a mut RawParseData,
     id: String,
 }
 
@@ -24,43 +24,41 @@ impl<'a> DataContext<'a> {
         seed
     }
 
-    /// Add an item to the context
-    pub fn add_item(&mut self, item: ItemType, track_id: &str) -> anyhow::Result<()> {
+    /// Add an exercise to the context
+    pub fn add(&mut self, exercise: Exercise) -> anyhow::Result<()> {
         debug!(
-            "{:24} ({:8} id: {})",
-            "Adding item to context",
-            item.to_string(),
+            "{:24} (id: {})",
+            "Adding exercise to context",
             &self.id
         );
-        self.context.items.insert(self.id.clone(), item);
-        if !track_id.is_empty() {
-            let id = self.id.clone();
-            self.get_course_tracks()?
-                .iter_mut()
-                .rfind(|track| track.id == track_id)
-                .with_context(|| format!("Track `{track_id}` not found"))?
-                .items
-                .push(id);
-        }
+        self.context.exercises.insert(self.id.clone(), exercise);
+        let (cat, id) = self.id.split_once('/').expect("ID has slash");
+        self.context
+            .tree
+            .entry(cat.to_string())
+            .or_default()
+            .push(id.to_string());
+        // if !track_id.is_empty() {
+        //     let id = self.id.clone();
+        //     self.get_course_tracks()?
+        //         .iter_mut()
+        //         .rfind(|track| track.id == track_id)
+        //         .with_context(|| format!("Track `{track_id}` not found"))?
+        //         .items
+        //         .push(id);
+        // }
 
         Ok(())
     }
 
-    fn get_course_tracks(&mut self) -> anyhow::Result<&mut Vec<Track>> {
-        let course_id = self.id.split_once('/').map(|(a, _)| a).unwrap_or(&self.id);
-        let tracks = self
-            .context
-            .tracks
-            .get_mut(course_id)
-            .with_context(|| format!("Course `{course_id}` not found"))?;
-
-        Ok(tracks)
-    }
-
-    pub fn add_track(&mut self, track: Track) -> anyhow::Result<()> {
-        debug!("{:24} (id: {})", "Adding track to context", track.id);
-        self.get_course_tracks()?.push(track);
-        Ok(())
+    pub fn add_category(&mut self, category: CategoryConfig) {
+        debug!(
+            "{:24} (id: {})",
+            "Adding category to context",
+            &self.id
+        );
+        self.context.categories.insert(self.id.clone(), category);
+        self.context.tree.insert(self.id.clone(), vec![]);
     }
 
     /// Return the id
@@ -77,15 +75,20 @@ impl<'a> DataContext<'a> {
     pub fn markdown_context(&self) -> &MarkdownContext {
         &self.context.markdown_context
     }
-
+    
+    /// Return the `MarkdownContext` used for parsing markdown mutably
+    pub fn markdown_context_mut(&mut self) -> &mut MarkdownContext {
+        &mut self.context.markdown_context
+    }
+    
     /// Return the `ComrakOptions` used for parsing markdown
     pub fn markdown_options(&self) -> &ComrakOptions {
         &self.context.markdown_context.options
     }
 
-    /// Create a new `ItemContext` from a `ParseContext` and an item id
-    pub fn new(context: &'a mut RawCourseData, id: &str) -> anyhow::Result<Self> {
-        if context.items.contains_key(id) {
+    /// Create a new `ItemContext` from a `ParseContext` and an id
+    pub fn new(context: &'a mut RawParseData, id: &str) -> anyhow::Result<Self> {
+        if context.categories.contains_key(id) {
             anyhow::bail!("Duplicate item id: {}", id);
         }
         let id = id.to_string();

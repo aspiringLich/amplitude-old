@@ -3,11 +3,16 @@ pub mod course;
 pub mod inject;
 pub mod link_concat;
 
-use crate::{items::ItemType, parse::course::parse_course, OsStrToString};
+use crate::{
+    items::article::parse_frontmatter,
+    path::{DirectoryContent, FromDirectory},
+    OsStrToString,
+};
 use amplitude_common::{
     config::{Config, ParseConfig},
     default,
 };
+use amplitude_runner::exercise::Exercise;
 use anyhow::Context;
 use comrak::{
     nodes::AstNode, parse_document_refs, Arena, ComrakExtensionOptions, ComrakOptions,
@@ -18,7 +23,7 @@ use link_concat::link_concat_callback;
 use serde::{ser::SerializeMap, Serialize, Serializer};
 use std::{
     collections::{hash_map::DefaultHasher, HashMap},
-    fs,
+    fs::{self, File},
     hash::{Hash, Hasher},
     path::{Path, PathBuf},
     vec,
@@ -27,7 +32,7 @@ use tracing::{info, warn};
 
 use self::{
     context::{DataContext, MarkdownContext},
-    course::{CourseConfig, Track},
+    course::{CategoryConfig, Track},
     inject::InjectData,
 };
 
@@ -105,25 +110,67 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
 
     info!("Parsing articles...");
 
-    let mut data = RawCourseData::new(md_ctx).context("While creating `RawCourseData`")?;
+    let mut data = RawParseData::new(md_ctx);
     for item in fs::read_dir(&config.parse.clone_path)? {
         let item = item?;
         let path = item.path();
-        if path.is_dir() {
-            let name = path.file_name().to_string();
-            if name.starts_with('.') {
-                continue;
+        if !path.is_dir() {
+            continue;
+        }
+        let name = path.file_name().to_string();
+        if name.starts_with('.') {
+            continue;
+        }
+
+        let scope = || -> anyhow::Result<()> {
+            let mut ctx = DataContext::new(&mut data, &name).context("While creating context")?;
+            let header =
+            File::open(&path.join("header.md")).context("While openning header file")?;
+
+            let (category, s): (CategoryConfig, _) =
+                parse_frontmatter(&header).context("While parsing frontmatter for header")?;
+            ctx.add_category(category);
+
+            let arena = Arena::new();
+            let refs = parse_document_refs(&arena, &s);
+            
+            let original = ctx.markdown_context().refs.clone();
+            ctx.markdown_context_mut().refs.extend(refs);
+
+            for item in
+                fs::read_dir(path).with_context(|| format!("While reading category {}", name))?
+            {
+                let item = item?;
+                let path = item.path();
+                if !path.is_dir() {
+                    continue;
+                }
+                let name = path.file_name().to_string();
+
+                ctx.scope(&name, |ctx| -> anyhow::Result<()> {
+                    let exercise = Exercise::from_directory(
+                        &DirectoryContent::new(&path).context("While getting directory content")?,
+                        ctx,
+                        &config,
+                    ).context("While getting `Exercise`")?;
+                    
+                    ctx.add(exercise).context("While adding exercise")?;
+                    
+                    Ok(())
+                })
+                .context("While parsing exercise")?;
             }
 
-            parse_course(path, &mut data, config)
-                .with_context(|| format!("While parsing course `{name}`"))?;
-        }
+            data.markdown_context.refs = original;
+
+            Ok(())
+        };
+        scope().with_context(|| format!("While parsing category `{}`", name))?;
     }
-    let data = ParseData::from_raw(data).context("While generating `ParseData`")?;
 
     // dbg!(&data);
 
-    Ok(data)
+    Ok(ParseData::from_raw(data).context("While converting `RawParseData` to `ParseData`")?)
 }
 
 fn parse_into_ast<'a>(
@@ -190,96 +237,77 @@ pub(crate) fn parse_ast<'a>(
 
 /// Storing information about what weve parsed so far
 #[derive(Debug)]
-pub struct RawCourseData {
-    pub course_data: HashMap<String, CourseConfig>,
+pub struct RawParseData {
+    pub categories: HashMap<String, CategoryConfig>,
+    // items: HashMap<String, ItemType>,
+    // tracks: HashMap<String, Vec<Track>>,
+    exercises: HashMap<String, Exercise>,
+    tree: HashMap<String, Vec<String>>,
     markdown_context: MarkdownContext,
-    items: HashMap<String, ItemType>,
-    tracks: HashMap<String, Vec<Track>>,
     pub seed: u64,
 }
 
-/// Storing information about what weve parsed so far
-#[derive(Debug)]
-pub struct ParseData {
-    pub course_data: HashMap<String, CourseConfig>,
-    pub items: HashMap<String, ItemType>,
-    pub tracks: HashMap<String, Vec<Track>>,
-    pub tree: HashMap<String, TreeItem>,
-}
-
-fn as_hashmap<K: Serialize, V: Serialize, S: Serializer>(
-    list: &[(K, V)],
-    s: S,
-) -> Result<S::Ok, S::Error> {
-    let mut map = s.serialize_map(Some(list.len()))?;
-    for (k, v) in list {
-        map.serialize_entry(&k, &v)?;
+impl RawParseData {
+    pub fn new(md_ctx: MarkdownContext) -> Self {
+        Self {
+            markdown_context: md_ctx,
+            categories: default(),
+            exercises: default(),
+            tree: default(),
+            seed: default(),
+        }
     }
-    map.end()
 }
 
-#[derive(Debug, Clone, Serialize)]
-#[serde(untagged)]
-pub enum TreeItem {
-    #[serde(serialize_with = "as_hashmap")]
-    Course(Vec<(String, TreeItem)>),
-    Track(Vec<String>),
+/// Storing information about what weve parsed so far
+#[derive(Debug, Default)]
+pub struct ParseData {
+    pub categories: HashMap<String, CategoryConfig>,
+    // pub items: HashMap<String, ItemType>,
+    // pub tracks: HashMap<String, Vec<Track>>,
+    exercises: HashMap<String, Exercise>,
+    pub tree: HashMap<String, Vec<String>>,
 }
 
 impl ParseData {
-    pub fn from_raw(data: RawCourseData) -> anyhow::Result<Self> {
-        let mut courses: HashMap<_, _> = HashMap::new();
-        for (id, tracks) in &data.tracks {
-            courses.insert(
-                id.clone(),
-                TreeItem::Course(
-                    tracks
-                        .iter()
-                        .map(|t| (t.id.clone(), TreeItem::Track(t.items.clone())))
-                        .collect(),
-                ),
-            );
-        }
-
+    pub fn from_raw(data: RawParseData) -> anyhow::Result<Self> {
         Ok(Self {
-            course_data: data.course_data,
-            items: data.items,
-            tracks: data.tracks,
-            tree: courses,
-        })
-    }
-}
-
-impl RawCourseData {
-    pub fn new(markdown_context: MarkdownContext) -> anyhow::Result<Self> {
-        // let course: RawCourseConfig =
-        //     toml::from_str(&fs::read_to_string(path.join("course.toml"))?)?;
-        // let id = path
-        //     .file_name()
-        //     .context("Course path is not a directory")?
-        //     .to_string_lossy()
-        //     .to_string();
-
-        Ok(Self {
-            // id,
-            // title: course.title,
-            // description: course.description,
-            // output_path: config.parse.output_path.clone().into(),
-            course_data: default(),
-            markdown_context,
-            tracks: default(),
-            items: default(),
-            seed: default(),
+            categories: data.categories,
+            exercises: data.exercises,
+            tree: data.tree,
         })
     }
 
-    pub fn add_track(&mut self, course_id: String, track: Track) -> anyhow::Result<()> {
-        self.tracks
-            .get_mut(&course_id)
-            .with_context(|| format!("Course `{course_id}` not found"))?
-            .push(track);
-        Ok(())
-    }
+    // impl RawCourseData {
+    //     pub fn new(markdown_context: MarkdownContext) -> anyhow::Result<Self> {
+    //         // let course: RawCourseConfig =
+    //         //     toml::from_str(&fs::read_to_string(path.join("course.toml"))?)?;
+    //         // let id = path
+    //         //     .file_name()
+    //         //     .context("Course path is not a directory")?
+    //         //     .to_string_lossy()
+    //         //     .to_string();
+
+    //         Ok(Self {
+    //             // id,
+    //             // title: course.title,
+    //             // description: course.description,
+    //             // output_path: config.parse.output_path.clone().into(),
+    //             categories: default(),
+    //             markdown_context,
+    //             tracks: default(),
+    //             items: default(),
+    //             seed: default(),
+    //         })
+    //     }
+
+    //     pub fn add_track(&mut self, course_id: String, track: Track) -> anyhow::Result<()> {
+    //         self.tracks
+    //             .get_mut(&course_id)
+    //             .with_context(|| format!("Course `{course_id}` not found"))?
+    //             .push(track);
+    //         Ok(())
+    //     }
 }
 
 /// Takes a path to a file and throws it in the asset folder to be served in

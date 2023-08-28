@@ -9,7 +9,6 @@ use serde::Serialize;
 
 mod admonition;
 mod code;
-mod quiz;
 mod utils;
 
 type CallbackArgs = HashMap<String, String>;
@@ -70,7 +69,7 @@ impl<T: Callback> DynCallback for T {
     }
 }
 
-const CALLBACKS: &[&'static dyn DynCallback] = &[&admonition::Admonition, &quiz::Quiz, &code::Code];
+const CALLBACKS: &[&'static dyn DynCallback] = &[&admonition::Admonition, &code::Code];
 #[ctor::ctor]
 static MARKERS: HashMap<&'static str, &'static dyn DynCallback> = {
     let mut tags = HashMap::new();

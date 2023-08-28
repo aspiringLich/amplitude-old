@@ -16,12 +16,10 @@ impl FromDirectory for Exercise {
     ) -> anyhow::Result<Self> {
         let instructions = content.query_file("instructions", FileType::Markdown)?;
         let config = content.query_file("config", FileType::Toml)?;
-        let src_path = content.get_directory("src")?;
-        let src = DirectoryContent::new(&src_path)?;
 
         let id = context.id().rsplit_once('/').unwrap().1.to_string();
-        let starting_code = src.query_files(&id, FileType::Code)?;
-        let generator = src
+        let starting_code = content.query_files(&id, FileType::Code)?;
+        let generator = content
             .query_files("generator", FileType::Code)?
             .collect::<Vec<_>>();
 
