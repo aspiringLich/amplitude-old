@@ -1,6 +1,8 @@
 <script lang="ts">
-    import { focusTrap, modalStore } from "@skeletonlabs/skeleton";
+    import { focusTrap, getModalStore } from "@skeletonlabs/skeleton";
     import { Cross1 } from "radix-icons-svelte";
+    
+    const modalStore = getModalStore();
 </script>
 
 <div class="card w-modal shadow-xl relative" use:focusTrap={true}>

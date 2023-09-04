@@ -3,17 +3,20 @@
 
     //~ Themes
     // import "@skeletonlabs/skeleton/themes/theme-skeleton.css";
-    import "@skeletonlabs/skeleton/styles/skeleton.css";
     import "../app.postcss";
-    import "../themes/base.postcss";
-    import "../themes/colors.postcss";
 
     //~ `highlight.js`
     import hljs from "highlight.js";
-    import { storeHighlightJs, toastStore } from "@skeletonlabs/skeleton";
+    import { storeHighlightJs } from "@skeletonlabs/skeleton";
     import "highlight.js/styles/agate.css";
     storeHighlightJs.set(hljs);
-
+    
+    //~ Init Stores
+    import { initializeStores, getDrawerStore, getToastStore } from "@skeletonlabs/skeleton";
+    initializeStores();
+    const drawerStore = getDrawerStore();
+    const toastStore = getToastStore();
+    
     //~ Toast Notifications
     import { Toast } from "@skeletonlabs/skeleton";
 
@@ -61,7 +64,7 @@
         );
     };
 
-    import { AppShell, Drawer, drawerStore } from "@skeletonlabs/skeleton";
+    import { AppShell, Drawer } from "@skeletonlabs/skeleton";
     import { HamburgerMenu, Cross1 } from "radix-icons-svelte";
     import NavBar from "$cmpt/NavBar.svelte";
     import { fly } from "svelte/transition";

@@ -1,5 +1,11 @@
 /* Write your global styles here, in PostCSS syntax */
 /*! purgecss start ignore */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind variants;
+
 @font-face {
     font-family: "Noto Sans";
     src: "$assets/fonts/NotoSans-Regular.ttf";
@@ -83,6 +89,19 @@ blockquote {
     width: 100%;
     overflow: hidden;
     @apply bg-surface-100-800-token rounded-container-token m-0 py-4 px-6;
+}
+
+button {
+	@apply font-bold;
+	
+	path {
+		stroke-width: 10;
+		stroke: inherit;
+	}
+}
+
+.select {
+	@apply py-0;
 }
 
 .splitpanes.theme {
