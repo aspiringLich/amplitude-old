@@ -5,9 +5,10 @@ use tracing::{error, info};
 
 use crate::misc::current_epoch;
 
-use self::{auth::AuthDb, session::SessionDb, user::UserDb};
+use self::{auth::AuthDb, misc::MiscDb, session::SessionDb, user::UserDb};
 
 pub mod auth;
+pub mod misc;
 pub mod session;
 pub mod user;
 
@@ -53,6 +54,10 @@ impl Db {
 
     pub fn user(&self) -> UserDb {
         UserDb(self)
+    }
+
+    pub fn misc(&self) -> MiscDb {
+        MiscDb(self)
     }
 }
 

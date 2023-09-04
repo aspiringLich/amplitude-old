@@ -62,9 +62,9 @@ impl<T: Send + Sync> HandledRoute<T> for Server<T> {
 }
 
 /// An error that's meant to be converted into some kinda 404 page
-pub(super) struct StatusError {
-    status: Status,
-    body: Option<String>,
+pub struct StatusError {
+    pub status: Status,
+    pub body: Option<String>,
 }
 
 impl<D: fmt::Display + marker::Sync + marker::Send + 'static> From<D> for StatusError {

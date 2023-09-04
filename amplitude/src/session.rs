@@ -1,8 +1,10 @@
-use afire::Request;
+use std::{any, result};
+
+use afire::{Request, Status};
 use anyhow::{anyhow, bail};
 use serde::Serialize;
 
-use crate::{misc::LoginProvider, state::State};
+use crate::{error::StatusError, misc::LoginProvider, state::State};
 
 #[derive(Debug, Serialize)]
 pub struct Session {
@@ -62,11 +64,14 @@ pub struct GithubSession {
     pub token: String,
 }
 
-pub fn get_session(app: &State, req: &Request) -> anyhow::Result<Session> {
-    let token = req.cookies.get("session").ok_or(anyhow!("No session"))?;
+pub fn get_session(app: &State, req: &Request) -> result::Result<Session, StatusError> {
+    let token = req
+        .cookies
+        .get("session")
+        .ok_or(StatusError::from(anyhow!("No session")))?;
 
     if token == "LOGOUT" {
-        bail!("User logged out");
+        return Err(anyhow!("User logged out").into());
     }
 
     let session = app
@@ -77,6 +82,17 @@ pub fn get_session(app: &State, req: &Request) -> anyhow::Result<Session> {
         .ok_or(anyhow!("Invalid session"))?;
 
     Ok(session)
+}
+
+pub fn assert_admin(session: &Session) -> result::Result<(), StatusError> {
+    if session.admin {
+        return Ok(());
+    }
+
+    Err(StatusError {
+        status: Status::Unauthorized,
+        body: Some(serde_json::json!({ "error": "Unauthorized" }).to_string()),
+    })
 }
 
 impl SessionPlatform {
