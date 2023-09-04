@@ -38,6 +38,7 @@ impl<'a> MiscDb<'a> {
             ids.push(row.get(0)?);
         }
 
+        // surely this is a good idea
         let mut options = (1000..9999).collect::<Vec<_>>();
         options.shuffle(&mut rand::thread_rng());
 
@@ -48,5 +49,28 @@ impl<'a> MiscDb<'a> {
         }
 
         bail!("No unique class id found")
+    }
+
+    pub fn save_problem_progress(&self, user_id: &str, problem_id: u64, code: &str) -> Result<()> {
+        // todo: validate problem_id
+
+        self.lock().execute(
+            include_str!("./sql/problems/upsert_problem.sql"),
+            params![user_id, problem_id, code, false],
+        )?;
+
+        Ok(())
+    }
+
+    pub fn load_problem_progress(&self, user_id: &str, problem_id: u64) -> Result<String> {
+        // todo: validate problem_id
+
+        let code = self.lock().query_row(
+            include_str!("./sql/problems/load_problem.sql"),
+            params![user_id, problem_id],
+            |x| x.get::<_, String>(0),
+        )?;
+
+        Ok(code)
     }
 }

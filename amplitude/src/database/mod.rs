@@ -98,7 +98,8 @@ impl Db {
             // == Classes ==
             include_str!("./sql/class/create_class.sql"),
             include_str!("./sql/class/create_class_members.sql"),
-            // == Solutions ==
+            // == Problems ==
+            include_str!("./sql/problems/create_problems.sql"),
             include_str!("./sql/problems/create_solutions.sql"),
         ] {
             trans.execute(i, [])?;
