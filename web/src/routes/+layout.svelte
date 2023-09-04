@@ -86,7 +86,9 @@
 
 <AppShell slotPageContent="relative" on:scroll={updateScroll}>
     <svelte:fragment slot="header">
+        {#key data.pathname}
         <NavBar pathname={data.pathname}/>
+        {/key}
     </svelte:fragment>
 
     {#if loaded}

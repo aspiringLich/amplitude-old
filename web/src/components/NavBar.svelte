@@ -1,7 +1,9 @@
 <script lang="ts" context="module">
-    type Path = [string, string][];
+    import { get, writable } from "svelte/store";
+
+    export type Path = [string, string][];
     /**
-     * The path for the breadcrumbs.
+     * For breadcrumbs, stores the path
      */
     export const path = writable([] as Path);
 </script>
@@ -15,17 +17,12 @@
         getDrawerStore,
     } from "@skeletonlabs/skeleton";
     import { HamburgerMenu, TriangleDown } from "radix-icons-svelte";
-    import { writable } from "svelte/store";
 
     export let pathname: string;
-
+    
+    const _path = get(path);
     const modalStore = getModalStore();
     const drawerStore = getDrawerStore();
-
-    $: console.log($path);
-    // export let path: string;
-    // $: list = path.split("/").slice(1, path.length - 1);
-    // $: trunc = list.slice(0, list.length - 1);
 
     const login = () => {
         modalStore.trigger({
@@ -54,7 +51,7 @@
                 <a class="anchor clean-link" href="/">home</a>
             </li>
 
-            {#each $path as p, i}
+            {#each _path as p, i}
                 <li class="crumb-seperator" aria-hidden>/</li>
                 <li class="crumb">
                     <a class="anchor clean-link" href={p[0]}>
@@ -63,12 +60,14 @@
                 </li>
             {/each}
 
-            <li class="crumb-seperator" aria-hidden>/</li>
-            <li class="crumb">
-                <a class="anchor clean-link" href={pathname}>
-                    {pathname.split("/").slice(-1)[0]}
-                </a>
-            </li>
+            {#if pathname !== "/"}
+                <li class="crumb-seperator" aria-hidden>/</li>
+                <li class="crumb">
+                    <a class="anchor clean-link" href={pathname}>
+                        {pathname.split("/").slice(-1)[0]}
+                    </a>
+                </li>
+            {/if}
         </ol>
     </div>
     <div class="flex items-center justify-end gap-2 px-2">
