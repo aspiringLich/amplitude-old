@@ -189,6 +189,7 @@
 <div class="codemirror-wrapper {classes}" bind:this={element} />
 
 <style>
+    /*! purgecss start ignore */
     .codemirror-wrapper {
         height: 100%;
     }

@@ -3,10 +3,13 @@
     import {
         LightSwitch,
         Avatar,
-        modalStore,
-        drawerStore,
+        getModalStore,
+        getDrawerStore,
     } from "@skeletonlabs/skeleton";
     import { HamburgerMenu, TriangleDown } from "radix-icons-svelte";
+    
+    const modalStore = getModalStore();
+    const drawerStore = getDrawerStore();
 
     export let path: string;
     $: list = path.split("/").slice(1, path.length - 1);

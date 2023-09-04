@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { modalStore } from "@skeletonlabs/skeleton";
+    import { getModalStore } from "@skeletonlabs/skeleton";
     import { editorSettings as settings } from "$lib/settings";
     import * as themes from "thememirror";
     import Modal from "$cmpt/modals/Modal.svelte";
@@ -8,6 +8,7 @@
     import StepSelect from "$cmpt/form/StepSelect.svelte";
     import { camelToTitle } from "$lib/util";
 
+    const modalStore = getModalStore();
     const predicate = (x: string) => x != "createTheme";
     let trimmed_themes = ["default", ...Object.keys(themes)].filter(predicate);
     let value = `import itertools, random\n\ndeck = list(itertools.product(

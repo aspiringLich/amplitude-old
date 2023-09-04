@@ -4,12 +4,15 @@
     import { itemID, type ExerciseData } from "$lib/item";
     import ExercisePanel from "./ExercisePanel.svelte";
     import type { TestResults } from "$lib/fetch";
-    import { modalStore, toastStore } from "@skeletonlabs/skeleton";
+    import { getModalStore, getToastStore } from "@skeletonlabs/skeleton";
     import type { ToastSettings } from "@skeletonlabs/skeleton";
     import { Gear } from "radix-icons-svelte";
     import colors from "tailwindcss/colors";
     import { editorSettings as settings } from "$lib/settings";
     import { onMount } from "svelte";
+
+    const modalStore = getModalStore();
+    const toastStore = getToastStore();
 
     export let data: ExerciseData;
 
@@ -76,10 +79,7 @@
     <Pane minSize={20} class="relative flex shadow-xl">
         <ExercisePanel {data} bind:results />
     </Pane>
-    <Pane
-        minSize={20}
-        class="flex flex-col relative overflow-auto shadow-xl"
-    >
+    <Pane minSize={20} class="flex flex-col relative overflow-auto shadow-xl">
         <div
             class="h-[42px] bg-surface-200-700-token flex items-center justify-between {fdir}"
         >
