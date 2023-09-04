@@ -7,7 +7,6 @@
     import { getModalStore, getToastStore } from "@skeletonlabs/skeleton";
     import type { ToastSettings } from "@skeletonlabs/skeleton";
     import { Gear } from "radix-icons-svelte";
-    import colors from "tailwindcss/colors";
     import { editorSettings as settings } from "$lib/settings";
     import { onMount } from "svelte";
 
@@ -73,7 +72,7 @@
 
 <Splitpanes
     theme="theme"
-    class="floating-container m-auto {fdir}"
+    class="floating-container {fdir}"
     rtl={$settings.flipPanes}
 >
     <Pane minSize={20} class="relative flex shadow-xl">
