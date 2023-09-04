@@ -36,7 +36,7 @@
 </noscript>
 
 <div>
-    <div class="article container-xl px-8 py-4 m-auto {classes}" class:show={init} bind:this={body_element}>
+    <div class="article container-xl m-auto {classes}" class:show={init} bind:this={body_element}>
     <h1 class="text-5xl my-6">{@html data.title}</h1>
         {@html data.body}
     </div>

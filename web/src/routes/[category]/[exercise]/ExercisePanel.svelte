@@ -35,7 +35,7 @@
     <svelte:fragment slot="panel">
         {#if tabN == 0}
             <Article
-                classes="h-max"
+                classes="h-max px-4 py-2"
                 data={{
                     title: data.config.title,
                     body: data.config.instructions,

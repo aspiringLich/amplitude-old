@@ -106,7 +106,7 @@ button {
 
 .splitpanes.theme {
     .splitpanes__pane {
-        @apply rounded-md;
+        @apply lg:rounded-md;
         overflow-y: auto;
     }
     .splitpanes__splitter {
@@ -206,4 +206,8 @@ button {
 
 .dark .hover-highlight:hover {
     background-color: rgb(var(--color-surface-500) / 0.5);
+}
+
+.floating-container {
+    @apply lg:p-16 lg:pt-8 max-w-6xl;
 }
