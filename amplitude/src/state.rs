@@ -1,6 +1,7 @@
 use std::{fs, path::PathBuf};
 
 use amplitude_common::config::{Args, Config};
+use anyhow::Context;
 use parking_lot::{RwLock, RwLockReadGuard};
 use rusqlite::Connection;
 
@@ -22,7 +23,10 @@ impl State {
 
     pub fn new() -> anyhow::Result<Self> {
         let args = Args::parse();
-        let mut config = toml::from_str::<Config>(&fs::read_to_string(&args.config)?)?;
+        let mut config = toml::from_str::<Config>(
+            &fs::read_to_string(&args.config).context("While reading config file")?,
+        )
+        .context("While parsing config file")?;
         config.args = args;
 
         let tmp_folder = PathBuf::from(&config.docker.tmp_folder);
@@ -30,8 +34,10 @@ impl State {
             fs::create_dir_all(tmp_folder)?;
         }
 
-        let db = Db::new(Connection::open(&path::DATABASE)?);
-        db.init()?;
+        let db = Db::new(
+            Connection::open(&path::DATABASE).context("While opening connection to Database")?,
+        );
+        db.init().context("While initializing Database")?;
 
         let parse_data = parse(&config)?;
 
