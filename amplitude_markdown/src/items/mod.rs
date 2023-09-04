@@ -1,4 +1,3 @@
-
 use crate::parse::context::DataContext;
 use crate::path::{DirectoryContent, FileType, FromDirectory, FromFile};
 use amplitude_common::config::Config;
@@ -7,7 +6,6 @@ use anyhow::Context;
 use serde::{Deserialize, Serialize};
 
 use std::fs::{self, File};
-
 
 pub mod article;
 pub mod exercise;

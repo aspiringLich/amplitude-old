@@ -125,7 +125,7 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
         let scope = || -> anyhow::Result<()> {
             let mut ctx = DataContext::new(&mut data, &name).context("While creating context")?;
             let header =
-            File::open(&path.join("header.md")).context("While openning header file")?;
+                File::open(&path.join("header.md")).context("While openning header file")?;
 
             let (category, s): (CategoryConfig, _) =
                 parse_frontmatter(&header).context("While parsing frontmatter for header")?;
@@ -133,7 +133,7 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
 
             let arena = Arena::new();
             let refs = parse_document_refs(&arena, &s);
-            
+
             let original = ctx.markdown_context().refs.clone();
             ctx.markdown_context_mut().refs.extend(refs);
 
@@ -152,10 +152,11 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
                         &DirectoryContent::new(&path).context("While getting directory content")?,
                         ctx,
                         &config,
-                    ).context("While getting `Exercise`")?;
-                    
+                    )
+                    .context("While getting `Exercise`")?;
+
                     ctx.add(exercise).context("While adding exercise")?;
-                    
+
                     Ok(())
                 })
                 .context("While parsing exercise")?;

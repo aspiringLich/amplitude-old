@@ -23,7 +23,6 @@ pub struct Db {
 enum DbResult<T> {
     Ok(T),
     NotFound,
-    Error(rusqlite::Error),
 }
 
 impl Db {
@@ -132,14 +131,16 @@ impl Db {
     }
 }
 
-impl<T> From<Result<T, rusqlite::Error>> for DbResult<T> {
-    fn from(res: Result<T, rusqlite::Error>) -> Self {
-        match res {
-            Ok(t) => Self::Ok(t),
-            Err(rusqlite::Error::QueryReturnedNoRows | rusqlite::Error::ExecuteReturnedResults) => {
-                Self::NotFound
-            }
-            Err(e) => Self::Error(e),
+trait SimplifyDbResult<T> {
+    fn simplify(self) -> Result<DbResult<T>, rusqlite::Error>;
+}
+
+impl<T> SimplifyDbResult<T> for Result<T, rusqlite::Error> {
+    fn simplify(self) -> Result<DbResult<T>, rusqlite::Error> {
+        match self {
+            Ok(t) => Ok(DbResult::Ok(t)),
+            Err(rusqlite::Error::QueryReturnedNoRows) => Ok(DbResult::NotFound),
+            Err(e) => Err(e),
         }
     }
 }

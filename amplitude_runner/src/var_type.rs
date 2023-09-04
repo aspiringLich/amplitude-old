@@ -89,7 +89,8 @@ impl<'a> TryFrom<&'a str> for VariableType {
                 let predicate = |c: char| !c.is_ascii_alphanumeric() && !"_-".contains(c);
                 anyhow::ensure!(
                     !ident.contains(predicate),
-                    "Invalid character {}, Field names should only be made up of alphanumeric characters or \"_-\"",
+                    "Invalid character {}, Field names should only be made up of alphanumeric \
+                     characters or \"_-\"",
                     ident.as_bytes()[ident.find(predicate).unwrap()] as char
                 );
                 map.insert(ident.to_string(), VariableType::try_from(ty)?);

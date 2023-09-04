@@ -6,7 +6,7 @@ use serde::Serialize;
 
 use crate::{misc::LoginProvider, state::State};
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct Session {
     /// Platform specific things
     pub platform: SessionPlatform,
@@ -22,6 +22,7 @@ pub struct Session {
     pub signup: u64,
 }
 
+#[derive(Debug)]
 pub enum SessionPlatform {
     Github(GithubSession),
     Google(GoogleSession),
@@ -36,11 +37,13 @@ impl Serialize for SessionPlatform {
     }
 }
 
+#[derive(Debug)]
 pub struct GoogleSession {
     pub google_id: String,
     pub access_token: String,
 }
 
+#[derive(Debug)]
 pub struct GithubSession {
     pub github_id: u64,
     pub login: String,
