@@ -1,3 +1,11 @@
+<script lang="ts" context="module">
+    type Path = [string, string][];
+    /**
+     * The path for the breadcrumbs.
+     */
+    export const path = writable([] as Path);
+</script>
+
 <script lang="ts">
     import { browser } from "$app/environment";
     import {
@@ -7,13 +15,17 @@
         getDrawerStore,
     } from "@skeletonlabs/skeleton";
     import { HamburgerMenu, TriangleDown } from "radix-icons-svelte";
-    
+    import { writable } from "svelte/store";
+
+    export let pathname: string;
+
     const modalStore = getModalStore();
     const drawerStore = getDrawerStore();
 
-    export let path: string;
-    $: list = path.split("/").slice(1, path.length - 1);
-    $: trunc = list.slice(0, list.length - 1);
+    $: console.log($path);
+    // export let path: string;
+    // $: list = path.split("/").slice(1, path.length - 1);
+    // $: trunc = list.slice(0, list.length - 1);
 
     const login = () => {
         modalStore.trigger({
@@ -38,19 +50,25 @@
             <HamburgerMenu size={20} />
         </button>
         <ol class="breadcrumb ml-4">
-            <li class="crumb"><a class="anchor" href="/">home</a></li>
+            <li class="crumb">
+                <a class="anchor clean-link" href="/">home</a>
+            </li>
 
-            {#each trunc as crumb, i}
+            {#each $path as p, i}
                 <li class="crumb-seperator" aria-hidden>/</li>
                 <li class="crumb">
-                    <a class="anchor" href="/{trunc.slice(i).join('/')}">
-                        {crumb}
+                    <a class="anchor clean-link" href={p[0]}>
+                        {p[1]}
                     </a>
                 </li>
             {/each}
 
             <li class="crumb-seperator" aria-hidden>/</li>
-            <li class="crumb">{list[list.length - 1]}</li>
+            <li class="crumb">
+                <a class="anchor clean-link" href={pathname}>
+                    {pathname.split("/").slice(-1)[0]}
+                </a>
+            </li>
         </ol>
     </div>
     <div class="flex items-center justify-end gap-2 px-2">

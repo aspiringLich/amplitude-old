@@ -1,6 +1,8 @@
 /* Write your global styles here, in PostCSS syntax */
 /*! purgecss start ignore */
 
+@import "utilities.postcss";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -92,16 +94,16 @@ blockquote {
 }
 
 button {
-	@apply font-bold;
-	
-	path {
-		stroke-width: 10;
-		stroke: inherit;
-	}
+    @apply font-bold;
+
+    path {
+        stroke-width: 10;
+        stroke: inherit;
+    }
 }
 
 .select {
-	@apply py-0;
+    @apply py-0;
 }
 
 .splitpanes.theme {
@@ -190,24 +192,3 @@ button {
         var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
-.semi-interactive {
-    transition-property: all;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 150ms;
-}
-
-.rounded-t-container-token {
-    @apply rounded-tl-container-token rounded-tr-container-token;
-}
-
-.hover-highlight:hover {
-    background-color: rgb(var(--color-surface-400) / 0.5);
-}
-
-.dark .hover-highlight:hover {
-    background-color: rgb(var(--color-surface-500) / 0.5);
-}
-
-.floating-container {
-    @apply lg:p-16 lg:pt-8 max-w-6xl;
-}

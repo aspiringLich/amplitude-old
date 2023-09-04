@@ -1,0 +1,30 @@
+@tailwind utilities;
+
+@layer utilities {
+    .semi-interactive {
+        transition-property: all;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 150ms;
+    }
+
+    .rounded-t-container-token {
+        @apply rounded-tl-container-token rounded-tr-container-token;
+    }
+
+    .hover-highlight:hover {
+        background-color: rgb(var(--color-surface-400) / 0.3);
+    }
+
+    .dark .hover-highlight:hover {
+        background-color: rgb(var(--color-surface-500) / 0.3);
+    }
+
+    .floating-container {
+        @apply lg:p-16 lg:pt-8 max-w-6xl;
+    }
+    
+    .clean-link {
+        @apply no-underline p-1 rounded-md;
+        @apply hover-highlight;
+    }
+}
