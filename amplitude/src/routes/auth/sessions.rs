@@ -16,7 +16,7 @@ struct SessionEntry {
 
 pub fn attach(server: &mut Server<State>) {
     server.handled_stateful_route(Method::GET, "/auth/sessions", move |app, req| {
-        let session = match get_session(app.clone(), req) {
+        let session = match get_session(&app, req) {
             Ok(session) => session,
             Err(_) => {
                 return Response::new()

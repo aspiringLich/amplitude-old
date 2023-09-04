@@ -6,7 +6,7 @@ use crate::{error::HandledRoute, misc::OkResponse, session::get_session, state::
 
 pub fn attach(server: &mut Server<State>) {
     server.handled_stateful_route(Method::GET, "/auth/logout", move |app, req| {
-        if let Ok(i) = get_session(app.clone(), req) {
+        if let Ok(i) = get_session(&app, req) {
             app.db.session().delete_session(&i.token)?;
         }
 

@@ -42,7 +42,7 @@ impl<'a> SessionDb<'a> {
         .unwrap_or_else(|_| session.id.to_owned());
 
         this.execute(
-            include_str!("./sql/insert_sessions.sql"),
+            include_str!("./sql/session/insert_sessions.sql"),
             params![
                 id,
                 session.token,

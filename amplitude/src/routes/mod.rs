@@ -12,6 +12,7 @@ mod category;
 mod evaluate;
 mod exercise;
 mod list;
+mod class;
 
 pub fn attach(server: &mut Server<State>) {
     server.route(Method::ANY, "/api/**", |_| {
