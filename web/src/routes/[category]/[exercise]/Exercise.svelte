@@ -73,7 +73,7 @@
 
 <Splitpanes
     theme="theme"
-    class="p-16 pt-8 max-w-6xl m-auto {fdir}"
+    class="floating-container m-auto {fdir}"
     rtl={$settings.flipPanes}
 >
     <Pane minSize={20} class="relative flex shadow-xl">

@@ -3,16 +3,20 @@
     import { Cross1 } from "radix-icons-svelte";
     
     const modalStore = getModalStore();
+    
+    export let title: string
 </script>
 
-<div class="card w-modal shadow-xl relative" use:focusTrap={true}>
+<div class="card w-modal shadow-xl relative pt-0" use:focusTrap={true}>
     <button
-        class="absolute top-1 right-1 hover:bg-slate-200 interactive p-1 rounded-full"
+        class="absolute top-1 right-1 hover-highlight interactive p-1 rounded-full"
         on:click={() => modalStore.close()}
     >
         <Cross1 size={20} class="stroke-3"/>
     </button>
-
+    <div class="card-header py-0 bg-surface-200-700-token rounded-t-container-token pt-1">
+        <h3 class="h3 !my-0">{title}</h3>
+    </div>
     <div class="max-h-[80vh] overflow-auto p-4 pt-2">
         <slot />
     </div>

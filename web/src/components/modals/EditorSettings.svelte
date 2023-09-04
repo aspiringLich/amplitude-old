@@ -17,8 +17,7 @@
 </script>
 
 {#if $modalStore[0]}
-    <Modal>
-        <h3 class="h3 !my-1">Editor Settings</h3>
+    <Modal title="Editor Settings">
         <div class="grid grid-cols-1 gap-2 !mt-0">
             <Editor
                 class="w-full h-64 min-h-64 max-h-64"

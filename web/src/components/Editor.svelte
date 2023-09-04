@@ -63,7 +63,8 @@
         python: python(),
     }[lang_name];
 
-    $: theme = themes[$modeCurrent ? $settings.lightTheme : $settings.darkTheme];
+    $: theme =
+        themes[$modeCurrent ? $settings.lightTheme : $settings.darkTheme];
 
     $: state_extensions = [
         ...get_base_extensions(
@@ -83,7 +84,10 @@
     $: view && update(value);
     $: view && state_extensions && reconfigure();
 
-    onMount(() => (view = create_editor_view()));
+    onMount(() => {
+        view = create_editor_view();
+        element.querySelector(".cm-content").setAttribute("tabindex", "-1");
+    });
     onDestroy(() => view?.destroy());
 
     function create_editor_view(): EditorView {
@@ -193,7 +197,6 @@
     .codemirror-wrapper {
         height: 100%;
     }
-
     .codemirror-wrapper :global(.cm-focused) {
         outline: none;
     }

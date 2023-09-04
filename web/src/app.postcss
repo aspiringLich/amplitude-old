@@ -106,7 +106,7 @@ button {
 
 .splitpanes.theme {
     .splitpanes__pane {
-        @apply rounded-md;
+        @apply lg:rounded-md;
         overflow-y: auto;
     }
     .splitpanes__splitter {
@@ -196,4 +196,18 @@ button {
     transition-duration: 150ms;
 }
 
+.rounded-t-container-token {
+    @apply rounded-tl-container-token rounded-tr-container-token;
+}
 
+.hover-highlight:hover {
+    background-color: rgb(var(--color-surface-400) / 0.5);
+}
+
+.dark .hover-highlight:hover {
+    background-color: rgb(var(--color-surface-500) / 0.5);
+}
+
+.floating-container {
+    @apply lg:p-16 lg:pt-8 max-w-6xl;
+}
