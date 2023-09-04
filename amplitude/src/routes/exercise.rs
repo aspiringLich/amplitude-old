@@ -17,11 +17,13 @@ pub fn attach(server: &mut Server<State>) {
         let e = parse_data
             .exercises
             .get(&req.id)
-            .with_context(Status::NotFound, || format!("Exercise `{}` not found", req.id))?;
+            .with_context(Status::NotFound, || {
+                format!("Exercise `{}` not found", req.id)
+            })?;
 
         let mut buffer = Vec::new();
         let mut s = serde_json::Serializer::new(&mut buffer);
-        
+
         let mut clone = e.clone();
         transform(&mut clone);
         clone.serialize(&mut s).context(

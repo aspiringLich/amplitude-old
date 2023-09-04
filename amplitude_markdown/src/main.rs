@@ -14,7 +14,7 @@ fn main() -> anyhow::Result<()> {
 
     let config = config_and_set_path()?;
     let data = parse(&config)?;
-    
+
     dbg!(data);
 
     Ok(())

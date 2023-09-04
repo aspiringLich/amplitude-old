@@ -1,4 +1,4 @@
-use super::{parse_md, RawParseData, course::CategoryConfig};
+use super::{course::CategoryConfig, parse_md, RawParseData};
 use amplitude_runner::exercise::Exercise;
 use comrak::{ComrakOptions, RefMap};
 use tracing::debug;

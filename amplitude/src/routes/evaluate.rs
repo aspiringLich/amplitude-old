@@ -19,7 +19,9 @@ pub fn attach(server: &mut Server<State>) {
         let e = parse_data
             .exercises
             .get(&body.id)
-            .with_context(Status::NotFound, || format!("Exercise `{}` not found", body.id))?;
+            .with_context(Status::NotFound, || {
+                format!("Exercise `{}` not found", body.id)
+            })?;
 
         let id = body.id.split_once('/').unwrap().1;
         let results = e
