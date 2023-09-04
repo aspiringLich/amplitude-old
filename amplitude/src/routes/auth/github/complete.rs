@@ -72,6 +72,7 @@ pub fn attach(server: &mut Server<State>) {
             name: user.name,
             avatar: user.avatar_url,
             signup: current_epoch(),
+            admin: false,
         };
 
         app.db

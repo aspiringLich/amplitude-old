@@ -14,37 +14,30 @@ pub struct SessionDb<'a>(pub(super) &'a Db);
 impl<'a> SessionDb<'a> {
     pub fn add_session(&self, session: &Session, agent: Option<&str>) -> anyhow::Result<()> {
         let this = self.lock();
-        let id = match &session.platform {
-            SessionPlatform::Github(p) => this.query_row(
-                include_str!("./sql/auth/github/upsert_login.sql"),
-                params![
-                    session.id,
-                    p.github_id,
-                    session.name,
-                    p.login,
-                    session.avatar,
-                    p.token
-                ],
-                |x| x.get::<_, String>(0),
-            ),
-            SessionPlatform::Google(p) => this.query_row(
-                include_str!("./sql/auth/google/upsert_login.sql"),
-                params![
-                    session.id,
-                    p.google_id,
-                    session.name,
-                    session.avatar,
-                    p.access_token,
-                ],
-                |x| x.get::<_, String>(0),
-            ),
-        }
-        .unwrap_or_else(|_| session.id.to_owned());
 
+        // Add platform specific login data
+        match &session.platform {
+            SessionPlatform::Github(p) => this.execute(
+                include_str!("./sql/auth/github/upsert_login.sql"),
+                params![session.id, p.github_id, p.login, p.token,],
+            )?,
+            SessionPlatform::Google(p) => this.execute(
+                include_str!("./sql/auth/google/upsert_login.sql"),
+                params![session.id, p.google_id, p.access_token,],
+            )?,
+        };
+
+        // Add generic login data
+        this.execute(
+            include_str!("./sql/auth/upsert_login.sql"),
+            params![session.id, session.name, session.avatar],
+        )?;
+
+        // Add session to database
         this.execute(
             include_str!("./sql/session/insert_sessions.sql"),
             params![
-                id,
+                session.id,
                 session.token,
                 session.platform.as_provider() as u8,
                 agent
@@ -74,39 +67,47 @@ impl<'a> SessionDb<'a> {
             return Err(anyhow::anyhow!("Session expired"));
         }
 
-        Ok(match platform.into() {
-            LoginProvider::Github => {
-                this.query_row("SELECT * FROM github_users WHERE id = ?1", [user_id], |x| {
-                    Ok(Session {
-                        id: x.get::<_, String>(0)?,
-                        name: x.get::<_, String>(2)?,
-                        avatar: x.get::<_, String>(4)?,
-                        signup: x.get::<_, u64>(6)?,
-                        token: token.to_string(),
-                        platform: SessionPlatform::Github(GithubSession {
-                            github_id: x.get::<_, u64>(1)?,
-                            login: x.get::<_, String>(3)?,
-                            token: x.get::<_, String>(5)?,
-                        }),
-                    })
-                })?
-            }
-            LoginProvider::Google => {
-                this.query_row("SELECT * FROM google_users WHERE id = ?1", [user_id], |x| {
-                    Ok(Session {
-                        id: x.get::<_, String>(0)?,
-                        name: x.get::<_, String>(2)?,
-                        avatar: x.get::<_, String>(3)?,
-                        signup: x.get::<_, u64>(5)?,
-                        token: token.to_string(),
-                        platform: SessionPlatform::Google(GoogleSession {
-                            google_id: x.get::<_, String>(1)?,
-                            access_token: x.get::<_, String>(4)?,
-                        }),
-                    })
-                })?
-            }
-        })
+        let platform_data: SessionPlatform = match platform.into() {
+            LoginProvider::Github => this.query_row(
+                "SELECT github_id, login, token FROM github_users WHERE id = ?1",
+                [&user_id],
+                |x| {
+                    Ok(GithubSession {
+                        github_id: x.get(0)?,
+                        login: x.get(1)?,
+                        token: x.get(2)?,
+                    }
+                    .into())
+                },
+            )?,
+            LoginProvider::Google => this.query_row(
+                "SELECT google_id, access_token FROM google_users WHERE id = ?1",
+                [&user_id],
+                |x| {
+                    Ok(GoogleSession {
+                        google_id: x.get(0)?,
+                        access_token: x.get(1)?,
+                    }
+                    .into())
+                },
+            )?,
+        };
+
+        Ok(this.query_row(
+            "SELECT name, avatar_url, created, admin FROM users WHERE id = ?",
+            [&user_id],
+            |x| {
+                Ok(Session {
+                    platform: platform_data,
+                    token: token.to_owned(),
+                    id: user_id.to_owned(),
+                    name: x.get(0)?,
+                    avatar: x.get(1)?,
+                    signup: x.get(2)?,
+                    admin: x.get(3)?,
+                })
+            },
+        )?)
     }
 
     pub fn delete_session(&self, token: &str) -> anyhow::Result<()> {

@@ -14,7 +14,7 @@ pub mod user;
 type SessionMeta = (String, u64, Option<String>);
 
 // Increment every time schema changes, even in dev
-const DATABASE_VERSION: u64 = 1;
+const DATABASE_VERSION: u64 = 2;
 
 pub struct Db {
     inner: Mutex<Option<Connection>>,
@@ -73,7 +73,8 @@ impl Db {
             }
             i => {
                 error!(
-                    "Database version mismatch. Expected {}, got {}",
+                    "Database version mismatch. Expected {}, got {}. Please run migrations, or \
+                     just like delete the database and start over.",
                     DATABASE_VERSION, i
                 );
             }
@@ -82,6 +83,7 @@ impl Db {
         let trans = this.transaction()?;
         for i in [
             // == AUTH ==
+            include_str!("./sql/auth/create_users.sql"),
             include_str!("./sql/auth/github/create_users.sql"),
             include_str!("./sql/auth/github/create_oauth_state.sql"),
             include_str!("./sql/auth/google/create_users.sql"),

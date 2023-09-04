@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use afire::Request;
 use anyhow::{anyhow, bail};
 use serde::Serialize;
@@ -20,12 +18,26 @@ pub struct Session {
     pub avatar: String,
     /// The time they signed up (epoch secs)
     pub signup: u64,
+    /// If the user is an admin
+    pub admin: bool,
 }
 
 #[derive(Debug)]
 pub enum SessionPlatform {
     Github(GithubSession),
     Google(GoogleSession),
+}
+
+impl From<GithubSession> for SessionPlatform {
+    fn from(x: GithubSession) -> Self {
+        Self::Github(x)
+    }
+}
+
+impl From<GoogleSession> for SessionPlatform {
+    fn from(x: GoogleSession) -> Self {
+        Self::Google(x)
+    }
 }
 
 impl Serialize for SessionPlatform {

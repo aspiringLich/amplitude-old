@@ -1,13 +1,9 @@
 INSERT INTO google_users (
         id,
         google_id,
-        name,
-        avatar_url,
-        access_token,
-        created
+        access_token
     )
-VALUES (?1, ?2, ?3, ?4, ?5, strftime('%s', 'now')) ON CONFLICT DO
+VALUES (?1, ?2, ?3) ON CONFLICT DO
 UPDATE
-SET name = ?3,
-    avatar_url = ?4
-RETURNING id;
+SET google_id = ?2,
+    access_token = ?3;
