@@ -29,7 +29,7 @@
 >
     <div class="flex items-center">
         <button
-            class="hover:bg-slate-200 interactive p-1 rounded-full ml-4"
+            class="hover-highlight interactive p-1 rounded-full ml-4"
             on:click={() =>
                 drawerStore.open({
                     width: "w-96",

@@ -106,7 +106,7 @@
     <div class="relative">
         <button
             class="absolute top-[-1.5em] right-[-1.5em]
-            hover:bg-slate-200 interactive p-1 rounded-full"
+            hover-highlight interactive p-1 rounded-full"
             on:click={() => drawerStore.close()}
         >
             <Cross1 size={24} />
