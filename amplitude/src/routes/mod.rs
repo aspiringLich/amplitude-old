@@ -9,10 +9,10 @@ use tracing::trace;
 
 mod auth;
 mod category;
+mod class;
 mod evaluate;
 mod exercise;
 mod list;
-mod class;
 
 pub fn attach(server: &mut Server<State>) {
     server.route(Method::ANY, "/api/**", |_| {
@@ -23,6 +23,7 @@ pub fn attach(server: &mut Server<State>) {
 
     auth::attach(server);
     category::attach(server);
+    class::attach(server);
     evaluate::attach(server);
     list::attach(server);
     exercise::attach(server);

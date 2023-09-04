@@ -20,6 +20,12 @@ pub struct Db {
     inner: Mutex<Option<Connection>>,
 }
 
+enum DbResult<T> {
+    Ok(T),
+    NotFound,
+    Error(rusqlite::Error),
+}
+
 impl Db {
     pub fn new(connection: Connection) -> Self {
         Self {
@@ -81,16 +87,13 @@ impl Db {
             include_str!("./sql/auth/github/create_oauth_state.sql"),
             include_str!("./sql/auth/google/create_users.sql"),
             include_str!("./sql/auth/google/create_oauth_state.sql"),
-            
             // == Sessions ==
             include_str!("./sql/session/create_sessions.sql"),
-            
             // == Classes ==
             include_str!("./sql/class/create_class.sql"),
-            include_str!("./sql/class/create_user_class.sql"),
-            
+            include_str!("./sql/class/create_class_members.sql"),
             // == Solutions ==
-            include_str!("./sql/problems/create_solutions.sql")
+            include_str!("./sql/problems/create_solutions.sql"),
         ] {
             trans.execute(i, [])?;
         }
@@ -126,5 +129,17 @@ impl Db {
         trans.commit()?;
 
         Ok(())
+    }
+}
+
+impl<T> From<Result<T, rusqlite::Error>> for DbResult<T> {
+    fn from(res: Result<T, rusqlite::Error>) -> Self {
+        match res {
+            Ok(t) => Self::Ok(t),
+            Err(rusqlite::Error::QueryReturnedNoRows | rusqlite::Error::ExecuteReturnedResults) => {
+                Self::NotFound
+            }
+            Err(e) => Self::Error(e),
+        }
     }
 }
