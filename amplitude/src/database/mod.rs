@@ -5,10 +5,11 @@ use tracing::{error, info};
 
 use crate::misc::current_epoch;
 
-use self::{auth::AuthDb, session::SessionDb};
+use self::{auth::AuthDb, session::SessionDb, user::UserDb};
 
 pub mod auth;
 pub mod session;
+pub mod user;
 
 type SessionMeta = (String, u64, Option<String>);
 
@@ -44,6 +45,10 @@ impl Db {
     pub fn session(&self) -> SessionDb {
         SessionDb(self)
     }
+
+    pub fn user(&self) -> UserDb {
+        UserDb(self)
+    }
 }
 
 impl Db {
@@ -71,11 +76,21 @@ impl Db {
 
         let trans = this.transaction()?;
         for i in [
+            // == AUTH ==
             include_str!("./sql/auth/github/create_users.sql"),
             include_str!("./sql/auth/github/create_oauth_state.sql"),
             include_str!("./sql/auth/google/create_users.sql"),
             include_str!("./sql/auth/google/create_oauth_state.sql"),
-            include_str!("./sql/create_sessions.sql"),
+            
+            // == Sessions ==
+            include_str!("./sql/session/create_sessions.sql"),
+            
+            // == Classes ==
+            include_str!("./sql/class/create_class.sql"),
+            include_str!("./sql/class/create_user_class.sql"),
+            
+            // == Solutions ==
+            include_str!("./sql/problems/create_solutions.sql")
         ] {
             trans.execute(i, [])?;
         }

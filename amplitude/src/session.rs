@@ -47,7 +47,7 @@ pub struct GithubSession {
     pub token: String,
 }
 
-pub fn get_session(app: Arc<State>, req: &Request) -> anyhow::Result<Session> {
+pub fn get_session(app: &State, req: &Request) -> anyhow::Result<Session> {
     let token = req.cookies.get("session").ok_or(anyhow!("No session"))?;
 
     if token == "LOGOUT" {
