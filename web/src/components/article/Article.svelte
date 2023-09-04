@@ -37,7 +37,7 @@
 
 <div>
     <div class="article container-xl m-auto {classes}" class:show={init} bind:this={body_element}>
-    <h1 class="text-5xl my-6">{@html data.title}</h1>
+    <h1 class="h1 my-6">{@html data.title}</h1>
         {@html data.body}
     </div>
 </div>
