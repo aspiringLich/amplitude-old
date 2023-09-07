@@ -13,6 +13,7 @@ mod class;
 mod evaluate;
 mod exercise;
 mod list;
+mod problem;
 
 pub fn attach(server: &mut Server<State>) {
     server.route(Method::ANY, "/api/**", |_| {
@@ -27,6 +28,7 @@ pub fn attach(server: &mut Server<State>) {
     evaluate::attach(server);
     list::attach(server);
     exercise::attach(server);
+    problem::attach(server);
 }
 
 pub fn json<T>(req: &Request) -> anyhow::Result<T>
