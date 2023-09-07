@@ -51,8 +51,8 @@
     .article {
         visibility: hidden;
         opacity: 0;
-        transform: translateY(-20px);
-        transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+        /* transform: translateY(-20px); */
+        transition: opacity 0.5s ease-in-out;
 
         &.show {
             transform: translateY(0);

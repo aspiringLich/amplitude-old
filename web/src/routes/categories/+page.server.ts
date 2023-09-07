@@ -1,5 +1,11 @@
 import { getCategories, type CategoryConfigs } from "$lib/fetch";
 
-export const load = async ({ params }): Promise<CategoryConfigs> => {
-    return await getCategories();
+class Data {
+    categories: CategoryConfigs;
+}
+
+export const load = async ({ params }): Promise<Data> => {
+    return {
+        categories: await getCategories(),
+    }
 };
