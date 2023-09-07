@@ -22,7 +22,7 @@ pub fn attach(server: &mut Server<State>) {
     });
     server.handled_stateful_route(Method::GET, "/api/list", |state, _req| {
         Ok(Response::new()
-            .text(serde_json::to_string(&state.parse_data().tree)?)
+            .text(serde_json::to_string(&state.parse_data().categories)?)
             .header("Access-Control-Allow-Origin", "*")
             .content(Content::JSON))
     });

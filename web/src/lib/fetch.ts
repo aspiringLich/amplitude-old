@@ -32,18 +32,18 @@ export const fetchApi = async <T>(
     return await req.json();
 };
 
-export type List = { [key: string]: string[] };
+// export type List = { [key: string]: string[] };
 
-export const getExerciseList = async (): Promise<string[]> => {
-    let list: List = await fetchApi("/api/list");
-    let items: string[] = [];
-    for (const [_, value] of Object.entries(list)) {
-        for (const item of value) {
-            items.push(...item);
-        }
-    }
-    return items;
-};
+// export const getExerciseList = async (): Promise<string[]> => {
+//     let list: List = await fetchApi("/api/list", { method: "GET" });
+//     let items: string[] = [];
+//     for (const [_, value] of Object.entries(list)) {
+//         for (const item of value) {
+//             items.push(...item);
+//         }
+//     }
+//     return items;
+// };
 
 export type TestResult =
     | {
@@ -73,3 +73,9 @@ export class CategoryConfig {
     title: string;
     description: string;
 }
+
+export type CategoryConfigs = { [key: string]: CategoryConfig };
+
+export const getCategories = async (): Promise<CategoryConfigs> => {
+    return await fetchApi("/api/list", { method: "GET" });
+};

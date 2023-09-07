@@ -1,4 +1,5 @@
 <script lang="ts">
+    export let data;
 </script>
 
 <div class="floating-container">
@@ -6,7 +7,7 @@
         <h1 class="header h1">Categories</h1>
         <div class="body">
             <div class="grid grid-flow-row-dense">
-                yee
+                
             </div>
         </div>
     </div>
