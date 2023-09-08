@@ -1,13 +1,11 @@
 <script lang="ts">
-    export let data;
-
     //~ Themes
     // import "@skeletonlabs/skeleton/themes/theme-skeleton.css";
     import "../app.postcss";
 
     //~ `highlight.js`
     import hljs from "highlight.js";
-    import { storeHighlightJs } from "@skeletonlabs/skeleton";
+    import { Drawer, storeHighlightJs } from "@skeletonlabs/skeleton";
     import "highlight.js/styles/agate.css";
     storeHighlightJs.set(hljs);
 
@@ -41,6 +39,9 @@
     import type { ModalComponent } from "@skeletonlabs/skeleton";
     import EditorSettings from "$cmpt/modals/EditorSettings.svelte";
     import Login from "$cmpt/modals/Login.svelte";
+    
+    export let data;
+    
     const modalComponentRegistry: Record<string, ModalComponent> = {
         EditorSettings: {
             ref: EditorSettings,
@@ -58,12 +59,24 @@
             background: "variant-filled-error",
         });
     };
-
-    import { AppShell, Drawer } from "@skeletonlabs/skeleton";
-    import { HamburgerMenu, Cross1 } from "radix-icons-svelte";
-    import NavBar from "$cmpt/NavBar.svelte";
-    import { fly } from "svelte/transition";
-    import { onMount } from "svelte";    
+    
+    import { onMount } from "svelte";
+    import { Cross1 } from "radix-icons-svelte";
+    
+    //~ Update Scroll Position
+    let scrollElement: Element;
+    const updateScroll = () => {
+        document.body.style.setProperty(
+            "--scroll",
+            scrollElement.scrollTop.toString()
+        );
+    };
+    
+    onMount(() => {
+        scrollElement = document.querySelector("#page");
+    });
+    
+    const duration = 400;
 </script>
 
 <svelte:window on:error={handleError} />
@@ -71,7 +84,7 @@
 <Toast />
 <Modal components={modalComponentRegistry} />
 
-{#key data.pathname}
+{#key data.url}
     <slot />
 {/key}
 

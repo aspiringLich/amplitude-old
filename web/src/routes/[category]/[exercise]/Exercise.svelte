@@ -63,6 +63,7 @@
     }
 
     $: fdir = $settings.flipPanes ? "!flex-row-reverse" : "!flex-row";
+    $: show = loaded ? "show" : "";
 
     let loaded = false;
     onMount(() => {
@@ -72,7 +73,7 @@
 
 <Splitpanes
     theme="theme"
-    class="floating-container {fdir}"
+    class="floating-container {show} {fdir}"
     rtl={$settings.flipPanes}
 >
     <Pane minSize={20} class="relative flex shadow-xl">
@@ -103,11 +104,11 @@
                 <Gear size={24} />
             </button>
         </div>
-        <div class="overflow-auto flex-[1_1_0px] bg-surface-100-800-token">
+        <div class="overflow-auto flex-[1_1_0px] bg-surface-50-900-token">
             <Editor
                 bind:value={code}
                 bind:lang_name={lang}
-                class="overflow-auto"
+                class="overflow-auto fade-in"
             />
         </div>
     </Pane>

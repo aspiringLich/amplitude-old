@@ -4,4 +4,4 @@
     export let data;
 </script>
 
-<Page pathname={data.pathname}>root page :)</Page>
+<Page url={data.url}>root page :)</Page>

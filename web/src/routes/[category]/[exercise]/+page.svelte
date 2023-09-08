@@ -5,6 +5,6 @@
     export let data;
 </script>
 
-<Page path={[["/categories", "categories"]]} pathname={data.pathname}>
+<Page path={[["/categories", "categories"]]} url={data.url}>
     <Exercise {data} />
 </Page>

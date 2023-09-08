@@ -10,7 +10,6 @@
     .rounded-t-container-token {
         @apply rounded-tl-container-token rounded-tr-container-token;
     }
-
     .rounded-b-container-token {
         @apply rounded-bl-container-token rounded-br-container-token;
     }
@@ -18,7 +17,6 @@
     .hover-highlight:hover {
         background-color: rgb(var(--color-surface-400) / 0.3);
     }
-
     .dark .hover-highlight:hover {
         background-color: rgb(var(--color-surface-500) / 0.3);
     }
@@ -27,7 +25,6 @@
         @apply lg:p-16 lg:pt-8 max-w-6xl m-auto;
         @apply h-full;
     }
-
     .floating-container-inner {
         @apply lg:rounded-container-token lg:shadow-2xl h-full lg:h-min;
 
@@ -46,5 +43,16 @@
     .clean-link {
         @apply no-underline p-1 rounded-md;
         @apply hover-highlight;
+    }
+
+    .fade-in {
+        @apply transition-opacity duration-300;
+        @apply opacity-0 invisible;
+    }
+    .show .fade-in {
+        @apply opacity-100 visible;
+    }
+    .show.fade-in {
+        @apply opacity-100 visible;
     }
 }

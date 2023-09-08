@@ -4,7 +4,7 @@
     export let data;
 </script>
 
-<Page pathname={data.pathname}>
+<Page url={data.url}>
     <div class="floating-container">
         <div class="floating-container-inner">
             <h1 class="header h1">Categories</h1>
