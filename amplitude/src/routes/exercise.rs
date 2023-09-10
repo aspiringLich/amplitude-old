@@ -21,18 +21,9 @@ pub fn attach(server: &mut Server<State>) {
                 format!("Exercise `{}` not found", req.id)
             })?;
 
-        let mut buffer = Vec::new();
-        let mut s = serde_json::Serializer::new(&mut buffer);
-
         let mut clone = e.clone();
         transform(&mut clone);
-        clone.serialize(&mut s).context(
-            Status::InternalServerError,
-            "While serializing Item to JSON",
-        )?;
 
-        Ok(Response::new()
-            .bytes(buffer.as_slice())
-            .content(Content::JSON))
+        Ok(Response::new().json(clone)?)
     });
 }

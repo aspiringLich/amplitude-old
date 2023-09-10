@@ -22,8 +22,7 @@ pub fn attach(server: &mut Server<State>) {
             .with_context(Status::NotFound, || {
                 format!("Category `{}` not found", req.category)
             })?;
-        Ok(Response::new()
-            .text(serde_json::to_string(&course)?)
-            .content(Content::JSON))
+
+        Ok(Response::new().json(course)?)
     })
 }
