@@ -1,13 +1,21 @@
 <script lang="ts">
-    import type { CategoryConfig } from "$lib/fetch";
+    import { ProgressRadial } from "@skeletonlabs/skeleton";
 
-    export let config: CategoryConfig;
-    export let id: string;
+    export let config;
 </script>
 
-<div class="card min-w-96 max-w-lg">
-    <section class="p-4">
-        <h2 class="text-xl font-bold">{config.title}</h2>
-        <i class="font-light">{config.description}</i>
+<div class="card max-w-lg card-hover">
+    <section class="p-4 flex gap-x-4">
+        <div>
+            <ProgressRadial width="w-[3.25rem]" value={0.4} />
+        </div>
+        <div>
+            <h2 class="text-xl font-bold text-ellipsis whitespace-nowrap overflow-hidden">
+                {config.title}
+            </h2>
+            <i class="font-light text-ellipsis whitespace-nowrap overflow-hidden">
+                {config.description}
+            </i>
+        </div>
     </section>
 </div>

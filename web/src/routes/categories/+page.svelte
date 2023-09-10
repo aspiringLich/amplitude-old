@@ -1,5 +1,6 @@
 <script lang="ts">
     import Page from "$cmpt/Page.svelte";
+    import { ProgressRadial } from "@skeletonlabs/skeleton";
     import CategoryCard from "./CategoryCard.svelte";
 
     export let data;
@@ -9,9 +10,9 @@
     <div class="floating-container-inner">
         <h1 class="header h1">Categories</h1>
         <div class="body">
-            <div class="grid grid-flow-row-dense">
+            <div class="grid">
                 {#each Object.entries(data.categories) as [category, config]}
-                    <CategoryCard id={category} config={config} />
+                    <CategoryCard {config} />
                 {/each}
             </div>
         </div>

@@ -40,8 +40,7 @@
                 <tr
                     class="interactable hover:cursor-pointer"
                     class:correct={result?.type === "correct"}
-                    class:incorrect={result?.type === "incorrect" ||
-                        result?.type === "error"}
+                    class:incorrect={result?.type === "incorrect" || result?.type === "error"}
                     on:click={() => select(i)}
                     class:selected={selected === i}
                 >
@@ -62,10 +61,7 @@
                     </td>
                 </tr>
             {/each}
-            <tr
-                class:correct={res?.hidden}
-                class:incorrect={res?.hidden === false}
-            >
+            <tr class:correct={res?.hidden} class:incorrect={res?.hidden === false}>
                 <td colspan={3}>
                     ...{func.hidden_cases} more hidden cases
                 </td>
@@ -77,9 +73,7 @@
             <tfoot>
                 <tr>
                     <th colspan="3" class="normal-case">
-                        <div
-                            class="grid grid-cols-[6em_1fr] grid-flow-row gap-2"
-                        >
+                        <div class="grid grid-cols-[6em_1fr] grid-flow-row gap-2">
                             <span class="my-auto">Inputs</span>
                             <Code code={stringify(test.inputs)} />
                             <span class="my-auto">Output</span>
@@ -87,27 +81,25 @@
 
                             {#if result}
                                 {#if result.output !== undefined}
-                                    <span class="my-auto"> Recieved </span>
+                                    <span class="my-auto">Recieved</span>
                                     <Code code={JSON.stringify(result.output, null, 2)} />
                                 {/if}
                                 <span class="my-auto">
                                     <code>stdout</code>
                                 </span>
                                 {#if result.stdout?.length === 0}
-                                    <span class="font-normal"> N/A </span>
+                                    <span class="font-normal">N/A</span>
                                 {:else}
                                     <Code code={result.stdout} />
                                 {/if}
                                 {#if result.traceback !== undefined}
-                                    <span class="my-auto"> Traceback </span>
+                                    <span class="my-auto">Traceback</span>
                                     <Code code={result.traceback} />
                                 {/if}
                             {/if}
                             {#if !result}
                                 <span class="col-span-2 my-auto">
-                                    <span class="text-success-600-300-token">
-                                        Run
-                                    </span>
+                                    <span class="text-success-600-300-token">Run</span>
                                     your code to see more information!
                                 </span>
                             {/if}

@@ -8,12 +8,9 @@ export type EditorSettings = {
     flipPanes: boolean;
 };
 
-export const editorSettings: Writable<EditorSettings> = localStorageStore(
-    "localEditorSettings",
-    {
-        lightTheme: "tomorrow",
-        darkTheme: "dracula",
-        fontSize: 14,
-        flipPanes: false,
-    }
-);
+export const editorSettings: Writable<EditorSettings> = localStorageStore("localEditorSettings", {
+    lightTheme: "tomorrow",
+    darkTheme: "dracula",
+    fontSize: 14,
+    flipPanes: false,
+});

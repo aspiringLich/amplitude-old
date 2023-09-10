@@ -6,10 +6,7 @@ export const fetchApi = async <T>(
     opts?: {
         method?: "POST" | "GET";
         body?: any;
-        fetch?: (
-            input: RequestInfo | URL,
-            init?: RequestInit
-        ) => Promise<Response>;
+        fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
     }
 ): Promise<T> => {
     opts = opts ?? {};
@@ -72,6 +69,7 @@ export class TestResults {
 export class CategoryConfig {
     title: string;
     description: string;
+    exercises: string[];
 }
 
 export type CategoryConfigs = { [key: string]: CategoryConfig };
@@ -84,7 +82,7 @@ export type ProblemIds = Map<string, string[]>;
 export type ProblemCompletion = {
     completed: ProblemIds;
     incomplete: ProblemIds;
-}
+};
 
 export const getProblemCompletion = async (): Promise<ProblemCompletion> => {
     return await fetchApi("/api/problem/completion", { method: "GET" });

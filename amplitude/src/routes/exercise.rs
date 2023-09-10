@@ -1,5 +1,4 @@
 use amplitude_markdown::items::exercise::transform;
-use serde::Serialize;
 
 use super::*;
 

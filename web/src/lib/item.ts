@@ -112,9 +112,7 @@ export function renderArticle(body: HTMLElement, data?: ArticleData) {
         "pre:not(.component)",
         Code,
         (props, slots) => {
-            let language =
-                slots.default[0].classList[0]?.replace("language-", "") ??
-                "plaintext";
+            let language = slots.default[0].classList[0]?.replace("language-", "") ?? "plaintext";
 
             return {
                 code: slots.default[0].innerHTML,
@@ -130,8 +128,8 @@ export function renderArticle(body: HTMLElement, data?: ArticleData) {
     renderComponent(body, "quiz", Quiz, (props, slots) => {
         if (!data) return props;
         return {
-            data: data.quiz_data[props.id]
-        }
+            data: data.quiz_data[props.id],
+        };
     });
 
     // turn all h2s into links to themselves

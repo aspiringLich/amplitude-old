@@ -4,7 +4,7 @@
 
     export let data: ArticleData;
     export let classes = "";
-    
+
     let body_element: HTMLElement;
     let padding = 1000; // vh
     let init = false;
@@ -37,7 +37,7 @@
 
 <div>
     <div class="article container-xl m-auto fade-in {classes}" class:show={init} bind:this={body_element}>
-    <h1 class="h1 my-6">{@html data.title}</h1>
+        <h1 class="h1 my-6">{@html data.title}</h1>
         {@html data.body}
     </div>
 </div>
@@ -49,7 +49,7 @@
 <style lang="postcss">
     /*! purgecss start ignore */
     .article {
-        &> :global(h2) {
+        & > :global(h2) {
             font-size: 1.75em;
             margin: 0.75em 0 0.75em 0;
 
@@ -63,8 +63,8 @@
             text-decoration: none;
         }
     }
-    
+
     :global(html.dark h2 > a) {
-        color: rgb(var(--text-color-dark))
+        color: rgb(var(--text-color-dark));
     }
 </style>

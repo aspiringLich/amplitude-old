@@ -9,9 +9,7 @@
     export let data: QuizData;
 
     // Local
-    let answers: { correct: boolean; num: number }[] = new Array(
-        data.questions.length
-    );
+    let answers: { correct: boolean; num: number }[] = new Array(data.questions.length);
 
     let container: HTMLElement;
     let n = 0;
@@ -42,7 +40,7 @@
     };
     const inc = () => (selected = answers[++n]?.num);
     const dec = () => (selected = answers[--n]?.num);
-    
+
     $: answered = answers[n] !== undefined;
 </script>
 

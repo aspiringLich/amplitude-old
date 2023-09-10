@@ -1,5 +1,4 @@
 pub mod context;
-pub mod course;
 pub mod inject;
 pub mod link_concat;
 
@@ -20,6 +19,7 @@ use comrak::{
 };
 use git2::build::RepoBuilder;
 use link_concat::link_concat_callback;
+use serde::{Deserialize, Serialize};
 
 use std::{
     collections::{hash_map::DefaultHasher, HashMap},
@@ -32,7 +32,6 @@ use tracing::{info, warn};
 
 use self::{
     context::{DataContext, MarkdownContext},
-    course::CategoryConfig,
     inject::InjectData,
 };
 
@@ -55,6 +54,15 @@ pub fn clone_repo(config: &ParseConfig) -> anyhow::Result<()> {
     RepoBuilder::new().clone(&config.git_url, Path::new(clone_path))?;
 
     Ok(())
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct CategoryConfig {
+    pub title: String,
+    pub description: String,
+    #[serde(skip_deserializing)]
+    pub exercises: Vec<String>,
 }
 
 /// Reparses the things and does the things
@@ -117,19 +125,19 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
         if !path.is_dir() {
             continue;
         }
-        let name = path.file_name().to_string();
-        if name.starts_with('.') {
+        let category_id = path.file_name().to_string();
+        if category_id.starts_with('.') {
             continue;
         }
 
         let scope = || -> anyhow::Result<()> {
-            let mut ctx = DataContext::new(&mut data, &name).context("While creating context")?;
+            let mut ctx =
+                DataContext::new(&mut data, &category_id).context("While creating context")?;
             let header =
                 File::open(&path.join("header.md")).context("While openning header file")?;
 
-            let (category, s): (CategoryConfig, _) =
+            let (mut category, s): (CategoryConfig, _) =
                 parse_frontmatter(&header).context("While parsing frontmatter for header")?;
-            ctx.add_category(category);
 
             let arena = Arena::new();
             let refs = parse_document_refs(&arena, &s);
@@ -137,17 +145,20 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
             let original = ctx.markdown_context().refs.clone();
             ctx.markdown_context_mut().refs.extend(refs);
 
-            for item in
-                fs::read_dir(path).with_context(|| format!("While reading category {}", name))?
+            for item in fs::read_dir(path)
+                .with_context(|| format!("While reading category {}", category_id))?
             {
                 let item = item?;
                 let path = item.path();
                 if !path.is_dir() {
                     continue;
                 }
-                let name = path.file_name().to_string();
+                let exercise_id = path.file_name().to_string();
+                category
+                    .exercises
+                    .push(format!("{category_id}/{exercise_id}"));
 
-                ctx.scope(&name, |ctx| -> anyhow::Result<()> {
+                ctx.scope(&exercise_id, |ctx| -> anyhow::Result<()> {
                     let exercise = Exercise::from_directory(
                         &DirectoryContent::new(&path).context("While getting directory content")?,
                         ctx,
@@ -162,11 +173,12 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
                 .context("While parsing exercise")?;
             }
 
+            ctx.add_category(category);
             data.markdown_context.refs = original;
 
             Ok(())
         };
-        scope().with_context(|| format!("While parsing category `{}`", name))?;
+        scope().with_context(|| format!("While parsing category `{}`", category_id))?;
     }
 
     // dbg!(&data);
@@ -177,7 +189,7 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
 fn parse_into_ast<'a>(
     input: &'a str,
     ctx: &MarkdownContext,
-    id: &str,
+    // id: &str,
     arena: &'a Arena<AstNode<'a>>,
 ) -> anyhow::Result<&'a AstNode<'a>> {
     // get the refs
@@ -189,11 +201,14 @@ fn parse_into_ast<'a>(
         input,
         &ctx.options,
         Some(&mut |link| {
-            let out = link_concat_callback(link, &this_refs);
-            if out.is_none() {
-                warn!("Broken link `{link}` in {id}");
+            if let Some(link) = link_concat_callback(link, &this_refs) {
+                Some(link)
+            } else if let Some(r) = this_refs.lookup(link) {
+                Some((r.url.as_str().to_string(), r.title.to_string()))
+            } else {
+                warn!("Broken link: {}", link);
+                None
             }
-            out
         }),
     );
     Ok(ast)
@@ -208,7 +223,7 @@ pub(crate) fn parse_md_full(
 ) -> anyhow::Result<(String, InjectData)> {
     // do things
     let arena = Arena::new();
-    let node = parse_into_ast(input, ctx.markdown_context(), ctx.id(), &arena)?;
+    let node = parse_into_ast(input, ctx.markdown_context(), &arena)?;
 
     let mut data = default();
     inject::inject(node, ctx, &mut data)?;
@@ -220,7 +235,7 @@ pub(crate) fn parse_md_full(
 pub(crate) fn parse_md(input: &str, ctx: &mut DataContext) -> anyhow::Result<String> {
     // do things
     let arena = Arena::new();
-    let node = parse_into_ast(input, ctx.markdown_context(), ctx.id(), &arena)?;
+    let node = parse_into_ast(input, ctx.markdown_context(), &arena)?;
 
     let mut data = default();
     inject::inject(node, ctx, &mut data)?;
@@ -232,6 +247,7 @@ pub(crate) fn parse_ast<'a>(
     ctx: &MarkdownContext,
 ) -> anyhow::Result<String> {
     let mut cm = vec![];
+
     comrak::format_html(node, &ctx.options, &mut cm).context("while parsing AST to html")?;
     String::from_utf8(cm).context("While converting html to string")
 }
