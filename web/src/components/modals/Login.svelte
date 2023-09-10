@@ -2,6 +2,4 @@
     import Modal from "$cmpt/modals/Modal.svelte";
 </script>
 
-<Modal title="Login">
-    todo :)
-</Modal>
+<Modal title="Login">todo :)</Modal>

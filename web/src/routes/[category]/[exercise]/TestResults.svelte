@@ -1,6 +1,5 @@
 <script lang="ts">
-    import type { TestResults } from "$lib/fetch";
-    import type { ExerciseData } from "$lib/item";
+    import type { TestResults, ExerciseData } from "$lib/fetch";
     import Code from "$cmpt/article/Code.svelte";
     import { CrossCircled } from "radix-icons-svelte";
 

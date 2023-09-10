@@ -2,7 +2,7 @@
     import Admonition from "$cmpt/article/Admonition.svelte";
     import Article from "$cmpt/article/Article.svelte";
     import Code from "$cmpt/article/Code.svelte";
-    import type { ExerciseData } from "$lib/item";
+    import type { ExerciseData } from "$lib/fetch";
     import { TabGroup, Tab } from "@skeletonlabs/skeleton";
     import type { TestResults as TypeTestResult } from "$lib/fetch";
     import TestResults from "./TestResults.svelte";

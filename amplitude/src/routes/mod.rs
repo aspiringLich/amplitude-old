@@ -45,7 +45,7 @@ where
     )?;
     Context::with_context(serde_json::from_str(&s), || {
         trace!(
-            "Bad Request: {s} {}",
+            "Bad Request: `{s}` {}",
             serde_json::from_str::<T>(&s).unwrap_err()
         );
         "Bad Request"

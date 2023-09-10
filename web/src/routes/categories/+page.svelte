@@ -10,9 +10,9 @@
     <div class="floating-container-inner">
         <h1 class="header h1">Categories</h1>
         <div class="body">
-            <div class="grid">
+            <div class="flex gap-y-4 flex-col">
                 {#each Object.entries(data.categories) as [category, config]}
-                    <CategoryCard {config} />
+                    <CategoryCard {config} id={category} />
                 {/each}
             </div>
         </div>

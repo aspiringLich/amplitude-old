@@ -1,20 +1,37 @@
 <script lang="ts">
+    import type { CompletionConfig } from "$lib/fetch";
     import { ProgressRadial } from "@skeletonlabs/skeleton";
+    import { getModalStore } from "@skeletonlabs/skeleton";
 
-    export let config;
+    export let config: CompletionConfig;
+    export let id: string;
+
+    const modalStore = getModalStore();
+
+    $: percent = (config.completed.length / config.exercises.length) * 100;
+
+    const open = () => {
+        modalStore.trigger({
+            type: "component",
+            component: "CategoryInfo",
+            meta: {...config, id: id },
+        });
+    };
 </script>
 
-<div class="card max-w-lg card-hover">
-    <section class="p-4 flex gap-x-4">
-        <div>
-            <ProgressRadial width="w-[3.25rem]" value={0.4} />
-        </div>
-        <div>
-            <h2 class="text-xl font-bold text-ellipsis whitespace-nowrap overflow-hidden">
+<div class="card card-hover flex flex-grow hover:cursor-pointer" on:click={open} role="none">
+    <section class="m-4 mr-0 pr-4 border-surface-600-300-token border-r-[1px]">
+        <ProgressRadial width="w-[3.25em]" value={percent} stroke={100} font={150}>
+            {percent}%
+        </ProgressRadial>
+    </section>
+    <section class="py-4 pl-2 flex gap-x-4">
+        <div class="flex flex-col">
+            <h2 class="text-xl font-bold truncate">
                 {config.title}
             </h2>
-            <i class="font-light text-ellipsis whitespace-nowrap overflow-hidden">
-                {config.description}
+            <i class="font-light truncate">
+                {config.description + "dkjaofaklfjak"}
             </i>
         </div>
     </section>

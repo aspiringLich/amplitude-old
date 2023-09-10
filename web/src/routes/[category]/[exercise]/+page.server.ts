@@ -1,17 +1,8 @@
-import type { EntryGenerator, RouteParams } from "./$types";
-import { fetchApi } from "$lib/fetch";
-import type { Item } from "$lib/item";
+import { getExercise } from "$lib/fetch";
+import type { ExerciseData } from "$lib/fetch";
 
-export const load = async ({ params, fetch }): Promise<Item> => {
-    let response: Item = await fetchApi("/api/exercise", {
-        method: "POST",
-        body: {
-            id: `${params.category}/${params.exercise}`,
-        },
-        fetch,
-    });
-
-    return response;
+export const load = async ({ params, fetch }): Promise<ExerciseData> => {
+    return getExercise(`${params.category}/${params.exercise}`);
 };
 
 // export const prerender = true;

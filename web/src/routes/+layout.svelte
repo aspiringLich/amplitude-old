@@ -10,11 +10,7 @@
     storeHighlightJs.set(hljs);
 
     //~ Init Stores
-    import {
-        initializeStores,
-        getDrawerStore,
-        getToastStore,
-    } from "@skeletonlabs/skeleton";
+    import { initializeStores, getDrawerStore, getToastStore } from "@skeletonlabs/skeleton";
     initializeStores();
     const drawerStore = getDrawerStore();
     const toastStore = getToastStore();
@@ -23,14 +19,7 @@
     import { Toast } from "@skeletonlabs/skeleton";
 
     //~ Popups
-    import {
-        computePosition,
-        autoUpdate,
-        offset,
-        shift,
-        flip,
-        arrow,
-    } from "@floating-ui/dom";
+    import { computePosition, autoUpdate, offset, shift, flip, arrow } from "@floating-ui/dom";
     import { storePopup } from "@skeletonlabs/skeleton";
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
@@ -39,43 +28,37 @@
     import type { ModalComponent } from "@skeletonlabs/skeleton";
     import EditorSettings from "$cmpt/modals/EditorSettings.svelte";
     import Login from "$cmpt/modals/Login.svelte";
-    
+    import CategoryInfo from "$cmpt/modals/CategoryInfo.svelte";
+
     export let data;
-    
+
     const modalComponentRegistry: Record<string, ModalComponent> = {
-        EditorSettings: {
-            ref: EditorSettings,
-        },
-        Login: {
-            ref: Login,
-        },
+        CategoryInfo: { ref: CategoryInfo },
+        EditorSettings: { ref: EditorSettings },
+        Login: { ref: Login },
     };
 
     //~ Error Handling
     const handleError = () => {
         toastStore.trigger({
-            message:
-                "An unexpected error occurred! Please reload the page to restore functionality.",
+            message: "An unexpected error occurred! Please reload the page to restore functionality.",
             background: "variant-filled-error",
         });
     };
-    
+
     import { onMount } from "svelte";
     import { Cross1 } from "radix-icons-svelte";
-    
+
     //~ Update Scroll Position
     let scrollElement: Element;
     const updateScroll = () => {
-        document.body.style.setProperty(
-            "--scroll",
-            scrollElement.scrollTop.toString()
-        );
+        document.body.style.setProperty("--scroll", scrollElement.scrollTop.toString());
     };
-    
+
     onMount(() => {
         scrollElement = document.querySelector("#page");
     });
-    
+
     const duration = 400;
 </script>
 

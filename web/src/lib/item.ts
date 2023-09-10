@@ -164,29 +164,6 @@ export class QuizData {
     type?: "quiz";
 }
 
-export class ExerciseData {
-    config: {
-        title: string;
-        instructions: string;
-        functions: {
-            [key: string]: {
-                inputs: string[];
-                output: string;
-                hidden_cases: number;
-                visible_cases: number;
-                tests: {
-                    inputs: Object[];
-                    output: Object;
-                }[];
-            };
-        };
-    };
-    lang_info: {
-        [key: string]: {
-            code: string;
-        };
-    };
-    type?: "exercise";
-}
 
-export type Item = ExerciseData;
+
+// export type Item = ExerciseData;
