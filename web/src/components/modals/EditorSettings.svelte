@@ -7,7 +7,7 @@
     import Checkbox from "$cmpt/form/Checkbox.svelte";
     import StepSelect from "$cmpt/form/StepSelect.svelte";
     import { camelToTitle } from "$lib/util";
-    
+
     const modalStore = getModalStore();
     const predicate = (x: string) => x != "createTheme";
     let trimmed_themes = ["default", ...Object.keys(themes)].filter(predicate);

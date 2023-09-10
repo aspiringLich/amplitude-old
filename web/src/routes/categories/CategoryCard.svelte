@@ -31,7 +31,7 @@
                 {config.title}
             </h2>
             <i class="font-light truncate">
-                {config.description + "dkjaofaklfjak"}
+                {config.description}
             </i>
         </div>
     </section>
