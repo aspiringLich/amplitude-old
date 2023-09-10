@@ -51,7 +51,7 @@ impl<'a> MiscDb<'a> {
         bail!("No unique class id found")
     }
 
-    pub fn save_problem_progress(&self, user_id: &str, problem_id: u64, code: &str) -> Result<()> {
+    pub fn save_problem_progress(&self, user_id: &str, problem_id: &str, code: &str) -> Result<()> {
         // todo: validate problem_id
 
         self.lock().execute(
@@ -62,7 +62,7 @@ impl<'a> MiscDb<'a> {
         Ok(())
     }
 
-    pub fn load_problem_progress(&self, user_id: &str, problem_id: u64) -> Result<String> {
+    pub fn load_problem_progress(&self, user_id: &str, problem_id: &str) -> Result<String> {
         // todo: validate problem_id
 
         let code = self.lock().query_row(
@@ -73,4 +73,33 @@ impl<'a> MiscDb<'a> {
 
         Ok(code)
     }
+    
+    /// Get the list of problems that the user has completed.
+    pub fn get_completed_problems(&self, user_id: &str) -> Result<Vec<String>> {
+        let lock = self.lock();
+        let mut stmt = lock.prepare(include_str!("./sql/problems/get_completed_problems.sql"))?;
+        let mut rows = stmt.query(params![user_id])?;
+
+        let mut ids = Vec::new();
+        while let Some(row) = rows.next()? {
+            ids.push(row.get(0)?);
+        }
+
+        Ok(ids)
+    }
+    
+    /// Get the list of problems a user is still working on
+    pub fn get_incomplete_problems(&self, user_id: &str) -> Result<Vec<String>> {
+        let lock = self.lock();
+        let mut stmt = lock.prepare(include_str!("./sql/problems/get_incomplete_problems.sql"))?;
+        let mut rows = stmt.query(params![user_id])?;
+
+        let mut ids = Vec::new();
+        while let Some(row) = rows.next()? {
+            ids.push(row.get(0)?);
+        }
+
+        Ok(ids)
+    }
+    
 }

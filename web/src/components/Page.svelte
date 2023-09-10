@@ -7,6 +7,8 @@
 
     export let path: [string, string][] = [];
     export let url: URL;
+    let className = "";
+    export { className as class }
 
     //~ Update Scroll Position
     let scrollElement: Element;
@@ -30,7 +32,7 @@
     </svelte:fragment>
 
     <div
-        class="h-full"
+        class="h-full {className}"
         in:fly={{ x: -5, duration, delay: duration }}
         out:fly={{ x: 5, duration }}
     >

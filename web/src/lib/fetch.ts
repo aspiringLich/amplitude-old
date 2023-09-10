@@ -79,3 +79,13 @@ export type CategoryConfigs = { [key: string]: CategoryConfig };
 export const getCategories = async (): Promise<CategoryConfigs> => {
     return await fetchApi("/api/list", { method: "GET" });
 };
+
+export type ProblemIds = Map<string, string[]>;
+export type ProblemCompletion = {
+    completed: ProblemIds;
+    incomplete: ProblemIds;
+}
+
+export const getProblemCompletion = async (): Promise<ProblemCompletion> => {
+    return await fetchApi("/api/problem/completion", { method: "GET" });
+};

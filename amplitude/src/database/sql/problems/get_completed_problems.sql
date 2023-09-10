@@ -1,0 +1,1 @@
+SELECT problem_id FROM problems WHERE user_id = ?1 AND completed = 1;
