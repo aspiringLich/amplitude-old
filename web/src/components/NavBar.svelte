@@ -75,7 +75,8 @@
             class="select-none font-normal hover:underline"
             on:click={login}
         >
-            Not Logged In<TriangleDown class="inline-block" size={18} />
+            Not Logged In
+            <TriangleDown class="inline-block" size={18} />
         </button>
         <LightSwitch height="h-5" width="w-10" class="my-1" />
     </div>
