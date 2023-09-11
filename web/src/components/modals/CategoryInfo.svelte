@@ -17,12 +17,19 @@
 
 <Modal title={config.title}>
     <div class="mb-2">{config.description}</div>
-    {#await exercise then exercise}
+    {#await exercise}
+        {#each config.exercises as _}
+            <div class="p-2 card flex flex-row items-center rounded-full h-11">
+                <div class="w-[5.75em] placeholder animate-pulse" />
+                <div class="ml-2 w-full placeholder animate-pulse" />
+            </div>
+        {/each}
+    {:then exercise}
         {#each Object.entries(exercise) as [exercise_id, e]}
             {@const complete = config.completed.includes(exercise_id)}
             {@const incomplete = config.incomplete.includes(exercise_id)}
-            <a class="p-2 card card-hover flex flex-row items-center rounded-full" href="/{exercise_id}" on:click={close}>
-                <div class="w-[5.75em]">
+            <a class="p-2 card flex flex-row items-center rounded-full" href="/{exercise_id}" on:click={close}>
+                <span class="w-[5.75em]">
                     {#if complete}
                         <span class="badge variant-ghost-primary">Completed</span>
                     {:else if incomplete}
@@ -30,9 +37,8 @@
                     {:else}
                         <span class="badge variant-ghost-surface">Not Started</span>
                     {/if}
-                </div>
+                </span>
                 <span class="text-xl font-semibold !ml-2">{e.title}</span>
-                
             </a>
         {/each}
     {/await}
