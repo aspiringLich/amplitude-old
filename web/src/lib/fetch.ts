@@ -139,12 +139,12 @@ export class ExerciseData {
     type?: "exercise";
 }
 
-class LoginProvider {
+export class LoginProvider {
     name: string;
     path: string;
 }
 
-class Session {
+export class Session {
     platform: string;
     token: string;
     id: string;
