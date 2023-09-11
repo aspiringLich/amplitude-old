@@ -16,28 +16,42 @@ impl<'a> SessionDb<'a> {
         let this = self.lock();
 
         // Add platform specific login data
-        match &session.platform {
-            SessionPlatform::Github(p) => this.execute(
-                include_str!("./sql/auth/github/upsert_login.sql"),
-                params![session.id, p.github_id, p.login, p.token,],
-            )?,
-            SessionPlatform::Google(p) => this.execute(
-                include_str!("./sql/auth/google/upsert_login.sql"),
-                params![session.id, p.google_id, p.access_token,],
-            )?,
+        let id: String = match &session.platform {
+            SessionPlatform::Github(p) => {
+                this.execute(
+                    include_str!("./sql/auth/github/upsert_login.sql"),
+                    params![session.id, p.github_id, p.login, p.token,],
+                )?;
+                this.query_row(
+                    "SELECT id FROM github_users WHERE github_id = ?",
+                    [p.github_id],
+                    |row| row.get(0),
+                )?
+            }
+            SessionPlatform::Google(p) => {
+                this.execute(
+                    include_str!("./sql/auth/google/upsert_login.sql"),
+                    params![session.id, p.google_id, p.access_token,],
+                )?;
+                this.query_row(
+                    "SELECT id FROM google_users WHERE google_id = ?",
+                    [&p.google_id],
+                    |row| row.get(0),
+                )?
+            }
         };
 
         // Add generic login data
         this.execute(
             include_str!("./sql/auth/upsert_login.sql"),
-            params![session.id, session.name, session.avatar],
+            params![id, session.name, session.avatar],
         )?;
 
         // Add session to database
         this.execute(
             include_str!("./sql/session/insert_sessions.sql"),
             params![
-                session.id,
+                id,
                 session.token,
                 session.platform.as_provider() as u8,
                 agent
