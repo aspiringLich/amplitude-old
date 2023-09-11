@@ -19,33 +19,4 @@ npm i
 npm run dev # the rust server AND the sveltekit server must be both running
 ```
 
-## To-Do
-
- - [x] ~~Reworked article / item system~~
- - [x] Article
-   - [x] Admonitions
-   - [x] Code Blocks
-   - [x] ~~Quiz~~
- - [ ] Exercises ~~/ Projects~~
-   - [x] Code editor
-   - [x] Test case generation system
-   - [ ] Other languages
- - [ ] General Stuff 
-   - [ ] "Home" page
-   - [ ] Login page
-   - [ ] Settings
-   - [ ] Course page
- - [ ] Web Course Editor
-   - [ ] Edit Exercises 
-   - [ ] Create Exercises
-   - [ ] Edit Items
-   - [ ] Create Items
-   - [ ] Delete Items
-   - [ ] Move Items
-   - [ ] Create Courses
- - [ ] Other
-   - [x] Modals
-   - [x] Toast notifications
-   - [ ] Robust Form Components
-
 [amplitude_articles]: https://github.com/rcsc/amplitude_articles.git
