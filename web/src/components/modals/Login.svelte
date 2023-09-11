@@ -1,23 +1,17 @@
 <script lang="ts">
   import Modal from "$cmpt/modals/Modal.svelte";
-
-  const supported = fetch("/auth/supported").then((r) => r.json());
-  //   const session = fetch("/auth/session").then((r) => r.json());
+  import { supportedPlatforms } from "$lib/fetch";
 </script>
 
 <Modal title="Login">
-  {#await supported}
-    <p>Loading auth options</p>
-  {:then supported}
-    <div class="flex flex-col gap-3">
-      {#each supported as provider}
-        <button
-          on:click={() => (document.location = provider.path)}
-          class="bg-blue-800"
-        >
-          Login with {provider.name}
-        </button>
-      {/each}
-    </div>
-  {/await}
+  <div class="flex flex-col gap-3">
+    {#each supportedPlatforms as provider}
+      <button
+        on:click={() => (document.location = provider.path)}
+        class="bg-blue-800"
+      >
+        Login with {provider.name}
+      </button>
+    {/each}
+  </div>
 </Modal>
