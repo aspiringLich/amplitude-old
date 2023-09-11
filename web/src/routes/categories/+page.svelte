@@ -1,6 +1,5 @@
 <script lang="ts">
     import Page from "$cmpt/Page.svelte";
-    import { ProgressRadial } from "@skeletonlabs/skeleton";
     import CategoryCard from "./CategoryCard.svelte";
 
     export let data;

@@ -5,9 +5,10 @@
     const modalStore = getModalStore();
     
     export let title: string
+    export let width: string = "w-modal";
 </script>
 
-<div class="w-modal shadow-xl relative pt-0" use:focusTrap={true}>
+<div class="{width} shadow-xl relative pt-0" use:focusTrap={true}>
     <button
         class="absolute top-1 right-1 hover-highlight interactive p-1 rounded-full"
         on:click={() => modalStore.close()}

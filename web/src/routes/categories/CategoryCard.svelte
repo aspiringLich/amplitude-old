@@ -8,13 +8,13 @@
 
     const modalStore = getModalStore();
 
-    $: percent = (config.completed.length / config.exercises.length) * 100;
+    $: percent = Math.round((config.completed.length / config.exercises.length) * 100);
 
     const open = () => {
         modalStore.trigger({
             type: "component",
             component: "CategoryInfo",
-            meta: {...config, id: id },
+            meta: { ...config, id: id },
         });
     };
 </script>
