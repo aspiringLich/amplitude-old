@@ -22,6 +22,7 @@ pub struct RequestLogger;
 
 impl Middleware for RequestLogger {
     fn pre(&self, req: &mut Request) -> MiddleResult {
+        #[cfg(debug_assertions)]
         event!(
             tracing::Level::TRACE,
             "{} {}{}",

@@ -1,6 +1,7 @@
 use std::{
     collections::{HashMap, HashSet},
     fs,
+    path::PathBuf,
 };
 
 use clap::Parser;
@@ -42,6 +43,7 @@ pub struct ServerConfig {
     pub port: u16,
     pub threads: usize,
     pub req_duration: u64,
+    pub database_path: PathBuf,
 }
 
 #[derive(Deserialize, Default, Debug)]

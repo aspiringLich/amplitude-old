@@ -78,7 +78,7 @@ export const getCategories = async (): Promise<CategoryConfigs> => {
     return await fetchApi("/api/list", { method: "GET" });
 };
 
-export type ProblemIds = {[key: string]: string[]};
+export type ProblemIds = { [key: string]: string[] };
 export type ProblemCompletion = {
     completed: ProblemIds;
     incomplete: ProblemIds;
@@ -110,7 +110,7 @@ export const getCompletionConfig = async (): Promise<CompletionConfigs> => {
     }
 
     return completion_config;
-}
+};
 
 export class ExerciseConfig {
     title: string;
@@ -139,6 +139,23 @@ export class ExerciseData {
     type?: "exercise";
 }
 
+export class LoginProvider {
+    name: string;
+    path: string;
+}
+
+export class Session {
+    platform: string;
+    token: string;
+    id: string;
+    name: string;
+    avatar: string;
+    signup: number;
+    admin: boolean;
+}
+
+export const supportedPlatforms: [LoginProvider] = await fetchApi("/auth/supported", { method: "GET" });
+
 export const getExercise = async (id: string): Promise<ExerciseData> => {
     return await fetchApi("/api/exercise", {
         method: "POST",
@@ -146,13 +163,13 @@ export const getExercise = async (id: string): Promise<ExerciseData> => {
             id: id,
         },
     });
-}
+};
 
-export const getCategoryExercises = async (category: string): Promise<{[key: string]: ExerciseConfig}> => {
+export const getCategoryExercises = async (category: string): Promise<{ [key: string]: ExerciseConfig }> => {
     return await fetchApi("/api/exercise/category", {
         method: "POST",
         body: {
             category: category,
         },
     });
-}
+};

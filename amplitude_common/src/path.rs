@@ -9,7 +9,6 @@ macro def_static($name:ident, $str:literal) {
     pub static $name: StaticPath = StaticPath($str);
 }
 
-def_static!(DATABASE, "./data.db");
 def_static!(LANGUAGES, "./languages");
 
 /// A struct that represents a path, which can be initialized statically.

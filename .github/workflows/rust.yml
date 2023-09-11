@@ -1,27 +1,31 @@
 name: CI
-on: [push, pull_request]
+
+on:
+  push:
+    paths:
+      - "amplitude/**"
+      - "amplitude_common/**"
+      - "amplitude_markdown/**"
+      - "amplitude_runner/**"
+      - "Cargo.*"
+      - "rust-toolchain.toml"
+
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
         os: [
-          ubuntu-latest, 
-          # macos-latest, 
-          # windows-latest
-        ]
+            ubuntu-latest,
+            # macos-latest,
+            # windows-latest
+          ]
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Build
         run: |
           export RUST_BACKTRACE=1
           cargo build
-
-      # - name: Test
-      #   run: |
-      #     export RUST_BACKTRACE=1
-      #     cargo r -p amplitude_runner
-      #     cargo test

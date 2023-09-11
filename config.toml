@@ -10,6 +10,8 @@ port = 8080
 threads = 16
 # How long until a request times out (in seconds)
 req_duration = 5
+# Path of the database file
+database_path = "./data/data.db"
 
 # Docker configuration
 [docker]
