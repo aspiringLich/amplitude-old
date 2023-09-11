@@ -44,10 +44,7 @@
         } else {
             results = (await res.json()) as TestResults;
 
-            let passed = !Object.values(results).reduce(
-                (acc, x) => acc || !x.passed,
-                false
-            );
+            let passed = !Object.values(results).reduce((acc, x) => acc || !x.passed, false);
             const t: ToastSettings = passed
                 ? {
                       message: "Congrats! All tests passed!",
@@ -63,6 +60,7 @@
     }
 
     $: fdir = $settings.flipPanes ? "!flex-row-reverse" : "!flex-row";
+    $: show = loaded ? "show" : "";
 
     let loaded = false;
     onMount(() => {
@@ -70,26 +68,13 @@
     });
 </script>
 
-<Splitpanes
-    theme="theme"
-    class="floating-container {fdir}"
-    rtl={$settings.flipPanes}
->
+<Splitpanes theme="theme" class="floating-container {show} {fdir}" rtl={$settings.flipPanes}>
     <Pane minSize={20} class="relative flex shadow-xl">
         <ExercisePanel {data} bind:results />
     </Pane>
     <Pane minSize={20} class="flex flex-col relative overflow-auto shadow-xl">
-        <div
-            class="h-[42px] bg-surface-200-700-token flex items-center justify-between {fdir}"
-        >
-            <button
-                type="button"
-                class="btn py-1 ml-1 variant-filled-primary left"
-                disabled={run_disabled}
-                on:click={run_code}
-            >
-                Run
-            </button>
+        <div class="h-[42px] bg-surface-200-700-token flex items-center justify-between {fdir}">
+            <button type="button" class="btn py-1 ml-1 variant-filled-primary left" disabled={run_disabled} on:click={run_code}>Run</button>
             <button
                 type="button"
                 class="btn btn-icon hover:rotate-[22.5deg] text-surface-500 dark:text-surface-300"
@@ -103,12 +88,8 @@
                 <Gear size={24} />
             </button>
         </div>
-        <div class="overflow-auto flex-[1_1_0px] bg-surface-100-800-token">
-            <Editor
-                bind:value={code}
-                bind:lang_name={lang}
-                class="overflow-auto"
-            />
+        <div class="overflow-auto flex-[1_1_0px] bg-surface-50-900-token">
+            <Editor bind:value={code} bind:lang_name={lang} class="overflow-auto fade-in" />
         </div>
     </Pane>
 </Splitpanes>

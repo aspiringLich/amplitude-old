@@ -1,13 +1,3 @@
-<script lang="ts" context="module">
-    import { get, writable } from "svelte/store";
-
-    export type Path = [string, string][];
-    /**
-     * For breadcrumbs, stores the path
-     */
-    export const path = writable([] as Path);
-</script>
-
 <script lang="ts">
     import { browser } from "$app/environment";
     import {
@@ -17,10 +7,12 @@
         getDrawerStore,
     } from "@skeletonlabs/skeleton";
     import { HamburgerMenu, TriangleDown } from "radix-icons-svelte";
-
-    export let pathname: string;
     
-    const _path = get(path);
+    type Path = [string, string][];
+    
+    export let path: Path = [];
+    export let pathname: string;
+
     const modalStore = getModalStore();
     const drawerStore = getDrawerStore();
 
@@ -51,7 +43,7 @@
                 <a class="anchor clean-link" href="/">home</a>
             </li>
 
-            {#each _path as p, i}
+            {#each path as p, i}
                 <li class="crumb-seperator" aria-hidden>/</li>
                 <li class="crumb">
                     <a class="anchor clean-link" href={p[0]}>

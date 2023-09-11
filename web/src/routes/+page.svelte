@@ -1,5 +1,7 @@
 <script>
+    import Page from "$cmpt/Page.svelte";
     
+    export let data;
 </script>
 
-root page :)
+<Page url={data.url}>root page :)</Page>

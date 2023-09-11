@@ -6,10 +6,7 @@ export const fetchApi = async <T>(
     opts?: {
         method?: "POST" | "GET";
         body?: any;
-        fetch?: (
-            input: RequestInfo | URL,
-            init?: RequestInit
-        ) => Promise<Response>;
+        fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
     }
 ): Promise<T> => {
     opts = opts ?? {};
@@ -32,18 +29,18 @@ export const fetchApi = async <T>(
     return await req.json();
 };
 
-export type List = { [key: string]: string[] };
+// export type List = { [key: string]: string[] };
 
-export const getExerciseList = async (): Promise<string[]> => {
-    let list: List = await fetchApi("/api/list");
-    let items: string[] = [];
-    for (const [_, value] of Object.entries(list)) {
-        for (const item of value) {
-            items.push(...item);
-        }
-    }
-    return items;
-};
+// export const getExerciseList = async (): Promise<string[]> => {
+//     let list: List = await fetchApi("/api/list", { method: "GET" });
+//     let items: string[] = [];
+//     for (const [_, value] of Object.entries(list)) {
+//         for (const item of value) {
+//             items.push(...item);
+//         }
+//     }
+//     return items;
+// };
 
 export type TestResult =
     | {
@@ -72,4 +69,90 @@ export class TestResults {
 export class CategoryConfig {
     title: string;
     description: string;
+    exercises: string[];
+}
+
+export type CategoryConfigs = { [key: string]: CategoryConfig };
+
+export const getCategories = async (): Promise<CategoryConfigs> => {
+    return await fetchApi("/api/list", { method: "GET" });
+};
+
+export type ProblemIds = {[key: string]: string[]};
+export type ProblemCompletion = {
+    completed: ProblemIds;
+    incomplete: ProblemIds;
+};
+
+export const getProblemCompletion = async (): Promise<ProblemCompletion> => {
+    return await fetchApi("/api/problem/completion", { method: "GET" });
+};
+
+export class CompletionConfig extends CategoryConfig {
+    completed: string[];
+    incomplete: string[];
+}
+export type CompletionConfigs = { [key: string]: CompletionConfig };
+
+export const getCompletionConfig = async (): Promise<CompletionConfigs> => {
+    let categories = await getCategories();
+    let completion = await getProblemCompletion();
+
+    let completion_config: { [key: string]: CompletionConfig } = {};
+    for (const [category, config] of Object.entries(categories)) {
+        let completed = completion.completed[category] ?? [];
+        let incomplete = completion.incomplete[category] ?? [];
+        completion_config[category] = {
+            ...config,
+            completed: completed,
+            incomplete: incomplete,
+        };
+    }
+
+    return completion_config;
+}
+
+export class ExerciseConfig {
+    title: string;
+    instructions: string;
+    functions?: {
+        [key: string]: {
+            inputs: string[];
+            output: string;
+            hidden_cases: number;
+            visible_cases: number;
+            tests: {
+                inputs: Object[];
+                output: Object;
+            }[];
+        };
+    };
+}
+
+export class ExerciseData {
+    config: ExerciseConfig;
+    lang_info: {
+        [key: string]: {
+            code: string;
+        };
+    };
+    type?: "exercise";
+}
+
+export const getExercise = async (id: string): Promise<ExerciseData> => {
+    return await fetchApi("/api/exercise", {
+        method: "POST",
+        body: {
+            id: id,
+        },
+    });
+}
+
+export const getCategoryExercises = async (category: string): Promise<{[key: string]: ExerciseConfig}> => {
+    return await fetchApi("/api/exercise/category", {
+        method: "POST",
+        body: {
+            category: category,
+        },
+    });
 }

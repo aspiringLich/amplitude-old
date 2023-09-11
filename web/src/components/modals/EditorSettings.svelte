@@ -19,23 +19,9 @@
 {#if $modalStore[0]}
     <Modal title="Editor Settings">
         <div class="grid grid-cols-1 gap-2 !mt-0">
-            <Editor
-                class="w-full h-64 min-h-64 max-h-64"
-                lang_name="python"
-                bind:value
-            />
-            <StepSelect
-                title="Editor Theme (light)"
-                options={trimmed_themes}
-                transform={camelToTitle}
-                bind:value={$settings.lightTheme}
-            />
-            <StepSelect
-                title="Editor Theme (dark)"
-                options={trimmed_themes}
-                transform={camelToTitle}
-                bind:value={$settings.darkTheme}
-            />
+            <Editor class="w-full h-64 min-h-64 max-h-64" lang_name="python" bind:value />
+            <StepSelect title="Editor Theme (light)" options={trimmed_themes} transform={camelToTitle} bind:value={$settings.lightTheme} />
+            <StepSelect title="Editor Theme (dark)" options={trimmed_themes} transform={camelToTitle} bind:value={$settings.darkTheme} />
             <Checkbox title="Flip Panes" bind:checked={$settings.flipPanes} />
         </div>
     </Modal>

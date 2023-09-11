@@ -2,14 +2,14 @@
     import Admonition from "$cmpt/article/Admonition.svelte";
     import Article from "$cmpt/article/Article.svelte";
     import Code from "$cmpt/article/Code.svelte";
-    import type { ExerciseData } from "$lib/item";
+    import type { ExerciseData } from "$lib/fetch";
     import { TabGroup, Tab } from "@skeletonlabs/skeleton";
     import type { TestResults as TypeTestResult } from "$lib/fetch";
     import TestResults from "./TestResults.svelte";
-    
+
     export let data: ExerciseData;
     export let results: TypeTestResult | Error | undefined = undefined;
-    
+
     let tabN = 0;
 
     $: fn_list = Object.keys(data.config.functions);
@@ -23,12 +23,7 @@
     // }
 </script>
 
-<TabGroup
-    class="flex grow flex-col overflow-auto"
-    border="border-b-0"
-    regionList="bg-surface-200-700-token"
-    regionPanel="overflow-auto flex-[1_0_0px] !mt-0 px-4 bg-surface-50 dark:bg-surface-900"
->
+<TabGroup class="flex grow flex-col overflow-auto" border="border-b-0" regionList="bg-surface-200-700-token" regionPanel="overflow-auto flex-[1_0_0px] !mt-0 px-4 bg-surface-50 dark:bg-surface-900">
     <Tab bind:group={tabN} name="instructions" value={0}>Instructions</Tab>
     <Tab bind:group={tabN} name="test" value={1}>Test Cases</Tab>
 

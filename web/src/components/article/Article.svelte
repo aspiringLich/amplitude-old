@@ -4,9 +4,9 @@
 
     export let data: ArticleData;
     export let classes = "";
-    
+
     let body_element: HTMLElement;
-    let padding = 1000;
+    let padding = 1000; // vh
     let init = false;
 
     onMount(() => {
@@ -36,8 +36,8 @@
 </noscript>
 
 <div>
-    <div class="article container-xl m-auto {classes}" class:show={init} bind:this={body_element}>
-    <h1 class="h1 my-6">{@html data.title}</h1>
+    <div class="article container-xl m-auto fade-in {classes}" class:show={init} bind:this={body_element}>
+        <h1 class="h1 my-6">{@html data.title}</h1>
         {@html data.body}
     </div>
 </div>
@@ -49,18 +49,7 @@
 <style lang="postcss">
     /*! purgecss start ignore */
     .article {
-        visibility: hidden;
-        opacity: 0;
-        transform: translateY(-20px);
-        transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
-
-        &.show {
-            transform: translateY(0);
-            visibility: visible;
-            opacity: 1;
-        }
-        
-        &> :global(h2) {
+        & > :global(h2) {
             font-size: 1.75em;
             margin: 0.75em 0 0.75em 0;
 
@@ -74,8 +63,8 @@
             text-decoration: none;
         }
     }
-    
+
     :global(html.dark h2 > a) {
-        color: rgb(var(--text-color-dark))
+        color: rgb(var(--text-color-dark));
     }
 </style>

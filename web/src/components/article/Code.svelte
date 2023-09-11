@@ -85,9 +85,7 @@
 
     // Trigger syntax highlighting if highlight.js is available
     $: if ($storeHighlightJs !== undefined) {
-        displayCode = $storeHighlightJs
-            .highlight(code, { language })
-            .value.trim();
+        displayCode = $storeHighlightJs.highlight(code, { language }).value.trim();
         formatted = true;
     }
 
@@ -108,6 +106,7 @@
         data-testid="codeblock"
         on:mouseenter={() => (hover = true)}
         on:mouseleave={() => (hover = false)}
+        role="none"
     >
         <!-- Copy Button -->
         {#if copy && (hover || copyState)}
@@ -118,7 +117,8 @@
                 transition:fade={{ duration: 100 }}
             >
                 {#if copyState}
-                    <span class="text-xs">Copied!</span><Check size={16} />
+                    <span class="text-xs">Copied!</span>
+                    <Check size={16} />
                 {:else}
                     <Copy size={16} />
                 {/if}
@@ -135,8 +135,6 @@
         {/if}
         <!-- Pre/Code -->
         <pre class="codeblock-pre {cPre}" class:mt-4={txt}><code
-                class="codeblock-code language-{language} lineNumbers"
-                >{#if formatted}{@html displayCode}{:else}{code.trim()}{/if}</code
-            ></pre>
+                class="codeblock-code language-{language} lineNumbers">{#if formatted}{@html displayCode}{:else}{code.trim()}{/if}</code></pre>
     </div>
 {/if}

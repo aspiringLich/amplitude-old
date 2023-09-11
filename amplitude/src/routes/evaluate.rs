@@ -28,8 +28,6 @@ pub fn attach(server: &mut Server<State>) {
             .run_tests(&body.lang, &body.code, id, &state.config)
             .context(Status::InternalServerError, "Error running tests")?;
 
-        Ok(Response::new()
-            .text(serde_json::to_string(&results)?)
-            .content(Content::JSON))
+        Ok(Response::new().json(results)?)
     });
 }

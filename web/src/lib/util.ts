@@ -5,11 +5,7 @@
  * @param threshold - The delay to avoid recalling the function.
  * @param execAsap - If true, the Function is called at the start of the threshold, otherwise the Function is called at the end of the threshold.
  */
-export function debounce<T extends (...args: any[]) => any>(
-    func: T,
-    threshold: number,
-    execAsap = false
-): T {
+export function debounce<T extends (...args: any[]) => any>(func: T, threshold: number, execAsap = false): T {
     let timeout: any;
 
     return function debounced(this: any, ...args: any[]): any {
@@ -39,6 +35,4 @@ export const camelToTitle = (str: string) => {
         .trim();
 };
 // https://stackoverflow.com/questions/54246477/how-to-convert-camelcase-to-snake-case
-export const camelToSkewer = (str) =>
-    str.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
-
+export const camelToSkewer = (str) => str.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
