@@ -19,7 +19,7 @@
     };
 </script>
 
-<div class="card card-hover flex flex-grow hover:cursor-pointer" on:click={open} role="none">
+<div class="card card-hover flex flex-grow hover:cursor-pointer" on:click={open} on:keypress={open} role="link" tabindex="0">
     <section class="m-4 mr-0 pr-4 border-surface-600-300-token border-r-[1px]">
         <ProgressRadial width="w-[3.25em]" value={percent} stroke={100} font={150}>
             {percent}%
