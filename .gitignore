@@ -5,6 +5,7 @@
 .vite
 *.db*
 .tmp
+auth.toml
 
 # Logs
 logs

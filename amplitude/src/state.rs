@@ -1,9 +1,13 @@
 use std::{fs, path::PathBuf};
 
-use amplitude_common::config::{Args, AuthConfig, Config};
-use anyhow::Context;
+use amplitude_common::{
+    config::{Args, AuthConfig, Config},
+    default,
+};
+use anyhow::{anyhow, Context};
 use parking_lot::{RwLock, RwLockReadGuard};
 use rusqlite::Connection;
+use tracing::warn;
 
 use crate::database::Db;
 
@@ -25,10 +29,18 @@ impl State {
         let mut config: Config =
             toml::from_str(&fs::read_to_string(&args.config).context("While reading config file")?)
                 .context("While parsing config file")?;
-        let auth: AuthConfig = toml::from_str(
-            &fs::read_to_string(&args.auth).context("While reading auth config file")?,
-        )
-        .context("While parsing auth file")?;
+
+        let auth_file = fs::read_to_string(&args.auth);
+        let auth: AuthConfig = match auth_file {
+            Ok(s) => toml::from_str(&s).context("While parsing auth file")?,
+            Err(e) => match e.kind() {
+                std::io::ErrorKind::NotFound => {
+                    warn!("No Auth File found at `{}`!", &args.auth);
+                    default()
+                }
+                _ => return Err(e).context("While reading auth file"),
+            },
+        };
 
         config.args = args;
         config.auth = auth;
