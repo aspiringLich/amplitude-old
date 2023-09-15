@@ -1,6 +1,6 @@
 use std::{fs, path::PathBuf};
 
-use amplitude_common::config::{Args, Config};
+use amplitude_common::config::{Args, AuthConfig, Config};
 use anyhow::Context;
 use parking_lot::{RwLock, RwLockReadGuard};
 use rusqlite::Connection;
@@ -22,11 +22,16 @@ impl State {
 
     pub fn new() -> anyhow::Result<Self> {
         let args = Args::parse();
-        let mut config = toml::from_str::<Config>(
-            &fs::read_to_string(&args.config).context("While reading config file")?,
+        let mut config: Config =
+            toml::from_str(&fs::read_to_string(&args.config).context("While reading config file")?)
+                .context("While parsing config file")?;
+        let auth: AuthConfig = toml::from_str(
+            &fs::read_to_string(&args.auth).context("While reading auth config file")?,
         )
-        .context("While parsing config file")?;
+        .context("While parsing auth file")?;
+
         config.args = args;
+        config.auth = auth;
 
         let tmp_folder = PathBuf::from(&config.docker.tmp_folder);
         if !tmp_folder.exists() {

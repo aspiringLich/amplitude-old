@@ -17,6 +17,9 @@ pub struct Args {
     /// The path of the config file
     #[arg(long, default_value_t = {"config.toml".to_string()})]
     pub config: String,
+    /// The path of the auth file
+    #[arg(long, default_value_t = {"auth.toml".to_string()})]
+    pub auth: String,
 }
 
 impl Args {

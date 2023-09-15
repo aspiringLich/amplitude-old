@@ -35,13 +35,3 @@ asset_prefix = "./generated"
 # image file extensions (non exhaustive)
 image_extensions = ["png", "jpg", "jpeg", "gif", "svg", "bmp", "tiff", "webp"]
 
-# # Github OAuth configuration
-# [github_oauth]
-# app_id = "0123456789abcdef"
-# app_secret = "0123456789abcdef"
-
-# # Google OAuth configuration
-# [google_oauth]
-# client_id = "0123456789-0123456789abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com"
-# client_secret = "ABCDEF-0123456789abcdefgABCDEFG-abcdefgABCDEFG"
-# external_url = "http://localhost:5173"
