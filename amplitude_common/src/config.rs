@@ -15,11 +15,11 @@ pub struct Args {
     #[arg(long, default_value_t = false)]
     pub pull: bool,
     /// The path of the config file
-    #[arg(long, default_value_t = {"config.toml".to_string()})]
-    pub config: String,
+    #[arg(long, default_value = "config.toml")]
+    pub config: PathBuf,
     /// The path of the auth file
-    #[arg(long, default_value_t = {"auth.toml".to_string()})]
-    pub auth: String,
+    #[arg(long, default_value = "auth.toml")]
+    pub auth: PathBuf,
 }
 
 impl Args {

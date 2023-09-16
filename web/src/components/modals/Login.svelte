@@ -12,13 +12,10 @@
             <button on:click={() => redirect(provider)} class="btn variant-outline-surface bg-black rounded">
                 {#if provider.name === "GitHub"}
                     <GithubLogo class="w-5 h-5 mr-2" />
-                    <span>Continue with GitHub</span>
                 {:else if provider.name === "Google"}
                     <img src="/assets/img/google_logo.svg" alt="Google Logo" class="w-5 h-5 mr-2" />
-                    <span>Continue with {provider.name}</span>
-                {:else}
-                    <span>Continue with {provider.name}</span>
                 {/if}
+                <span>Continue with {provider.name}</span>
             </button>
         {/each}
     </div>

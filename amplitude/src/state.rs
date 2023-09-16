@@ -35,7 +35,7 @@ impl State {
             Ok(s) => toml::from_str(&s).context("While parsing auth file")?,
             Err(e) => match e.kind() {
                 std::io::ErrorKind::NotFound => {
-                    warn!("No Auth File found at `{}`!", &args.auth);
+                    warn!("No Auth File found at `{}`!", &args.auth.to_string_lossy());
                     default()
                 }
                 _ => return Err(e).context("While reading auth file"),
