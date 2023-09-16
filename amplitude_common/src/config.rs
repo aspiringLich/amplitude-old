@@ -54,6 +54,7 @@ pub struct ServerConfig {
 pub struct AuthConfig {
     pub google_oauth: Option<GoogleOauth>,
     pub github_oauth: Option<GithubOauth>,
+    pub bot: Option<GithubBotAuth>,
 }
 
 fn args() -> Args {
@@ -102,6 +103,12 @@ pub struct GoogleOauth {
 #[derive(Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct GithubOauth {
+    pub app_id: String,
+    pub app_secret: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct GithubBotAuth {
     pub app_id: String,
     pub app_secret: String,
 }

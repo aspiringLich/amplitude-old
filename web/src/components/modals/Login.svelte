@@ -4,9 +4,9 @@
 </script>
 
 <Modal title="Login">
-    <div class="flex flex-col gap-3">
+    <div class="flex flex-col gap-3 m-auto w-80">
         {#each supportedPlatforms as provider}
-            <button on:click={() => (document.location = provider.path)} class="bg-blue-800">
+            <button on:click={() => (document.location = provider.path)} class="btn variant-outline-surface">
                 Login with {provider.name}
             </button>
         {/each}
