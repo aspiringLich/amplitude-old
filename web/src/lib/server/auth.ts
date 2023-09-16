@@ -1,5 +1,6 @@
 import fs from "fs";
 import toml from "toml";
+import { App } from "octokit";
 
 export class AuthConfig {
     github_oauth: {
@@ -14,8 +15,15 @@ export class AuthConfig {
     bot_auth: {
         app_id: string;
         app_secret: string;
+        private_key: string;
     };
 }
 
 let buffer = fs.readFileSync("../auth.toml");
 export let auth: AuthConfig = toml.parse(buffer.toString());
+
+const app = new App({
+    appId: auth.bot_auth.app_id,
+    privateKey: auth.bot_auth.private_key,
+});
+export let octokit = app.octokit;

@@ -1,10 +1,13 @@
 <script lang="ts">
+    import FormElement from "$cmpt/form/FormElement.svelte";
     import { ArrowLeft, ArrowRight } from "radix-icons-svelte";
 
     //~ Props
-    export let value: any;
-    /** The Title of the Element */
+    /** The Title for the Element */
     export let title: string;
+
+    export let value: any;
+
     /** The list of options for the select */
     export let options: any[] = [];
     /** The function to run on the values when displayed */
@@ -25,8 +28,8 @@
     $: value = options[selected];
 </script>
 
-<div class="block">
-    <span class="block font-semibold text-surface-700-200-token">{title}</span>
+<FormElement bind:title>
+    <svelte:fragment slot="desc"><slot /></svelte:fragment>
     <div class="btn-group bg-surface-200-700-token inline-flex mt-1">
         <button class="z-20" on:click={dec}><ArrowLeft size={18} /></button>
         <select class="select border-l-0 border-b-2 rounded-none" bind:value={selected}>
@@ -35,7 +38,7 @@
             {/each}
         </select>
         <button on:click={inc} class="border-l-0">
-            <ArrowRight size={18}/>
+            <ArrowRight size={18} />
         </button>
     </div>
-</div>
+</FormElement>
