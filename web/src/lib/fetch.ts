@@ -154,6 +154,7 @@ export class Session {
     admin: boolean;
 }
 
+// todo: top level await makes build sad because old browsers don't support it
 export const supportedPlatforms: [LoginProvider] = await fetchApi("/auth/supported", { method: "GET" });
 
 export const getExercise = async (id: string): Promise<ExerciseData> => {

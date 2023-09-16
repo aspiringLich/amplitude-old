@@ -25,7 +25,7 @@ pub fn attach(server: &mut Server<State>) {
             .get_oauth(LoginProvider::Google, state)
             .context("Invalid state")?;
 
-        if current_epoch() - state >= 60 * 10 {
+        if current_epoch() - state.created >= 60 * 10 {
             return Ok(Response::new()
                 .status(Status::BadRequest)
                 .text("State Expired"));
@@ -86,7 +86,7 @@ pub fn attach(server: &mut Server<State>) {
             name: user.name,
             avatar: user.picture,
             signup: current_epoch(),
-            admin: false
+            admin: false,
         };
 
         app.db
@@ -100,7 +100,7 @@ pub fn attach(server: &mut Server<State>) {
         Ok(Response::new()
             .status(Status::TemporaryRedirect)
             .header("Cache-Control", "no-store")
-            .header("Location", "/")
+            .header("Location", state.redirect.as_deref().unwrap_or("/"))
             .cookie(cookie))
     });
 }

@@ -1,7 +1,7 @@
-use std::{any, result};
+use std::result;
 
 use afire::{Request, Status};
-use anyhow::{anyhow, bail};
+use anyhow::anyhow;
 use serde::Serialize;
 
 use crate::{error::StatusError, misc::LoginProvider, state::State};
