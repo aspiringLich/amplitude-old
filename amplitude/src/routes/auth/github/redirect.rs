@@ -6,12 +6,13 @@ use crate::{
 };
 
 pub fn attach(server: &mut Server<State>) {
-    server.stateful_route(Method::GET, "/auth/github/redirect", move |app, _| {
+    server.stateful_route(Method::GET, "/auth/github/redirect", move |app, req| {
+        let redirect = req.query.get("redirect");
         let state = rand_str(10);
 
         app.db
             .auth()
-            .add_oauth(LoginProvider::Github, &state)
+            .add_oauth(LoginProvider::Github, &state, redirect)
             .unwrap();
 
         let cfg = app.config.auth.github_oauth.as_ref().unwrap();

@@ -15,7 +15,7 @@ pub mod user;
 type SessionMeta = (String, u64, Option<String>);
 
 // Increment every time schema changes, even in dev
-const DATABASE_VERSION: u64 = 2;
+const DATABASE_VERSION: u64 = 3;
 
 pub struct Db {
     inner: Mutex<Option<Connection>>,

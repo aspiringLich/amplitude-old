@@ -24,7 +24,7 @@ pub fn attach(server: &mut Server<State>) {
             .get_oauth(LoginProvider::Github, state)
             .context("Invalid state")?;
 
-        if current_epoch() - state >= 60 * 10 {
+        if current_epoch() - state.created >= 60 * 10 {
             return Ok(Response::new().text("State Expired"));
         }
 
@@ -86,7 +86,10 @@ pub fn attach(server: &mut Server<State>) {
         Ok(Response::new()
             .status(Status::TemporaryRedirect)
             .header("Cache-Control", "no-store")
-            .header("Location", "/")
+            .header(
+                "Location",
+                state.redirect.as_ref().map(String::as_str).unwrap_or("/"),
+            )
             .cookie(cookie))
     });
 }

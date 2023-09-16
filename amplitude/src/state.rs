@@ -4,7 +4,7 @@ use amplitude_common::{
     config::{Args, AuthConfig, Config},
     default,
 };
-use anyhow::{anyhow, Context};
+use anyhow::Context;
 use parking_lot::{RwLock, RwLockReadGuard};
 use rusqlite::Connection;
 use tracing::warn;
