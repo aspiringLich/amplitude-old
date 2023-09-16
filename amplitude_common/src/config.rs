@@ -111,6 +111,7 @@ pub struct GithubOauth {
 pub struct GithubBotAuth {
     pub app_id: String,
     pub app_secret: String,
+    pub installation_id: String,
 }
 
 #[derive(Deserialize, Debug)]

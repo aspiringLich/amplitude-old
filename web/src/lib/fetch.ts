@@ -7,17 +7,20 @@ export const fetchApi = async <T>(
         method?: "POST" | "GET";
         body?: any;
         fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+        headers?: { [key: string]: string | number };
     }
 ): Promise<T> => {
     opts = opts ?? {};
     opts.fetch = opts.fetch ?? fetch;
     opts.method = opts.method ?? "GET";
+    opts.headers = opts.headers ?? {};
 
     let input = browser ? url : `http://127.0.0.1:8080${url}`;
     const req = await opts.fetch(input, {
         method: opts.method ?? "GET",
         headers: {
             "Content-Type": "application/json",
+            ...opts.headers,
         },
         body: opts.method == "POST" ? JSON.stringify(opts.body) : undefined,
     });
@@ -26,7 +29,15 @@ export const fetchApi = async <T>(
         throw new Error(`failed to fetch ${url} with` + JSON.stringify(opts));
     }
 
-    return await req.json();
+    try {
+        var text = await req.text();
+        var json = JSON.parse(text);
+    } catch (e) {
+        console.error(req);
+        console.error(text);
+        throw new Error(`JSON parsing failed!`);
+    }
+    return json;
 };
 
 // export type List = { [key: string]: string[] };
