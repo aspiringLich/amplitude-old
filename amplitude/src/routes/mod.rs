@@ -70,7 +70,7 @@ pub fn mapify_problem_ids(ids: Vec<String>) -> anyhow::Result<ProblemIdMap> {
     let mut map = HashMap::new();
     for id in ids {
         let (category, problem) = id
-            .split_once("/")
+            .split_once('/')
             .ok_or_else(|| anyhow::anyhow!("Invalid problem id: {}", id))?;
 
         map.entry(category.to_string())

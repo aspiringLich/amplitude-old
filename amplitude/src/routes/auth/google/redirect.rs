@@ -1,8 +1,9 @@
 use afire::{internal::encoding::url, Method, Response, Server, Status};
 
-use rand::Rng;
-
-use crate::{misc::{LoginProvider, rand_str}, state::State};
+use crate::{
+    misc::{rand_str, LoginProvider},
+    state::State,
+};
 
 pub fn attach(server: &mut Server<State>) {
     server.stateful_route(Method::GET, "/auth/google/redirect", move |app, req| {

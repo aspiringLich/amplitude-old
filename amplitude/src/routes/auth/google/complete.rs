@@ -100,10 +100,7 @@ pub fn attach(server: &mut Server<State>) {
         Ok(Response::new()
             .status(Status::TemporaryRedirect)
             .header("Cache-Control", "no-store")
-            .header(
-                "Location",
-                state.redirect.as_ref().map(String::as_str).unwrap_or("/"),
-            )
+            .header("Location", state.redirect.as_deref().unwrap_or("/"))
             .cookie(cookie))
     });
 }

@@ -102,7 +102,7 @@ pub mod class {
         }
     }
 
-    pub fn class_exists<'a>(db: &UserDb<'a>, class_id: u64) -> result::Result<(), ClassError> {
+    pub fn class_exists(db: &UserDb<'_>, class_id: u64) -> result::Result<(), ClassError> {
         let this = db.lock();
         if let DbResult::NotFound = this
             .query_row("SELECT * FROM class WHERE id = ?", [class_id], |_| Ok(()))
@@ -114,8 +114,8 @@ pub mod class {
         Ok(())
     }
 
-    pub fn in_class<'a>(
-        db: &UserDb<'a>,
+    pub fn in_class(
+        db: &UserDb<'_>,
         user_id: &str,
         class_id: u64,
     ) -> result::Result<bool, rusqlite::Error> {

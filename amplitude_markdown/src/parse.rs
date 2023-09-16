@@ -162,7 +162,7 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
                     let exercise = Exercise::from_directory(
                         &DirectoryContent::new(&path).context("While getting directory content")?,
                         ctx,
-                        &config,
+                        config,
                     )
                     .context("While getting `Exercise`")?;
 
@@ -181,9 +181,7 @@ pub fn parse(config: &Config) -> anyhow::Result<ParseData> {
         scope().with_context(|| format!("While parsing category `{}`", category_id))?;
     }
 
-    // dbg!(&data);
-
-    Ok(ParseData::from_raw(data).context("While converting `RawParseData` to `ParseData`")?)
+    ParseData::from_raw(data).context("While converting `RawParseData` to `ParseData`")
 }
 
 fn parse_into_ast<'a>(

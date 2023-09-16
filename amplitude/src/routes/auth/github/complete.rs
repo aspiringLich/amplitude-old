@@ -88,7 +88,7 @@ pub fn attach(server: &mut Server<State>) {
             .header("Cache-Control", "no-store")
             .header(
                 "Location",
-                state.redirect.as_ref().map(String::as_str).unwrap_or("/"),
+                state.redirect.as_deref().unwrap_or("/"),
             )
             .cookie(cookie))
     });
