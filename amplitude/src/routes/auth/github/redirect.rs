@@ -7,7 +7,7 @@ use crate::{
 
 pub fn attach(server: &mut Server<State>) {
     server.stateful_route(Method::GET, "/auth/github/redirect", move |app, req| {
-        let redirect = req.query.get("redirect");
+        let redirect = req.query.get("r");
         let state = rand_str(10);
 
         app.db

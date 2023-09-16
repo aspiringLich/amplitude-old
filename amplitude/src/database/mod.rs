@@ -82,6 +82,7 @@ impl Db {
                      just like delete the database and start over.",
                     DATABASE_VERSION, i
                 );
+                std::process::exit(1);
             }
         }
 

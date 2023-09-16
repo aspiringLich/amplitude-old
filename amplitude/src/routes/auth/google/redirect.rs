@@ -6,7 +6,7 @@ use crate::{misc::{LoginProvider, rand_str}, state::State};
 
 pub fn attach(server: &mut Server<State>) {
     server.stateful_route(Method::GET, "/auth/google/redirect", move |app, req| {
-        let redirect = req.query.get("redirect");
+        let redirect = req.query.get("r");
         let state = rand_str(10);
 
         app.db.auth().add_oauth(LoginProvider::Google, &state, redirect).unwrap();
