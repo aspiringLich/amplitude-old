@@ -1,6 +1,7 @@
 import fs from "fs";
 import toml from "toml";
-import { App } from "octokit";
+import { Octokit } from "octokit";
+import { createAppAuth } from "@octokit/auth-app";
 
 export class AuthConfig {
     github_oauth: {
@@ -12,18 +13,23 @@ export class AuthConfig {
         client_secret: string;
         external_url: string;
     };
-    bot_auth: {
-        app_id: string;
+    bot: {
+        app_id: number;
         app_secret: string;
         private_key: string;
+        installation_id: number;
     };
 }
 
 let buffer = fs.readFileSync("../auth.toml");
 export let auth: AuthConfig = toml.parse(buffer.toString());
 
-const app = new App({
-    appId: auth.bot_auth.app_id,
-    privateKey: auth.bot_auth.private_key,
+export const octokit = new Octokit({
+    authStrategy: createAppAuth,
+    auth: {
+        appId: auth.bot.app_id,
+        privateKey: auth.bot.private_key,
+        installationId: auth.bot.installation_id,
+        clientSecret: auth.bot.app_secret,
+    },
 });
-export let octokit = app.octokit;

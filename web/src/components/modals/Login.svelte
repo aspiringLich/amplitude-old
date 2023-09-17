@@ -6,10 +6,10 @@
     const redirect = (platform) => (document.location = `${platform.path}?r=${encodeURIComponent(document.location.pathname)}`);
 </script>
 
-<Modal title="Login">
-    <div class="flex flex-col gap-3 m-auto w-80">
+<Modal title="Login" width="w-modal-slim">
+    <div class="flex flex-col gap-3 m-auto w-64">
         {#each supportedPlatforms as provider}
-            <button on:click={() => redirect(provider)} class="btn variant-outline-surface bg-black rounded">
+            <button on:click={() => redirect(provider)} class="btn variant-ghost-surface">
                 {#if provider.name === "GitHub"}
                     <GithubLogo class="w-5 h-5 mr-2" />
                 {:else if provider.name === "Google"}
