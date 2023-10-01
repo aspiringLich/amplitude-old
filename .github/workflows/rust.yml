@@ -10,6 +10,9 @@ on:
       - "Cargo.*"
       - "rust-toolchain.toml"
 
+env:
+  CARGO_NET_GIT_FETCH_WITH_CLI: true
+
 jobs:
   build:
     strategy:

@@ -20,7 +20,6 @@ marksman_escape = "0.1.2"
 comrak = { git = "https://github.com/aspiringLich/comrak.git" }
 parking_lot = "0.12.1"
 chrono = "0.4.24"
-ureq = "2.6.2"
 git2 = "0.17.1"
 enum-iterator = "1.4.1"
 thiserror = "1.0.40"
