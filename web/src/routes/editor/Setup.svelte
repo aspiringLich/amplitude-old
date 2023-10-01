@@ -2,9 +2,11 @@
     import InputGroup from "$cmpt/form/InputGroup.svelte";
     import { createEventDispatcher } from "svelte";
     import { fetchApi } from "$lib/fetch";
-    import type { GitTree } from "src/routes/editor/git";
+    import { GitObject, type GitTree } from "./git";
+    import { getToaster } from "$lib/toast";
 
     const dispatch = createEventDispatcher();
+    const toaster = getToaster();
 
     let values = [null, "amplitude_articles", "main"];
     $: filled = values.every((s) => s?.length > 0);
@@ -21,10 +23,11 @@
             console.error(e);
             return;
         }
-        disabled = false;
-        console.log(res);
+        let tree = new GitObject(res);
+        
+        // confirm the tree matches the expected structure
 
-        dispatch("get_tree", res);
+        dispatch("get_tree", tree);
     };
 </script>
 

@@ -26,12 +26,19 @@ export interface GitTree {
 /**
  * The possible file modes in a Git repository.
  */
-enum GitFileMode {
+export enum GitFileMode {
     Blob = "100644",
     Executable = "100755",
     Tree = "040000",
     Commit = "160000",
     Symlink = "120000",
+}
+
+export enum ModificatonStatus {
+    UNCHANGED,
+    ADDED,
+    MODIFIED,
+    DELETED,
 }
 
 /**
@@ -44,18 +51,32 @@ export class GitObject {
     sha: string;
     url: string;
     size?: number;
+    content?: string;
     tree?: {
-        [key: string]: GitObject;
+        [key: string]: {
+            status: ModificatonStatus;
+            obj: GitObject;
+        };
     };
+    parent: GitObject | null;
+    modified: boolean;
+    
+    getContent(): string {
+        if (this.content) return this.content;
+        if (this.type == "blob") {
+            
+        }
+    }
 
-    getPath(path: string): GitObject | undefined {
+    get(path: string): GitObject | undefined {
         let components = path.split("/");
         let final = components.pop();
         let tree: GitObject = this;
         for (const component of components) {
-            tree = tree.tree![component];
+            tree = tree.tree![component].obj;
+            if (!tree?.tree) return undefined;
         }
-        return tree.tree![final!];
+        return tree.tree![final!].obj;
     }
 
     /**
@@ -69,6 +90,8 @@ export class GitObject {
         this.sha = object.sha;
         this.url = object.url;
         this.tree = {};
+        this.parent = (object.parent as GitObject) ?? null;
+        this.modified = false;
 
         if (object.tree) {
             let last_tree: GitObject = this;
@@ -79,6 +102,7 @@ export class GitObject {
                     type: entry.type as "blob" | "tree",
                     sha: entry.sha,
                     url: entry.url,
+                    parent: this,
                 });
 
                 // place the tree correctly in the filestructure
@@ -86,9 +110,12 @@ export class GitObject {
                 let components = entry.path.split("/");
                 let final = components.pop();
                 for (const component of components) {
-                    last_tree = last_tree.tree![component];
+                    last_tree = last_tree.tree![component].obj;
                 }
-                last_tree.tree![final] = obj;
+                last_tree.tree![final] = {
+                    status: ModificatonStatus.UNCHANGED,
+                    obj: obj,
+                };
 
                 switch (entry.type) {
                     case "tree":

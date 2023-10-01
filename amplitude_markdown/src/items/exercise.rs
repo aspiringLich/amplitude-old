@@ -18,7 +18,7 @@ impl FromDirectory for Exercise {
         let config = content.query_file("config", FileType::Toml)?;
 
         let id = context.id().rsplit_once('/').unwrap().1.to_string();
-        let starting_code = content.query_files(&id, FileType::Code)?;
+        let starting_code = content.query_files("template", FileType::Code)?;
         let generator = content
             .query_files("generator", FileType::Code)?
             .collect::<Vec<_>>();

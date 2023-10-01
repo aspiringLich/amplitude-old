@@ -1,13 +1,13 @@
 <script lang="ts">
     import Page from "$cmpt/Page.svelte";
-    import { GitObject, type GitTree } from "./git";
+    import type { GitObject, GitTree } from "./git";
     import Setup from "./Setup.svelte";
-    
+
     export let data;
-    
+
     const get_tree = (_tree: CustomEvent<GitTree>) => {
         let tree = _tree.detail;
-        console.log(new GitObject(tree))
+        console.log(tree);
     };
 </script>
 
@@ -15,7 +15,7 @@
     <div class="floating-container-inner">
         <h1 class="header h1">Editor</h1>
         <div class="body">
-            <Setup on:get_tree={get_tree}/>
+            <Setup on:get_tree={get_tree} />
         </div>
     </div>
 </Page>
