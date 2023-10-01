@@ -1,17 +1,17 @@
 <script lang="ts">
     import { Pane, Splitpanes } from "svelte-splitpanes";
     import Editor from "$cmpt/Editor.svelte";
-    import { itemID, type ExerciseData } from "$lib/item";
+    import { itemID } from "$lib/item";
     import ExercisePanel from "./ExercisePanel.svelte";
-    import type { TestResults } from "$lib/fetch";
-    import { getModalStore, getToastStore } from "@skeletonlabs/skeleton";
-    import type { ToastSettings } from "@skeletonlabs/skeleton";
+    import type { ExerciseData, TestResults } from "$lib/fetch";
+    import { getModalStore } from "@skeletonlabs/skeleton";
     import { Gear } from "radix-icons-svelte";
     import { editorSettings as settings } from "$lib/settings";
     import { onMount } from "svelte";
+    import { getToaster } from "$lib/toast";
 
     const modalStore = getModalStore();
-    const toastStore = getToastStore();
+    const toaster = getToaster();
 
     export let data: ExerciseData;
 
@@ -19,6 +19,8 @@
     let code = data.lang_info[lang].code;
     let results: TestResults | Error | undefined;
     let run_disabled = false;
+    
+    let tab_n: number;
 
     async function run_code() {
         run_disabled = true;
@@ -36,25 +38,15 @@
         });
         if (!res.ok) {
             results = new Error(await res.text());
-            const t: ToastSettings = {
-                message: "Error while trying to run code!",
-                background: "variant-filled-error",
-            };
-            toastStore.trigger(t);
+            toaster.error("Error while trying to run code!");
+            tab_n = 1;
         } else {
             results = (await res.json()) as TestResults;
 
             let passed = !Object.values(results).reduce((acc, x) => acc || !x.passed, false);
-            const t: ToastSettings = passed
-                ? {
-                      message: "Congrats! All tests passed!",
-                      background: "variant-filled-success",
-                  }
-                : {
-                      message: "Some tests failed!",
-                      background: "variant-filled-error",
-                  };
-            toastStore.trigger(t);
+            if (passed) toaster.success("Congrats! All tests passed!");
+            else toaster.error("Some tests failed!");
+            tab_n = 1;
         }
         run_disabled = false;
     }
@@ -70,7 +62,7 @@
 
 <Splitpanes theme="theme" class="floating-container {show} {fdir}" rtl={$settings.flipPanes}>
     <Pane minSize={20} class="relative flex shadow-xl">
-        <ExercisePanel {data} bind:results />
+        <ExercisePanel {data} bind:results bind:tab_n />
     </Pane>
     <Pane minSize={20} class="flex flex-col relative overflow-auto shadow-xl">
         <div class="h-[42px] bg-surface-200-700-token flex items-center justify-between {fdir}">

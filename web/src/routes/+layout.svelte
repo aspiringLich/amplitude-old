@@ -64,7 +64,7 @@
 
 <svelte:window on:error={handleError} />
 
-<Toast />
+<Toast buttonDismiss="btn-icon btn-icon-sm"}/>
 <Modal components={modalComponentRegistry} />
 
 {#key data.url}

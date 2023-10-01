@@ -192,3 +192,16 @@ button {
         var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
+.toast {
+    &.success button {
+        @apply variant-ringed-success;
+    }
+
+    &.error button {
+        @apply variant-ringed-error;
+    }
+    
+    .text-base {
+        @apply dark:text-white text-black;
+    }
+}

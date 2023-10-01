@@ -1,7 +1,7 @@
 <script lang="ts">
     import Page from "$cmpt/Page.svelte";
     import { GitObject, type GitTree } from "./git";
-    import Initial from "./Initial.svelte";
+    import Setup from "./Setup.svelte";
     
     export let data;
     
@@ -15,7 +15,7 @@
     <div class="floating-container-inner">
         <h1 class="header h1">Editor</h1>
         <div class="body">
-            <Initial on:get_tree={get_tree}/>
+            <Setup on:get_tree={get_tree}/>
         </div>
     </div>
 </Page>

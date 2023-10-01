@@ -9,8 +9,7 @@
 
     export let data: ExerciseData;
     export let results: TypeTestResult | Error | undefined = undefined;
-
-    let tabN = 0;
+    export let tab_n = 0;
 
     $: fn_list = Object.keys(data.config.functions);
 
@@ -24,11 +23,11 @@
 </script>
 
 <TabGroup class="flex grow flex-col overflow-auto" border="border-b-0" regionList="bg-surface-200-700-token" regionPanel="overflow-auto flex-[1_0_0px] !mt-0 px-4 bg-surface-50 dark:bg-surface-900">
-    <Tab bind:group={tabN} name="instructions" value={0}>Instructions</Tab>
-    <Tab bind:group={tabN} name="test" value={1}>Test Cases</Tab>
+    <Tab bind:group={tab_n} name="instructions" value={0}>Instructions</Tab>
+    <Tab bind:group={tab_n} name="test" value={1}>Test Cases</Tab>
 
     <svelte:fragment slot="panel">
-        {#if tabN == 0}
+        {#if tab_n == 0}
             <Article
                 classes="h-max px-4 py-2"
                 data={{
@@ -36,7 +35,7 @@
                     body: data.config.instructions,
                 }}
             />
-        {:else if tabN == 1}
+        {:else if tab_n == 1}
             {#if results instanceof Error}
                 <Admonition type="error" container="p-0">
                     <Code code={results.message} rounded="rounded-t-none" />
