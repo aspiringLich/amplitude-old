@@ -41,6 +41,15 @@ export enum ModificatonStatus {
     DELETED,
 }
 
+export enum Error {
+    /** Expected a Blob, did not get one */
+    NOT_BLOB,
+    /** Expected a Tree, did not get one */
+    NOT_TREE,
+    /** Expected this object to have a parent */
+    NO_PARENT,
+}
+
 /**
  * A high-level representation of an object in a Git repository.
  */
@@ -52,31 +61,42 @@ export class GitObject {
     url: string;
     size?: number;
     content?: string;
-    tree?: {
+    tree: {
         [key: string]: {
             status: ModificatonStatus;
             obj: GitObject;
         };
-    };
+    } | null;
     parent: GitObject | null;
     modified: boolean;
-    
+
     getContent(): string {
         if (this.content) return this.content;
         if (this.type == "blob") {
-            
+        } else {
+            throw Error.NOT_BLOB;
         }
     }
 
-    get(path: string): GitObject | undefined {
+    /**
+     *
+     * @param path The path of the
+     * @returns A gitobject if it fin
+     */
+    chdir(path: string): GitObject | Error {
         let components = path.split("/");
         let final = components.pop();
         let tree: GitObject = this;
         for (const component of components) {
-            tree = tree.tree![component].obj;
-            if (!tree?.tree) return undefined;
+            if (component === "..") {
+                tree = tree.parent;
+                if (!tree) return Error.NO_PARENT;
+            } else if (component !== ".") {
+                tree = tree.tree[component]?.obj;
+                if (tree?.type !== "tree") return Error.NOT_TREE;
+            }
         }
-        return tree.tree![final!].obj;
+        return tree?.tree?.[final]?.obj ?? Error.NOT_TREE;
     }
 
     /**
@@ -89,11 +109,12 @@ export class GitObject {
         this.type = (object.type as "blob" | "tree") ?? "tree";
         this.sha = object.sha;
         this.url = object.url;
-        this.tree = {};
+        this.tree = null;
         this.parent = (object.parent as GitObject) ?? null;
         this.modified = false;
 
         if (object.tree) {
+            this.tree = {};
             let last_tree: GitObject = this;
             for (const entry of object.tree) {
                 let obj = new GitObject({
